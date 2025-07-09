@@ -11,16 +11,32 @@ export const COLLECTIONS = {
   HELPERS: 'helpers',
 } as const;
 
+// Helper function to remove undefined values
+const removeUndefinedValues = (obj: any): any => {
+  const cleaned: any = {};
+  for (const key in obj) {
+    if (obj[key] !== undefined) {
+      cleaned[key] = obj[key];
+    }
+  }
+  return cleaned;
+};
+
 // Server-side user operations using Admin SDK
 export class UserService {
   static async createUser(uid: string, userData: Partial<BaseUser>): Promise<void> {
     const userRef = adminDb.collection(COLLECTIONS.USERS).doc(uid);
-    await userRef.set({
+    
+    // Remove undefined values to prevent Firestore errors
+    const cleanedData = removeUndefinedValues({
       ...userData,
       uid,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
+
+    console.log('💾 Saving user data:', cleanedData);
+    await userRef.set(cleanedData);
   }
 
   static async getUserByUid(uid: string): Promise<User | null> {
@@ -45,10 +61,14 @@ export class UserService {
 
   static async updateUser(uid: string, updateData: Partial<User>): Promise<void> {
     const userRef = adminDb.collection(COLLECTIONS.USERS).doc(uid);
-    await userRef.update({
+    
+    // Remove undefined values to prevent Firestore errors
+    const cleanedData = removeUndefinedValues({
       ...updateData,
       updatedAt: new Date(),
     });
+
+    await userRef.update(cleanedData);
   }
 
   static async updateLastLogin(uid: string): Promise<void> {
@@ -92,10 +112,14 @@ export class UserService {
 
   static async updateClientUser(uid: string, updateData: Partial<User>): Promise<void> {
     const userRef = doc(db, COLLECTIONS.USERS, uid);
-    await updateDoc(userRef, {
+    
+    // Remove undefined values to prevent Firestore errors
+    const cleanedData = removeUndefinedValues({
       ...updateData,
       updatedAt: serverTimestamp(),
     });
+
+    await updateDoc(userRef, cleanedData);
   }
 }
 

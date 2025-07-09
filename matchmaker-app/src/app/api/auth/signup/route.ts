@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminAuth } from '@/lib/firebase-admin';
 import { UserService } from '@/lib/db';
-import { SignUpData, AuthResponse } from '@/types/user';
+import { SignUpData, AuthResponse, BaseUser } from '@/types/user';
 
 export async function POST(request: NextRequest) {
   try {
@@ -62,14 +62,27 @@ export async function POST(request: NextRequest) {
 
       console.log('✅ Firebase user created:', userRecord?.uid);
 
-      // Create user document in Firestore
-      console.log('💾 Creating Firestore document...');
-      await UserService.createUser(userRecord!.uid, {
-        email: email || undefined,
-        phoneNumber: phoneNumber || undefined,
+      // Prepare user data for Firestore (only include defined values)
+      const userData: Partial<BaseUser> = {
         userType,
         isRegistrationComplete: false,
-      });
+      };
+
+      // Only add email if it exists
+      if (email) {
+        userData.email = email;
+      }
+
+      // Only add phoneNumber if it exists
+      if (phoneNumber) {
+        userData.phoneNumber = phoneNumber;
+      }
+
+      console.log('💾 Prepared user data:', userData);
+
+      // Create user document in Firestore
+      console.log('💾 Creating Firestore document...');
+      await UserService.createUser(userRecord!.uid, userData);
 
       console.log('✅ Firestore document created');
 
