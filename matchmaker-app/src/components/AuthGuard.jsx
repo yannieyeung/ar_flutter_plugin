@@ -4,12 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
-interface AuthGuardProps {
-  children: React.ReactNode;
-  requireRegistration?: boolean;
-}
-
-export function AuthGuard({ children, requireRegistration = false }: AuthGuardProps) {
+export function AuthGuard({ children, requireRegistration = false }) {
   const { user, firebaseUser, loading } = useAuth();
   const router = useRouter();
 

@@ -1,6 +1,5 @@
 import { db } from './firebase';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { User } from '@/types/user';
 
 // Collection names
 export const COLLECTIONS = {
@@ -8,18 +7,18 @@ export const COLLECTIONS = {
   EMPLOYERS: 'employers',
   AGENCIES: 'agencies',
   HELPERS: 'helpers',
-} as const;
+};
 
 // Client-side user operations
 export class ClientUserService {
-  static async getUser(uid: string): Promise<User | null> {
+  static async getUser(uid) {
     try {
       const userRef = doc(db, COLLECTIONS.USERS, uid);
       const userSnap = await getDoc(userRef);
       
       if (!userSnap.exists()) return null;
       
-      const userData = userSnap.data() as User;
+      const userData = userSnap.data();
       // Convert Firestore timestamps to Date objects
       userData.createdAt = userData.createdAt ? new Date(userData.createdAt) : new Date();
       userData.updatedAt = userData.updatedAt ? new Date(userData.updatedAt) : new Date();
@@ -34,7 +33,7 @@ export class ClientUserService {
     }
   }
 
-  static async updateUser(uid: string, updateData: Partial<User>): Promise<void> {
+  static async updateUser(uid, updateData) {
     const userRef = doc(db, COLLECTIONS.USERS, uid);
     await updateDoc(userRef, {
       ...updateData,

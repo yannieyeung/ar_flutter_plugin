@@ -1,7 +1,6 @@
 import { adminDb } from './firebase-admin';
 import { db } from './firebase';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { User, UserType, BaseUser } from '@/types/user';
 
 // Collection names
 export const COLLECTIONS = {
@@ -9,11 +8,11 @@ export const COLLECTIONS = {
   EMPLOYERS: 'employers',
   AGENCIES: 'agencies',
   HELPERS: 'helpers',
-} as const;
+};
 
 // Helper function to remove undefined values
-const removeUndefinedValues = (obj: any): any => {
-  const cleaned: any = {};
+const removeUndefinedValues = (obj) => {
+  const cleaned = {};
   for (const key in obj) {
     if (obj[key] !== undefined) {
       cleaned[key] = obj[key];
@@ -24,7 +23,7 @@ const removeUndefinedValues = (obj: any): any => {
 
 // Server-side user operations using Admin SDK
 export class UserService {
-  static async createUser(uid: string, userData: Partial<BaseUser>): Promise<void> {
+  static async createUser(uid, userData) {
     const userRef = adminDb.collection(COLLECTIONS.USERS).doc(uid);
     
     // Remove undefined values to prevent Firestore errors
@@ -39,12 +38,12 @@ export class UserService {
     await userRef.set(cleanedData);
   }
 
-  static async getUserByUid(uid: string): Promise<User | null> {
+  static async getUserByUid(uid) {
     try {
       const userDoc = await adminDb.collection(COLLECTIONS.USERS).doc(uid).get();
       if (!userDoc.exists) return null;
       
-      const userData = userDoc.data() as User;
+      const userData = userDoc.data();
       // Convert Firestore timestamps to Date objects
       userData.createdAt = userData.createdAt ? new Date(userData.createdAt) : new Date();
       userData.updatedAt = userData.updatedAt ? new Date(userData.updatedAt) : new Date();
@@ -59,7 +58,7 @@ export class UserService {
     }
   }
 
-  static async updateUser(uid: string, updateData: Partial<User>): Promise<void> {
+  static async updateUser(uid, updateData) {
     const userRef = adminDb.collection(COLLECTIONS.USERS).doc(uid);
     
     // Remove undefined values to prevent Firestore errors
@@ -71,7 +70,7 @@ export class UserService {
     await userRef.update(cleanedData);
   }
 
-  static async updateLastLogin(uid: string): Promise<void> {
+  static async updateLastLogin(uid) {
     const userRef = adminDb.collection(COLLECTIONS.USERS).doc(uid);
     await userRef.update({
       lastLoginAt: new Date(),
@@ -79,7 +78,7 @@ export class UserService {
     });
   }
 
-  static async markRegistrationComplete(uid: string): Promise<void> {
+  static async markRegistrationComplete(uid) {
     const userRef = adminDb.collection(COLLECTIONS.USERS).doc(uid);
     await userRef.update({
       isRegistrationComplete: true,
@@ -88,14 +87,14 @@ export class UserService {
   }
 
   // Client-side user operations
-  static async getClientUser(uid: string): Promise<User | null> {
+  static async getClientUser(uid) {
     try {
       const userRef = doc(db, COLLECTIONS.USERS, uid);
       const userSnap = await getDoc(userRef);
       
       if (!userSnap.exists()) return null;
       
-      const userData = userSnap.data() as User;
+      const userData = userSnap.data();
       // Convert Firestore timestamps to Date objects
       userData.createdAt = userData.createdAt ? new Date(userData.createdAt) : new Date();
       userData.updatedAt = userData.updatedAt ? new Date(userData.updatedAt) : new Date();
@@ -110,7 +109,7 @@ export class UserService {
     }
   }
 
-  static async updateClientUser(uid: string, updateData: Partial<User>): Promise<void> {
+  static async updateClientUser(uid, updateData) {
     const userRef = doc(db, COLLECTIONS.USERS, uid);
     
     // Remove undefined values to prevent Firestore errors
@@ -125,7 +124,7 @@ export class UserService {
 
 // Utility functions for querying users by type
 export class QueryService {
-  static async getUsersByType(userType: UserType, limit = 50): Promise<User[]> {
+  static async getUsersByType(userType, limit = 50) {
     try {
       const usersRef = adminDb.collection(COLLECTIONS.USERS);
       const snapshot = await usersRef
@@ -135,7 +134,7 @@ export class QueryService {
         .get();
       
       return snapshot.docs.map(doc => {
-        const userData = doc.data() as User;
+        const userData = doc.data();
         userData.createdAt = userData.createdAt ? new Date(userData.createdAt) : new Date();
         userData.updatedAt = userData.updatedAt ? new Date(userData.updatedAt) : new Date();
         if (userData.lastLoginAt) {
@@ -149,7 +148,7 @@ export class QueryService {
     }
   }
 
-  static async getIncompleteRegistrations(): Promise<User[]> {
+  static async getIncompleteRegistrations() {
     try {
       const usersRef = adminDb.collection(COLLECTIONS.USERS);
       const snapshot = await usersRef
@@ -157,7 +156,7 @@ export class QueryService {
         .get();
       
       return snapshot.docs.map(doc => {
-        const userData = doc.data() as User;
+        const userData = doc.data();
         userData.createdAt = userData.createdAt ? new Date(userData.createdAt) : new Date();
         userData.updatedAt = userData.updatedAt ? new Date(userData.updatedAt) : new Date();
         if (userData.lastLoginAt) {

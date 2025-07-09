@@ -1,13 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { adminAuth } from '@/lib/firebase-admin';
 import { UserService } from '@/lib/db';
-import { SignUpData, AuthResponse, BaseUser } from '@/types/user';
 
-export async function POST(request: NextRequest) {
+export async function POST(request) {
   try {
     console.log('📝 Signup API called');
     
-    const body: SignUpData = await request.json();
+    const body = await request.json();
     const { email, phoneNumber, password, userType } = body;
 
     console.log('🔍 Request data:', { email, phoneNumber, userType });
@@ -18,7 +17,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: false,
         message: 'Password and user type are required',
-      } as AuthResponse, { status: 400 });
+      }, { status: 400 });
     }
 
     if (!email && !phoneNumber) {
@@ -26,7 +25,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: false,
         message: 'Either email or phone number is required',
-      } as AuthResponse, { status: 400 });
+      }, { status: 400 });
     }
 
     if (!['employer', 'agency', 'individual_helper'].includes(userType)) {
@@ -34,7 +33,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: false,
         message: 'Invalid user type',
-      } as AuthResponse, { status: 400 });
+      }, { status: 400 });
     }
 
     console.log('✅ Input validation passed');
@@ -63,7 +62,7 @@ export async function POST(request: NextRequest) {
       console.log('✅ Firebase user created:', userRecord?.uid);
 
       // Prepare user data for Firestore (only include defined values)
-      const userData: Partial<BaseUser> = {
+      const userData = {
         userType,
         isRegistrationComplete: false,
       };
@@ -82,13 +81,13 @@ export async function POST(request: NextRequest) {
 
       // Create user document in Firestore
       console.log('💾 Creating Firestore document...');
-      await UserService.createUser(userRecord!.uid, userData);
+      await UserService.createUser(userRecord.uid, userData);
 
       console.log('✅ Firestore document created');
 
       // Generate custom token for immediate sign in
       console.log('🎟️ Generating custom token...');
-      const customToken = await adminAuth.createCustomToken(userRecord!.uid);
+      const customToken = await adminAuth.createCustomToken(userRecord.uid);
 
       console.log('✅ Custom token generated');
 
@@ -98,7 +97,7 @@ export async function POST(request: NextRequest) {
         success: true,
         message: 'User created successfully',
         redirectUrl,
-      } as AuthResponse, { 
+      }, { 
         status: 201,
         headers: {
           'Set-Cookie': `auth_token=${customToken}; HttpOnly; Path=/; Max-Age=3600; SameSite=Strict${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`,
@@ -108,20 +107,20 @@ export async function POST(request: NextRequest) {
     } catch (authError) {
       console.error('🔥 Firebase Auth Error:', authError);
       
-      const errorCode = (authError as { code?: string }).code;
+      const errorCode = authError.code;
       
       if (errorCode === 'auth/email-already-exists') {
         return NextResponse.json({
           success: false,
           message: 'An account with this email already exists',
-        } as AuthResponse, { status: 409 });
+        }, { status: 409 });
       }
       
       if (errorCode === 'auth/phone-number-already-exists') {
         return NextResponse.json({
           success: false,
           message: 'An account with this phone number already exists',
-        } as AuthResponse, { status: 409 });
+        }, { status: 409 });
       }
 
       throw authError;
@@ -129,12 +128,12 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('❌ Signup error (FULL):', error);
-    console.error('❌ Error stack:', (error as Error).stack);
-    console.error('❌ Error message:', (error as Error).message);
+    console.error('❌ Error stack:', error.stack);
+    console.error('❌ Error message:', error.message);
     
     return NextResponse.json({
       success: false,
       message: 'Internal server error',
-    } as AuthResponse, { status: 500 });
+    }, { status: 500 });
   }
 }

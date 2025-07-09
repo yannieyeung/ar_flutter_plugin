@@ -1,0 +1,398 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { AuthGuard } from '@/components/AuthGuard';
+import { useRouter, useParams } from 'next/navigation';
+import { ClientUserService } from '@/lib/db-client';
+
+export default function RegistrationPage() {
+  const { user, refreshUser } = useAuth();
+  const router = useRouter();
+  const params = useParams();
+  const userType = params.userType;
+
+  // Form state
+  const [formData, setFormData] = useState({
+    // Common fields
+    fullName: '',
+    description: '',
+    location: '',
+    
+    // Employer specific
+    companyName: '',
+    companySize: '',
+    industry: '',
+    
+    // Agency specific
+    agencyName: '',
+    agencyLicense: '',
+    servicesOffered: '',
+    
+    // Helper specific
+    skills: '',
+    experience: '',
+    availability: '',
+    hourlyRate: '',
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  // Validate user type
+  useEffect(() => {
+    if (user && user.userType !== userType) {
+      router.push(`/registration/${user.userType}`);
+    }
+  }, [user, userType, router]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!user?.uid) {
+      setError('User not found. Please sign in again.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      // Prepare update data based on user type
+      const updateData = {
+        fullName: formData.fullName,
+        description: formData.description,
+        location: formData.location,
+        isRegistrationComplete: true,
+      };
+
+      // Add user type specific fields
+      if (userType === 'employer') {
+        updateData.companyName = formData.companyName;
+        updateData.companySize = formData.companySize;
+        updateData.industry = formData.industry;
+      } else if (userType === 'agency') {
+        updateData.agencyName = formData.agencyName;
+        updateData.agencyLicense = formData.agencyLicense;
+        updateData.servicesOffered = formData.servicesOffered;
+      } else if (userType === 'individual_helper') {
+        updateData.skills = formData.skills;
+        updateData.experience = formData.experience;
+        updateData.availability = formData.availability;
+        updateData.hourlyRate = formData.hourlyRate;
+      }
+
+      // Update user profile
+      await ClientUserService.updateUser(user.uid, updateData);
+
+      // Refresh user data in context
+      await refreshUser();
+
+      // Redirect to dashboard
+      router.push('/dashboard');
+
+    } catch (error) {
+      console.error('Registration update error:', error);
+      setError('Failed to complete registration. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getUserTypeTitle = () => {
+    switch (userType) {
+      case 'employer':
+        return 'Employer Registration';
+      case 'agency':
+        return 'Agency Registration';
+      case 'individual_helper':
+        return 'Helper Registration';
+      default:
+        return 'Registration';
+    }
+  };
+
+  const renderUserTypeFields = () => {
+    switch (userType) {
+      case 'employer':
+        return (
+          <>
+            <div>
+              <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">
+                Company Name *
+              </label>
+              <input
+                type="text"
+                name="companyName"
+                id="companyName"
+                required
+                value={formData.companyName}
+                onChange={handleInputChange}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="companySize" className="block text-sm font-medium text-gray-700">
+                Company Size
+              </label>
+              <select
+                name="companySize"
+                id="companySize"
+                value={formData.companySize}
+                onChange={handleInputChange}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              >
+                <option value="">Select company size</option>
+                <option value="1-10">1-10 employees</option>
+                <option value="11-50">11-50 employees</option>
+                <option value="51-200">51-200 employees</option>
+                <option value="201-500">201-500 employees</option>
+                <option value="500+">500+ employees</option>
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="industry" className="block text-sm font-medium text-gray-700">
+                Industry
+              </label>
+              <input
+                type="text"
+                name="industry"
+                id="industry"
+                value={formData.industry}
+                onChange={handleInputChange}
+                placeholder="e.g., Healthcare, Technology, Manufacturing"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+            </div>
+          </>
+        );
+
+      case 'agency':
+        return (
+          <>
+            <div>
+              <label htmlFor="agencyName" className="block text-sm font-medium text-gray-700">
+                Agency Name *
+              </label>
+              <input
+                type="text"
+                name="agencyName"
+                id="agencyName"
+                required
+                value={formData.agencyName}
+                onChange={handleInputChange}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="agencyLicense" className="block text-sm font-medium text-gray-700">
+                License Number
+              </label>
+              <input
+                type="text"
+                name="agencyLicense"
+                id="agencyLicense"
+                value={formData.agencyLicense}
+                onChange={handleInputChange}
+                placeholder="Professional license or registration number"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="servicesOffered" className="block text-sm font-medium text-gray-700">
+                Services Offered
+              </label>
+              <textarea
+                name="servicesOffered"
+                id="servicesOffered"
+                rows={3}
+                value={formData.servicesOffered}
+                onChange={handleInputChange}
+                placeholder="Describe the types of staffing services you provide"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+            </div>
+          </>
+        );
+
+      case 'individual_helper':
+        return (
+          <>
+            <div>
+              <label htmlFor="skills" className="block text-sm font-medium text-gray-700">
+                Skills & Expertise *
+              </label>
+              <textarea
+                name="skills"
+                id="skills"
+                rows={3}
+                required
+                value={formData.skills}
+                onChange={handleInputChange}
+                placeholder="List your key skills and areas of expertise"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="experience" className="block text-sm font-medium text-gray-700">
+                Years of Experience
+              </label>
+              <select
+                name="experience"
+                id="experience"
+                value={formData.experience}
+                onChange={handleInputChange}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              >
+                <option value="">Select experience level</option>
+                <option value="0-1">0-1 years</option>
+                <option value="2-5">2-5 years</option>
+                <option value="6-10">6-10 years</option>
+                <option value="11-15">11-15 years</option>
+                <option value="15+">15+ years</option>
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="availability" className="block text-sm font-medium text-gray-700">
+                Availability
+              </label>
+              <select
+                name="availability"
+                id="availability"
+                value={formData.availability}
+                onChange={handleInputChange}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              >
+                <option value="">Select availability</option>
+                <option value="full-time">Full-time</option>
+                <option value="part-time">Part-time</option>
+                <option value="contract">Contract</option>
+                <option value="flexible">Flexible</option>
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="hourlyRate" className="block text-sm font-medium text-gray-700">
+                Hourly Rate (Optional)
+              </label>
+              <input
+                type="text"
+                name="hourlyRate"
+                id="hourlyRate"
+                value={formData.hourlyRate}
+                onChange={handleInputChange}
+                placeholder="e.g., $25/hour or Negotiable"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+            </div>
+          </>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <AuthGuard>
+      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-extrabold text-gray-900">{getUserTypeTitle()}</h2>
+            <p className="mt-2 text-sm text-gray-600">
+              Complete your profile to start using MatchMaker
+            </p>
+          </div>
+
+          <div className="bg-white py-8 px-6 shadow rounded-lg sm:px-10">
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              {/* Common Fields */}
+              <div>
+                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  name="fullName"
+                  id="fullName"
+                  required
+                  value={formData.fullName}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="location" className="block text-sm font-medium text-gray-700">
+                  Location
+                </label>
+                <input
+                  type="text"
+                  name="location"
+                  id="location"
+                  value={formData.location}
+                  onChange={handleInputChange}
+                  placeholder="City, State"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
+
+              {/* User Type Specific Fields */}
+              {renderUserTypeFields()}
+
+              <div>
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                  Description
+                </label>
+                <textarea
+                  name="description"
+                  id="description"
+                  rows={4}
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder="Tell us about yourself and what you're looking for..."
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
+
+              {error && (
+                <div className="text-red-600 text-sm text-center">{error}</div>
+              )}
+
+              <div>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? (
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Completing Registration...
+                    </div>
+                  ) : (
+                    'Complete Registration'
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </AuthGuard>
+  );
+}

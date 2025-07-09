@@ -1,11 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { adminAuth } from '@/lib/firebase-admin';
 import { UserService } from '@/lib/db';
-import { SignInData, AuthResponse } from '@/types/user';
 
-export async function POST(request: NextRequest) {
+export async function POST(request) {
   try {
-    const body: SignInData = await request.json();
+    const body = await request.json();
     const { email, phoneNumber, password } = body;
 
     // Validate input
@@ -13,14 +12,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: false,
         message: 'Password is required',
-      } as AuthResponse, { status: 400 });
+      }, { status: 400 });
     }
 
     if (!email && !phoneNumber) {
       return NextResponse.json({
         success: false,
         message: 'Either email or phone number is required',
-      } as AuthResponse, { status: 400 });
+      }, { status: 400 });
     }
 
     try {
@@ -37,7 +36,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
           success: false,
           message: 'User not found',
-        } as AuthResponse, { status: 404 });
+        }, { status: 404 });
       }
 
       // Get user data from Firestore
@@ -47,7 +46,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
           success: false,
           message: 'User data not found',
-        } as AuthResponse, { status: 404 });
+        }, { status: 404 });
       }
 
       // Update last login
@@ -57,7 +56,7 @@ export async function POST(request: NextRequest) {
       const customToken = await adminAuth.createCustomToken(userRecord.uid);
 
       // Determine redirect URL based on registration status
-      let redirectUrl: string;
+      let redirectUrl;
       
       if (!userData.isRegistrationComplete) {
         redirectUrl = `/registration/${userData.userType}`;
@@ -70,7 +69,7 @@ export async function POST(request: NextRequest) {
         message: 'Sign in successful',
         user: userData,
         redirectUrl,
-      } as AuthResponse, {
+      }, {
         status: 200,
         headers: {
           'Set-Cookie': `auth_token=${customToken}; HttpOnly; Path=/; Max-Age=3600; SameSite=Strict${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`,
@@ -78,20 +77,20 @@ export async function POST(request: NextRequest) {
       });
 
     } catch (authError) {
-      const errorCode = (authError as { code?: string }).code;
+      const errorCode = authError.code;
       
       if (errorCode === 'auth/user-not-found') {
         return NextResponse.json({
           success: false,
           message: 'User not found',
-        } as AuthResponse, { status: 404 });
+        }, { status: 404 });
       }
 
       if (errorCode === 'auth/wrong-password') {
         return NextResponse.json({
           success: false,
           message: 'Invalid password',
-        } as AuthResponse, { status: 401 });
+        }, { status: 401 });
       }
 
       throw authError;
@@ -102,6 +101,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: false,
       message: 'Internal server error',
-    } as AuthResponse, { status: 500 });
+    }, { status: 500 });
   }
 }
