@@ -1,0 +1,111 @@
+// Firestore Security Rules for Job Matchmaker Platform
+// Copy these rules to your Firebase Console -> Firestore Database -> Rules
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users collection rules
+    match /users/{userId} {
+      // Users can read and write their own document
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow other authenticated users to read basic profile info (for job listings)
+      allow read: if request.auth != null && 
+        resource.data.keys().hasAny(['firstName', 'lastName', 'companyName', 'location']);
+    }
+    
+    // Jobs collection rules
+    match /jobs/{jobId} {
+      // Anyone authenticated can read active jobs (for agencies and helpers)
+      allow read: if request.auth != null && resource.data.status == 'active';
+      
+      // Employers can read their own jobs (any status)
+      allow read: if request.auth != null && 
+        request.auth.uid == resource.data.employerId;
+      
+      // Only employers can create jobs
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.employerId &&
+        getUserType(request.auth.uid) == 'employer' &&
+        validateJobData(request.resource.data);
+      
+      // Only employers can update their own jobs
+      allow update: if request.auth != null && 
+        request.auth.uid == resource.data.employerId &&
+        request.auth.uid == request.resource.data.employerId &&
+        validateJobUpdateData(request.resource.data);
+      
+      // Only employers can delete their own jobs
+      allow delete: if request.auth != null && 
+        request.auth.uid == resource.data.employerId;
+    }
+    
+    // Applications collection rules (for future implementation)
+    match /applications/{applicationId} {
+      // Applicants can read their own applications
+      allow read: if request.auth != null && 
+        request.auth.uid == resource.data.applicantId;
+      
+      // Employers can read applications for their jobs
+      allow read: if request.auth != null && 
+        request.auth.uid == resource.data.employerId;
+      
+      // Only agencies and helpers can create applications
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.applicantId &&
+        (getUserType(request.auth.uid) == 'agency' || 
+         getUserType(request.auth.uid) == 'individual_helper') &&
+        validateApplicationData(request.resource.data);
+      
+      // Applicants can update their own applications
+      allow update: if request.auth != null && 
+        request.auth.uid == resource.data.applicantId;
+      
+      // Employers can update application status
+      allow update: if request.auth != null && 
+        request.auth.uid == resource.data.employerId &&
+        onlyStatusChanged(resource.data, request.resource.data);
+    }
+    
+    // Helper functions
+    function getUserType(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data.userType;
+    }
+    
+    function validateJobData(data) {
+      return data.keys().hasAll(['employerId', 'title', 'description', 'category', 'status']) &&
+        data.employerId is string &&
+        data.title is string &&
+        data.description is string &&
+        data.category in ['domestic_helper', 'caregiver', 'driver', 'cook', 'other'] &&
+        data.status in ['active', 'paused', 'filled', 'expired'] &&
+        data.datePosted is string &&
+        data.lastUpdated is string;
+    }
+    
+    function validateJobUpdateData(data) {
+      return data.keys().hasAll(['employerId', 'title', 'description', 'category', 'status']) &&
+        data.employerId is string &&
+        data.title is string &&
+        data.description is string &&
+        data.category in ['domestic_helper', 'caregiver', 'driver', 'cook', 'other'] &&
+        data.status in ['active', 'paused', 'filled', 'expired'] &&
+        data.lastUpdated is string;
+    }
+    
+    function validateApplicationData(data) {
+      return data.keys().hasAll(['jobId', 'applicantId', 'employerId', 'status']) &&
+        data.jobId is string &&
+        data.applicantId is string &&
+        data.employerId is string &&
+        data.status == 'pending' &&
+        data.appliedAt is string;
+    }
+    
+    function onlyStatusChanged(oldData, newData) {
+      return newData.diff(oldData).affectedKeys().hasOnly(['status', 'lastUpdated']) &&
+        newData.status in ['pending', 'reviewed', 'shortlisted', 'rejected', 'hired'];
+    }
+  }
+}
