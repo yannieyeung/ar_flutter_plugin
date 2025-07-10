@@ -134,8 +134,14 @@ function SignInContent() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
     
-    if (isLoading) return;
+    console.log('🔄 SignIn: Form submission started', { usePhoneNumber, step, isLoading });
+    
+    if (isLoading) {
+      console.log('⚠️ SignIn: Form submission blocked - already loading');
+      return;
+    }
     
     setIsLoading(true);
     setError('');
@@ -143,18 +149,22 @@ function SignInContent() {
     try {
       if (usePhoneNumber) {
         if (step === 'credentials') {
+          console.log('📱 SignIn: Starting phone signin...');
           await handlePhoneSignIn();
         } else if (step === 'otp') {
+          console.log('🔐 SignIn: Starting OTP verification...');
           await handleOtpVerification();
         }
       } else {
+        console.log('📧 SignIn: Starting email signin...');
         await handleEmailSignIn();
       }
     } catch (error) {
-      console.error('Sign in error:', error);
+      console.error('❌ SignIn: Form submission error:', error);
       setError('Network error. Please try again.');
     } finally {
       setIsLoading(false);
+      console.log('✅ SignIn: Form submission completed');
     }
   };
 
@@ -181,7 +191,12 @@ function SignInContent() {
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form 
+          className="mt-8 space-y-6" 
+          onSubmit={handleSubmit}
+          method="post"
+          action="#"
+        >
           <div className="space-y-4">
             {step === 'credentials' && (
               <>
@@ -190,7 +205,6 @@ function SignInContent() {
                     <label className="flex items-center">
                       <input
                         type="radio"
-                        name="loginMethod"
                         checked={!usePhoneNumber}
                         onChange={() => handleAuthMethodChange(false)}
                         className="mr-2"
@@ -200,7 +214,6 @@ function SignInContent() {
                     <label className="flex items-center">
                       <input
                         type="radio"
-                        name="loginMethod"
                         checked={usePhoneNumber}
                         onChange={() => handleAuthMethodChange(true)}
                         className="mr-2"
@@ -217,7 +230,6 @@ function SignInContent() {
                     </label>
                     <input
                       id="phone-number"
-                      name="phoneNumber"
                       type="tel"
                       required
                       className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -234,7 +246,6 @@ function SignInContent() {
                       </label>
                       <input
                         id="email-address"
-                        name="email"
                         type="email"
                         autoComplete="email"
                         required
@@ -251,7 +262,6 @@ function SignInContent() {
                       </label>
                       <input
                         id="password"
-                        name="password"
                         type="password"
                         autoComplete="current-password"
                         required
@@ -273,7 +283,6 @@ function SignInContent() {
                 </label>
                 <input
                   id="otp"
-                  name="otp"
                   type="text"
                   required
                   maxLength="6"

@@ -60,6 +60,8 @@ function SignUpContent() {
   }, [firebaseUser, user, authInitialized, router]);
 
   const handleEmailSignUp = async () => {
+    console.log('📧 Email SignUp: Starting email signup process...');
+    
     const response = await fetch('/api/auth/signup', {
       method: 'POST',
       headers: {
@@ -73,31 +75,47 @@ function SignUpContent() {
     });
 
     const data = await response.json();
+    console.log('📋 Email SignUp: API Response:', data);
 
     if (data.success) {
+      console.log('✅ Email SignUp: Account created successfully');
+      
       // Get the custom token from the cookie and sign in with Firebase
       const cookies = document.cookie.split(';');
       const authTokenCookie = cookies.find(cookie => cookie.trim().startsWith('auth_token='));
       
       if (authTokenCookie) {
         const customToken = authTokenCookie.split('=')[1];
+        console.log('🎟️ Email SignUp: Found custom token, signing in...');
         
         try {
           // Sign in with the custom token
           await signInWithCustomToken(auth, customToken);
+          console.log('✅ Email SignUp: Firebase sign in successful');
           
-          // The AuthContext will handle automatic redirection
-          // No manual redirect needed here
+          // Force refresh user data and wait for it
+          console.log('⏳ Email SignUp: Refreshing user data...');
+          const refreshedUser = await forceRefreshUser();
+          
+          if (refreshedUser) {
+            console.log('✅ Email SignUp: User data loaded, AuthContext will handle redirect');
+          } else {
+            console.log('⚠️ Email SignUp: User data refresh failed, using fallback redirect');
+            router.push(data.redirectUrl);
+          }
+          
         } catch (firebaseError) {
-          console.error('Firebase sign in error:', firebaseError);
+          console.error('❌ Email SignUp: Firebase sign in error:', firebaseError);
           // Fallback to direct redirect
           router.push(data.redirectUrl);
         }
       } else {
+        console.log('⚠️ Email SignUp: No custom token found, using direct redirect');
         // Fallback to direct redirect
         router.push(data.redirectUrl);
       }
     } else {
+      console.error('❌ Email SignUp: API failed:', data);
       setError(data.message || 'Sign up failed');
     }
   };
@@ -201,8 +219,14 @@ function SignUpContent() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
     
-    if (isLoading) return;
+    console.log('🔄 Form submission started', { usePhoneNumber, step, isLoading });
+    
+    if (isLoading) {
+      console.log('⚠️ Form submission blocked - already loading');
+      return;
+    }
     
     setIsLoading(true);
     setError('');
@@ -210,18 +234,22 @@ function SignUpContent() {
     try {
       if (usePhoneNumber) {
         if (step === 'credentials') {
+          console.log('📱 Starting phone signup...');
           await handlePhoneSignUp();
         } else if (step === 'otp') {
+          console.log('🔐 Starting OTP verification...');
           await handleOtpVerification();
         }
       } else {
+        console.log('📧 Starting email signup...');
         await handleEmailSignUp();
       }
     } catch (error) {
-      console.error('Sign up error:', error);
+      console.error('❌ Form submission error:', error);
       setError('Network error. Please try again.');
     } finally {
       setIsLoading(false);
+      console.log('✅ Form submission completed');
     }
   };
 
@@ -248,7 +276,12 @@ function SignUpContent() {
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form 
+          className="mt-8 space-y-6" 
+          onSubmit={handleSubmit}
+          method="post"
+          action="#"
+        >
           <div className="space-y-4">
             <div>
               <label htmlFor="user-type" className="block text-sm font-medium text-gray-700">
@@ -256,7 +289,6 @@ function SignUpContent() {
               </label>
               <select
                 id="user-type"
-                name="userType"
                 value={userType}
                 onChange={(e) => setUserType(e.target.value)}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -274,7 +306,6 @@ function SignUpContent() {
                     <label className="flex items-center">
                       <input
                         type="radio"
-                        name="signupMethod"
                         checked={!usePhoneNumber}
                         onChange={() => handleAuthMethodChange(false)}
                         className="mr-2"
@@ -284,7 +315,6 @@ function SignUpContent() {
                     <label className="flex items-center">
                       <input
                         type="radio"
-                        name="signupMethod"
                         checked={usePhoneNumber}
                         onChange={() => handleAuthMethodChange(true)}
                         className="mr-2"
@@ -296,7 +326,6 @@ function SignUpContent() {
                   {usePhoneNumber ? (
                     <input
                       id="phone-number"
-                      name="phoneNumber"
                       type="tel"
                       required
                       className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -307,7 +336,6 @@ function SignUpContent() {
                   ) : (
                     <input
                       id="email-address"
-                      name="email"
                       type="email"
                       autoComplete="email"
                       required
@@ -326,7 +354,6 @@ function SignUpContent() {
                     </label>
                     <input
                       id="password"
-                      name="password"
                       type="password"
                       autoComplete="new-password"
                       required
@@ -347,7 +374,6 @@ function SignUpContent() {
                 </label>
                 <input
                   id="otp"
-                  name="otp"
                   type="text"
                   required
                   maxLength="6"
