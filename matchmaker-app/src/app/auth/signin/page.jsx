@@ -61,30 +61,73 @@ function SignInContent() {
 
   const handleEmailSignIn = async () => {
     try {
-      console.log('📧 Attempting email sign in...');
+      console.log('📧 SignIn: Starting email sign in...', { 
+        email: email, 
+        passwordLength: password.length,
+        hasAuth: !!auth 
+      });
       
+      // Validate inputs before Firebase call
+      if (!email || !password) {
+        throw new Error('Email and password are required');
+      }
+      
+      if (!email.includes('@')) {
+        throw new Error('Invalid email format');
+      }
+
+      // Check if user exists in our Firestore first
+      console.log('🔍 SignIn: Checking if user exists in our database...');
+      try {
+        const checkResponse = await fetch('/api/auth/check-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const checkResult = await checkResponse.json();
+        console.log('📋 SignIn: User check result:', checkResult);
+      } catch (checkError) {
+        console.log('⚠️ SignIn: Could not check user existence:', checkError.message);
+      }
+
       // Sign in with Firebase directly
+      console.log('🔥 SignIn: Calling Firebase signInWithEmailAndPassword...');
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
 
-      console.log('✅ Firebase email sign in successful:', firebaseUser.uid);
+      console.log('✅ SignIn: Firebase email sign in successful:', {
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        emailVerified: firebaseUser.emailVerified
+      });
 
       // The AuthContext will handle getting user data and automatic redirection
       // No manual redirect needed here
 
     } catch (error) {
-      console.error('📧 Email sign in error:', error);
+      console.error('❌ SignIn: Email sign in error details:', {
+        code: error.code,
+        message: error.message,
+        fullError: error
+      });
       
+      // Enhanced error handling with more specific messages
       if (error.code === 'auth/user-not-found') {
-        setError('No account found with this email address');
+        setError('No account found with this email address. Please sign up first.');
       } else if (error.code === 'auth/wrong-password') {
-        setError('Incorrect password');
+        setError('Incorrect password. Please try again.');
       } else if (error.code === 'auth/invalid-email') {
-        setError('Invalid email address');
+        setError('Invalid email address format.');
       } else if (error.code === 'auth/user-disabled') {
-        setError('This account has been disabled');
+        setError('This account has been disabled. Please contact support.');
+      } else if (error.code === 'auth/too-many-requests') {
+        setError('Too many failed attempts. Please try again later.');
+      } else if (error.code === 'auth/invalid-credential') {
+        setError('Invalid email or password. Please check your credentials.');
+      } else if (error.message.includes('required')) {
+        setError(error.message);
       } else {
-        setError('Sign in failed. Please try again.');
+        setError(`Sign in failed: ${error.message || 'Please try again.'}`);
       }
     }
   };
