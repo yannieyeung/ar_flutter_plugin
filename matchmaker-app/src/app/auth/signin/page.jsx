@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { signInWithCustomToken } from 'firebase/auth';
+import { signInWithCustomToken, RecaptchaVerifier, signInWithPhoneNumber, signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import Link from 'next/link';
 
@@ -11,24 +11,126 @@ function SignInContent() {
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
+  const [otp, setOtp] = useState('');
   const [usePhoneNumber, setUsePhoneNumber] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [step, setStep] = useState('credentials'); // 'credentials' | 'otp'
+  const [confirmationResult, setConfirmationResult] = useState(null);
   
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, firebaseUser } = useAuth();
+  const { user, firebaseUser, authInitialized } = useAuth();
+
+  // Initialize reCAPTCHA for phone auth
+  useEffect(() => {
+    if (usePhoneNumber && !window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        size: 'invisible',
+        callback: () => {
+          // reCAPTCHA solved
+        }
+      });
+    }
+  }, [usePhoneNumber]);
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (firebaseUser && user) {
+    console.log('🔍 SignIn: Auth state check', { 
+      firebaseUser: firebaseUser ? { uid: firebaseUser.uid } : null, 
+      user, 
+      authInitialized 
+    });
+
+    // Only redirect once auth is initialized and we have both firebase user and user data
+    if (authInitialized && firebaseUser && user) {
+      console.log('🔄 SignIn: User already authenticated, redirecting...', { 
+        isRegistrationComplete: user.isRegistrationComplete,
+        userType: user.userType 
+      });
+      
       if (user.isRegistrationComplete) {
+        console.log('➡️ SignIn: Redirecting to dashboard');
         router.push('/dashboard');
       } else {
+        console.log('➡️ SignIn: Redirecting to registration');
         router.push(`/registration/${user.userType}`);
       }
     }
-  }, [firebaseUser, user, router]);
+  }, [firebaseUser, user, authInitialized, router]);
+
+  const handleEmailSignIn = async () => {
+    try {
+      console.log('📧 Attempting email sign in...');
+      
+      // Sign in with Firebase directly
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const firebaseUser = userCredential.user;
+
+      console.log('✅ Firebase email sign in successful:', firebaseUser.uid);
+
+      // The AuthContext will handle getting user data and automatic redirection
+      // No manual redirect needed here
+
+    } catch (error) {
+      console.error('📧 Email sign in error:', error);
+      
+      if (error.code === 'auth/user-not-found') {
+        setError('No account found with this email address');
+      } else if (error.code === 'auth/wrong-password') {
+        setError('Incorrect password');
+      } else if (error.code === 'auth/invalid-email') {
+        setError('Invalid email address');
+      } else if (error.code === 'auth/user-disabled') {
+        setError('This account has been disabled');
+      } else {
+        setError('Sign in failed. Please try again.');
+      }
+    }
+  };
+
+  const handlePhoneSignIn = async () => {
+    if (!window.recaptchaVerifier) {
+      setError('reCAPTCHA not initialized. Please refresh and try again.');
+      return;
+    }
+
+    try {
+      console.log('📱 Attempting phone sign in...');
+      const result = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier);
+      setConfirmationResult(result);
+      setStep('otp');
+      setError('');
+      console.log('✅ OTP sent to phone number');
+    } catch (error) {
+      console.error('📱 Phone sign in error:', error);
+      setError('Failed to send OTP. Please check your phone number.');
+    }
+  };
+
+  const handleOtpVerification = async () => {
+    if (!confirmationResult) {
+      setError('No verification in progress. Please try again.');
+      return;
+    }
+
+    try {
+      console.log('🔐 Verifying OTP...');
+      
+      // Verify OTP with Firebase
+      const firebaseResult = await confirmationResult.confirm(otp);
+      const firebaseUser = firebaseResult.user;
+
+      console.log('✅ Phone OTP verification successful:', firebaseUser.uid);
+
+      // The AuthContext will handle getting user data and automatic redirection
+      // No manual redirect needed here
+
+    } catch (error) {
+      console.error('🔐 OTP verification error:', error);
+      setError('Invalid OTP. Please try again.');
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,50 +141,14 @@ function SignInContent() {
     setError('');
 
     try {
-      const response = await fetch('/api/auth/signin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: usePhoneNumber ? undefined : email,
-          phoneNumber: usePhoneNumber ? phoneNumber : undefined,
-          password,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Get the custom token from the cookie and sign in with Firebase
-        const cookies = document.cookie.split(';');
-        const authTokenCookie = cookies.find(cookie => cookie.trim().startsWith('auth_token='));
-        
-        if (authTokenCookie) {
-          const customToken = authTokenCookie.split('=')[1];
-          
-          try {
-            // Sign in with the custom token
-            await signInWithCustomToken(auth, customToken);
-            
-            // Wait a moment for the auth state to update
-            setTimeout(() => {
-              const redirectTo = searchParams.get('redirect') || data.redirectUrl || '/dashboard';
-              router.push(redirectTo);
-            }, 1000);
-          } catch (firebaseError) {
-            console.error('Firebase sign in error:', firebaseError);
-            // Fallback to direct redirect
-            const redirectTo = searchParams.get('redirect') || data.redirectUrl || '/dashboard';
-            router.push(redirectTo);
-          }
-        } else {
-          // Fallback to direct redirect
-          const redirectTo = searchParams.get('redirect') || data.redirectUrl || '/dashboard';
-          router.push(redirectTo);
+      if (usePhoneNumber) {
+        if (step === 'credentials') {
+          await handlePhoneSignIn();
+        } else if (step === 'otp') {
+          await handleOtpVerification();
         }
       } else {
-        setError(data.message || 'Sign in failed');
+        await handleEmailSignIn();
       }
     } catch (error) {
       console.error('Sign in error:', error);
@@ -90,6 +156,14 @@ function SignInContent() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleAuthMethodChange = (usePhone) => {
+    setUsePhoneNumber(usePhone);
+    setStep('credentials');
+    setError('');
+    setOtp('');
+    setConfirmationResult(null);
   };
 
   return (
@@ -108,83 +182,122 @@ function SignInContent() {
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div className="mb-4">
-              <div className="flex items-center space-x-4">
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="loginMethod"
-                    checked={!usePhoneNumber}
-                    onChange={() => setUsePhoneNumber(false)}
-                    className="mr-2"
-                  />
-                  <span className="text-sm font-medium text-gray-700">Email</span>
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="loginMethod"
-                    checked={usePhoneNumber}
-                    onChange={() => setUsePhoneNumber(true)}
-                    className="mr-2"
-                  />
-                  <span className="text-sm font-medium text-gray-700">Phone Number</span>
-                </label>
-              </div>
-            </div>
+          <div className="space-y-4">
+            {step === 'credentials' && (
+              <>
+                <div className="mb-4">
+                  <div className="flex items-center space-x-4">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="loginMethod"
+                        checked={!usePhoneNumber}
+                        onChange={() => handleAuthMethodChange(false)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Email</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="loginMethod"
+                        checked={usePhoneNumber}
+                        onChange={() => handleAuthMethodChange(true)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Phone Number</span>
+                    </label>
+                  </div>
+                </div>
 
-            {usePhoneNumber ? (
-              <div>
-                <label htmlFor="phone-number" className="sr-only">
-                  Phone number
-                </label>
-                <input
-                  id="phone-number"
-                  name="phoneNumber"
-                  type="tel"
-                  required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="Phone number"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                />
-              </div>
-            ) : (
-              <div>
-                <label htmlFor="email-address" className="sr-only">
-                  Email address
-                </label>
-                <input
-                  id="email-address"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="Email address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
+                {usePhoneNumber ? (
+                  <div>
+                    <label htmlFor="phone-number" className="sr-only">
+                      Phone number
+                    </label>
+                    <input
+                      id="phone-number"
+                      name="phoneNumber"
+                      type="tel"
+                      required
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      placeholder="Phone number (e.g., +1234567890)"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <div>
+                      <label htmlFor="email-address" className="sr-only">
+                        Email address
+                      </label>
+                      <input
+                        id="email-address"
+                        name="email"
+                        type="email"
+                        autoComplete="email"
+                        required
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        placeholder="Email address"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="password" className="sr-only">
+                        Password
+                      </label>
+                      <input
+                        id="password"
+                        name="password"
+                        type="password"
+                        autoComplete="current-password"
+                        required
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
+                    </div>
+                  </>
+                )}
+              </>
             )}
 
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
+            {step === 'otp' && (
+              <div>
+                <label htmlFor="otp" className="block text-sm font-medium text-gray-700">
+                  Enter OTP sent to {phoneNumber}
+                </label>
+                <input
+                  id="otp"
+                  name="otp"
+                  type="text"
+                  required
+                  maxLength="6"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  placeholder="Enter 6-digit OTP"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                />
+                <p className="mt-1 text-sm text-gray-500">
+                  Didn't receive OTP?{' '}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStep('credentials');
+                      setOtp('');
+                      setConfirmationResult(null);
+                    }}
+                    className="text-indigo-600 hover:text-indigo-500"
+                  >
+                    Try again
+                  </button>
+                </p>
+              </div>
+            )}
           </div>
 
           {error && (
@@ -200,14 +313,22 @@ function SignInContent() {
               {isLoading ? (
                 <div className="flex items-center">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Signing in...
+                  {step === 'credentials' 
+                    ? (usePhoneNumber ? 'Sending OTP...' : 'Signing in...') 
+                    : 'Verifying OTP...'
+                  }
                 </div>
               ) : (
-                'Sign in'
+                step === 'credentials' 
+                  ? (usePhoneNumber ? 'Send OTP' : 'Sign in') 
+                  : 'Verify OTP'
               )}
             </button>
           </div>
         </form>
+
+        {/* reCAPTCHA container */}
+        <div id="recaptcha-container"></div>
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [firebaseUser, setFirebaseUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [authInitialized, setAuthInitialized] = useState(false);
 
   // Function to get auth token from cookies
   const getAuthTokenFromCookie = () => {
@@ -31,39 +32,54 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     let mounted = true;
 
+    console.log('🚀 AuthProvider: Setting up auth state listener');
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (!mounted) return;
+
+      console.log('🔄 AuthProvider: Auth state changed', { 
+        firebaseUser: firebaseUser ? { uid: firebaseUser.uid, email: firebaseUser.email, phone: firebaseUser.phoneNumber } : null 
+      });
 
       setFirebaseUser(firebaseUser);
       
       if (firebaseUser) {
         // User is signed in, get user data from Firestore
         try {
+          console.log('👤 AuthProvider: Fetching user data from Firestore...');
           const userData = await ClientUserService.getUser(firebaseUser.uid);
+          
+          console.log('✅ AuthProvider: User data fetched successfully', userData);
+          
           if (mounted) {
             setUser(userData);
           }
         } catch (error) {
-          console.error('Error fetching user data:', error);
+          console.error('❌ AuthProvider: Error fetching user data:', error);
           if (mounted) {
             setUser(null);
           }
         }
       } else {
         // User is not signed in, check for auth token in cookie
+        console.log('🔍 AuthProvider: No Firebase user, checking for auth token...');
         const authToken = getAuthTokenFromCookie();
         
         if (authToken) {
+          console.log('🎟️ AuthProvider: Found auth token, attempting sign in...');
           try {
             // Try to sign in with the custom token
             await signInWithCustomToken(auth, authToken);
+            console.log('✅ AuthProvider: Custom token sign in successful');
             // The onAuthStateChanged will be triggered again with the signed-in user
             return;
           } catch (error) {
-            console.error('Error signing in with custom token:', error);
+            console.error('❌ AuthProvider: Error signing in with custom token:', error);
             // Clear invalid token
             clearAuthTokenCookie();
           }
+        } else {
+          console.log('🔍 AuthProvider: No auth token found in cookies');
         }
         
         if (mounted) {
@@ -73,10 +89,16 @@ export function AuthProvider({ children }) {
       
       if (mounted) {
         setLoading(false);
+        setAuthInitialized(true);
+        console.log('✅ AuthProvider: Authentication initialized', { 
+          firebaseUser: firebaseUser ? 'signed in' : 'not signed in',
+          hasUserData: !!user 
+        });
       }
     });
 
     return () => {
+      console.log('🧹 AuthProvider: Cleaning up auth listener');
       mounted = false;
       unsubscribe();
     };
@@ -85,16 +107,20 @@ export function AuthProvider({ children }) {
   const refreshUser = async () => {
     if (firebaseUser) {
       try {
+        console.log('🔄 AuthProvider: Refreshing user data...');
         const userData = await ClientUserService.getUser(firebaseUser.uid);
         setUser(userData);
+        console.log('✅ AuthProvider: User data refreshed');
       } catch (error) {
-        console.error('Error refreshing user data:', error);
+        console.error('❌ AuthProvider: Error refreshing user data:', error);
       }
     }
   };
 
   const signOut = async () => {
     try {
+      console.log('🚪 AuthProvider: Signing out...');
+      
       // Call API to clear server-side session
       await fetch('/api/auth/signout', {
         method: 'POST',
@@ -109,10 +135,12 @@ export function AuthProvider({ children }) {
       setUser(null);
       setFirebaseUser(null);
       
+      console.log('✅ AuthProvider: Sign out successful');
+      
       // Redirect to sign in page
       window.location.href = '/auth/signin';
     } catch (error) {
-      console.error('Sign out error:', error);
+      console.error('❌ AuthProvider: Sign out error:', error);
     }
   };
 
@@ -120,6 +148,7 @@ export function AuthProvider({ children }) {
     user,
     firebaseUser,
     loading,
+    authInitialized,
     signOut,
     refreshUser,
   };

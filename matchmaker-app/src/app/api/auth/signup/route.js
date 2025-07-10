@@ -5,16 +5,16 @@ export async function POST(request) {
     console.log('📝 Signup API called');
     
     const body = await request.json();
-    const { email, phoneNumber, password, userType } = body;
+    const { email, phoneNumber, password, userType, firebaseUid } = body;
 
-    console.log('🔍 Request data:', { email, phoneNumber, userType });
+    console.log('🔍 Request data:', { email, phoneNumber, userType, firebaseUid });
 
     // Validate input
-    if (!password || !userType) {
-      console.log('❌ Missing password or userType');
+    if (!userType) {
+      console.log('❌ Missing userType');
       return NextResponse.json({
         success: false,
-        message: 'Password and user type are required',
+        message: 'User type is required',
       }, { status: 400 });
     }
 
@@ -23,6 +23,24 @@ export async function POST(request) {
       return NextResponse.json({
         success: false,
         message: 'Either email or phone number is required',
+      }, { status: 400 });
+    }
+
+    // For email signup, password is required
+    if (email && !password) {
+      console.log('❌ Missing password for email signup');
+      return NextResponse.json({
+        success: false,
+        message: 'Password is required for email signup',
+      }, { status: 400 });
+    }
+
+    // For phone signup, firebaseUid is required (user already authenticated via OTP)
+    if (phoneNumber && !firebaseUid) {
+      console.log('❌ Missing firebaseUid for phone signup');
+      return NextResponse.json({
+        success: false,
+        message: 'Phone authentication not completed',
       }, { status: 400 });
     }
 
@@ -42,27 +60,46 @@ export async function POST(request) {
       const { UserService } = await import('@/lib/db');
 
       let userRecord;
+      let customToken;
 
       try {
-        console.log('🔥 Creating Firebase user...');
-        
-        // Create user with email or phone
         if (email) {
+          // Email signup flow
           console.log('📧 Creating user with email');
           userRecord = await adminAuth.createUser({
             email,
             password,
             emailVerified: false,
           });
-        } else if (phoneNumber) {
-          console.log('📱 Creating user with phone');
-          userRecord = await adminAuth.createUser({
-            phoneNumber,
-            password,
-          });
-        }
 
-        console.log('✅ Firebase user created:', userRecord?.uid);
+          console.log('✅ Firebase user created:', userRecord?.uid);
+
+          // Generate custom token for immediate sign in
+          console.log('🎟️ Generating custom token...');
+          customToken = await adminAuth.createCustomToken(userRecord.uid);
+          console.log('✅ Custom token generated');
+
+        } else if (phoneNumber && firebaseUid) {
+          // Phone signup flow - user already authenticated via OTP
+          console.log('📱 Using existing authenticated phone user');
+          
+          try {
+            // Get the existing user record
+            userRecord = await adminAuth.getUser(firebaseUid);
+            console.log('✅ Found existing Firebase user:', userRecord.uid);
+
+            // Generate custom token for consistency (though user is already signed in)
+            customToken = await adminAuth.createCustomToken(userRecord.uid);
+            console.log('✅ Custom token generated for phone user');
+
+          } catch (userError) {
+            console.error('❌ Firebase user not found:', userError);
+            return NextResponse.json({
+              success: false,
+              message: 'Phone authentication session expired. Please try again.',
+            }, { status: 400 });
+          }
+        }
 
         // Prepare user data for Firestore (only include defined values)
         const userData = {
@@ -88,24 +125,24 @@ export async function POST(request) {
 
         console.log('✅ Firestore document created');
 
-        // Generate custom token for immediate sign in
-        console.log('🎟️ Generating custom token...');
-        const customToken = await adminAuth.createCustomToken(userRecord.uid);
-
-        console.log('✅ Custom token generated');
-
         const redirectUrl = `/registration/${userType}`;
 
-        return NextResponse.json({
+        const response = NextResponse.json({
           success: true,
           message: 'User created successfully',
           redirectUrl,
         }, { 
-          status: 201,
-          headers: {
-            'Set-Cookie': `auth_token=${customToken}; HttpOnly; Path=/; Max-Age=3600; SameSite=Strict${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`,
-          }
+          status: 201
         });
+
+        // Only set cookie for email signup (phone users are already signed in)
+        if (email && customToken) {
+          response.headers.set('Set-Cookie', 
+            `auth_token=${customToken}; HttpOnly; Path=/; Max-Age=3600; SameSite=Strict${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`
+          );
+        }
+
+        return response;
 
       } catch (authError) {
         console.error('🔥 Firebase Auth Error:', authError);
