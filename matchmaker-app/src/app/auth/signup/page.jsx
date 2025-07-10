@@ -20,7 +20,7 @@ function SignUpContent() {
   const [confirmationResult, setConfirmationResult] = useState(null);
   
   const router = useRouter();
-  const { user, firebaseUser, authInitialized } = useAuth();
+  const { user, firebaseUser, authInitialized, forceRefreshUser } = useAuth();
 
   // Initialize reCAPTCHA for phone auth
   useEffect(() => {
@@ -126,11 +126,24 @@ function SignUpContent() {
     }
 
     try {
+      console.log('🔐 Phone SignUp: Starting OTP verification...');
+      
       // Verify OTP with Firebase
       const firebaseResult = await confirmationResult.confirm(otp);
       const firebaseUser = firebaseResult.user;
 
+      console.log('✅ Phone SignUp: OTP verified successfully', {
+        uid: firebaseUser.uid,
+        phoneNumber: firebaseUser.phoneNumber
+      });
+
       // Now create user record via API
+      console.log('🔄 Phone SignUp: Creating user record via API...', {
+        phoneNumber,
+        userType,
+        firebaseUid: firebaseUser.uid
+      });
+
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: {
@@ -144,15 +157,44 @@ function SignUpContent() {
       });
 
       const data = await response.json();
+      console.log('📋 Phone SignUp: API Response:', data);
 
       if (data.success) {
-        // User is already signed in with Firebase from OTP verification
-        // The AuthContext will handle automatic redirection
+        console.log('✅ Phone SignUp: User record created successfully');
+        console.log('⏳ Phone SignUp: Triggering immediate user data refresh...');
+        
+        // Try immediate refresh first
+        try {
+          const refreshedUser = await forceRefreshUser();
+          if (refreshedUser) {
+            console.log('✅ Phone SignUp: Immediate refresh successful, user data loaded');
+            // The useEffect will handle redirection
+            return;
+          }
+        } catch (error) {
+          console.error('❌ Phone SignUp: Immediate refresh failed:', error);
+        }
+        
+        // If immediate refresh failed, wait a bit for Firestore consistency
+        console.log('⏳ Phone SignUp: Immediate refresh failed, waiting for consistency...');
+        setTimeout(async () => {
+          console.log('🔄 Phone SignUp: Retrying user data refresh...');
+          
+          const refreshedUser = await forceRefreshUser();
+          if (refreshedUser) {
+            console.log('✅ Phone SignUp: Delayed refresh successful');
+          } else {
+            console.log('❌ Phone SignUp: All refresh attempts failed, forcing page reload');
+            window.location.reload();
+          }
+        }, 3000); // Increased delay for better consistency
+        
       } else {
+        console.error('❌ Phone SignUp: API failed:', data);
         setError(data.message || 'Failed to create user account');
       }
     } catch (error) {
-      console.error('OTP verification error:', error);
+      console.error('❌ Phone SignUp: OTP verification error:', error);
       setError('Invalid OTP. Please try again.');
     }
   };

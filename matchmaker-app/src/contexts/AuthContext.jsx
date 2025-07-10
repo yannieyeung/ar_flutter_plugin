@@ -110,11 +110,30 @@ export function AuthProvider({ children }) {
         console.log('🔄 AuthProvider: Refreshing user data...');
         const userData = await ClientUserService.getUser(firebaseUser.uid);
         setUser(userData);
-        console.log('✅ AuthProvider: User data refreshed');
+        console.log('✅ AuthProvider: User data refreshed', userData);
+        return userData;
       } catch (error) {
         console.error('❌ AuthProvider: Error refreshing user data:', error);
+        return null;
       }
     }
+    return null;
+  };
+
+  const forceRefreshUser = async () => {
+    console.log('🔄 AuthProvider: Force refreshing user data...');
+    if (auth.currentUser) {
+      try {
+        const userData = await ClientUserService.getUser(auth.currentUser.uid);
+        setUser(userData);
+        console.log('✅ AuthProvider: Force refresh successful', userData);
+        return userData;
+      } catch (error) {
+        console.error('❌ AuthProvider: Force refresh error:', error);
+        return null;
+      }
+    }
+    return null;
   };
 
   const signOut = async () => {
@@ -151,6 +170,7 @@ export function AuthProvider({ children }) {
     authInitialized,
     signOut,
     refreshUser,
+    forceRefreshUser,
   };
 
   return (

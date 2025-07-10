@@ -13,12 +13,20 @@ export const COLLECTIONS = {
 export class ClientUserService {
   static async getUser(uid) {
     try {
+      console.log('🔍 ClientUserService: Fetching user data for UID:', uid);
       const userRef = doc(db, COLLECTIONS.USERS, uid);
       const userSnap = await getDoc(userRef);
       
-      if (!userSnap.exists()) return null;
+      console.log('📋 ClientUserService: Document exists?', userSnap.exists());
+      
+      if (!userSnap.exists()) {
+        console.log('❌ ClientUserService: User document not found for UID:', uid);
+        return null;
+      }
       
       const userData = userSnap.data();
+      console.log('📄 ClientUserService: Raw user data from Firestore:', userData);
+      
       // Convert Firestore timestamps to Date objects
       userData.createdAt = userData.createdAt ? new Date(userData.createdAt) : new Date();
       userData.updatedAt = userData.updatedAt ? new Date(userData.updatedAt) : new Date();
@@ -26,9 +34,10 @@ export class ClientUserService {
         userData.lastLoginAt = new Date(userData.lastLoginAt);
       }
       
+      console.log('✅ ClientUserService: Processed user data:', userData);
       return userData;
     } catch (error) {
-      console.error('Error fetching user on client:', error);
+      console.error('❌ ClientUserService: Error fetching user:', error);
       return null;
     }
   }

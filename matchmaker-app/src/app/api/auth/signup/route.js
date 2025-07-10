@@ -105,25 +105,38 @@ export async function POST(request) {
         const userData = {
           userType,
           isRegistrationComplete: false,
+          createdAt: new Date().toISOString(),
         };
 
         // Only add email if it exists
         if (email) {
           userData.email = email;
+          console.log('📧 Added email to user data');
         }
 
         // Only add phoneNumber if it exists
         if (phoneNumber) {
           userData.phoneNumber = phoneNumber;
+          console.log('📱 Added phone number to user data');
         }
 
-        console.log('💾 Prepared user data:', userData);
+        console.log('💾 Prepared user data for Firestore:', userData);
 
         // Create user document in Firestore
-        console.log('💾 Creating Firestore document...');
-        await UserService.createUser(userRecord.uid, userData);
-
-        console.log('✅ Firestore document created');
+        console.log('💾 Creating Firestore document for user:', userRecord.uid);
+        
+        try {
+          await UserService.createUser(userRecord.uid, userData);
+          console.log('✅ Firestore document created successfully');
+          
+          // Verify the document was created
+          const verifyUser = await UserService.getUser(userRecord.uid);
+          console.log('🔍 Verification - User document:', verifyUser);
+          
+        } catch (firestoreError) {
+          console.error('❌ Firestore creation error:', firestoreError);
+          throw firestoreError;
+        }
 
         const redirectUrl = `/registration/${userType}`;
 
