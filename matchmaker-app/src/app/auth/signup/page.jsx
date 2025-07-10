@@ -34,16 +34,18 @@ function SignUpContent() {
     }
   }, [usePhoneNumber]);
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated (but only for users who visit the page when already signed in)
   useEffect(() => {
     console.log('🔍 SignUp: Auth state check', { 
       firebaseUser: firebaseUser ? { uid: firebaseUser.uid } : null, 
       user, 
-      authInitialized 
+      authInitialized,
+      isLoading
     });
 
     // Only redirect once auth is initialized and we have both firebase user and user data
-    if (authInitialized && firebaseUser && user) {
+    // BUT not if we're in the middle of a signup process (isLoading = true)
+    if (authInitialized && firebaseUser && user && !isLoading) {
       console.log('🔄 SignUp: User already authenticated, redirecting...', { 
         isRegistrationComplete: user.isRegistrationComplete,
         userType: user.userType 
@@ -57,7 +59,7 @@ function SignUpContent() {
         router.push(`/registration/${user.userType}`);
       }
     }
-  }, [firebaseUser, user, authInitialized, router]);
+  }, [firebaseUser, user, authInitialized, isLoading, router]);
 
   const handleEmailSignUp = async () => {
     console.log('📧 Email SignUp: Starting email signup process...');
@@ -80,25 +82,41 @@ function SignUpContent() {
     if (data.success) {
       console.log('✅ Email SignUp: Account created successfully');
       
+      // Wait a moment for the cookie to be properly set
+      console.log('⏳ Email SignUp: Waiting for cookie to be set...');
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       // Get the custom token from the cookie and sign in with Firebase
       const cookies = document.cookie.split(';');
       const authTokenCookie = cookies.find(cookie => cookie.trim().startsWith('auth_token='));
       
       if (authTokenCookie) {
         const customToken = authTokenCookie.split('=')[1];
-        console.log('🎟️ Email SignUp: Found custom token, signing in...');
+        console.log('🎟️ Email SignUp: Found custom token, signing in...', { tokenLength: customToken.length });
         
         try {
           // Sign in with the custom token
           await signInWithCustomToken(auth, customToken);
           console.log('✅ Email SignUp: Firebase sign in successful');
           
+          // Wait a moment for Firebase auth state to update
+          console.log('⏳ Email SignUp: Waiting for auth state to update...');
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
           // Force refresh user data and wait for it
           console.log('⏳ Email SignUp: Refreshing user data...');
           const refreshedUser = await forceRefreshUser();
           
           if (refreshedUser) {
-            console.log('✅ Email SignUp: User data loaded, AuthContext will handle redirect');
+            console.log('✅ Email SignUp: User data loaded successfully', {
+              uid: refreshedUser.uid,
+              userType: refreshedUser.userType,
+              isRegistrationComplete: refreshedUser.isRegistrationComplete
+            });
+            
+            // Redirect directly since we have the user data
+            console.log('🎯 Email SignUp: Performing direct redirect to registration');
+            router.push(`/registration/${refreshedUser.userType}`);
           } else {
             console.log('⚠️ Email SignUp: User data refresh failed, using fallback redirect');
             router.push(data.redirectUrl);
@@ -110,7 +128,9 @@ function SignUpContent() {
           router.push(data.redirectUrl);
         }
       } else {
-        console.log('⚠️ Email SignUp: No custom token found, using direct redirect');
+        console.log('⚠️ Email SignUp: No custom token found in cookies');
+        console.log('🍪 Email SignUp: Available cookies:', document.cookie);
+        console.log('⚠️ Email SignUp: Using direct redirect as fallback');
         // Fallback to direct redirect
         router.push(data.redirectUrl);
       }

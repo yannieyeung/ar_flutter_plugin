@@ -145,9 +145,25 @@ export async function POST(request) {
 
         // Only set cookie for email signup (phone users are already signed in)
         if (email && customToken) {
-          response.headers.set('Set-Cookie', 
-            `auth_token=${customToken}; HttpOnly; Path=/; Max-Age=3600; SameSite=Strict${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`
-          );
+          console.log('🍪 Setting auth token cookie for email signup');
+          
+          // Set cookie with proper attributes (NO HttpOnly since we need to read it in JavaScript)
+          const cookieOptions = [
+            `auth_token=${customToken}`,
+            'Path=/',
+            'Max-Age=3600',
+            'SameSite=Strict'
+          ];
+          
+          if (process.env.NODE_ENV === 'production') {
+            cookieOptions.push('Secure');
+          }
+          
+          response.headers.set('Set-Cookie', cookieOptions.join('; '));
+          console.log('✅ Auth token cookie set successfully', { 
+            cookieValue: `${customToken.substring(0, 20)}...`,
+            options: cookieOptions.slice(1).join('; ')
+          });
         }
 
         return response;
