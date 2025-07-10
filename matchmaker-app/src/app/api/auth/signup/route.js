@@ -128,11 +128,6 @@ export async function POST(request) {
         try {
           await UserService.createUser(userRecord.uid, userData);
           console.log('✅ Firestore document created successfully');
-          
-          // Verify the document was created
-          const verifyUser = await UserService.getUser(userRecord.uid);
-          console.log('🔍 Verification - User document:', verifyUser);
-          
         } catch (firestoreError) {
           console.error('❌ Firestore creation error:', firestoreError);
           throw firestoreError;
