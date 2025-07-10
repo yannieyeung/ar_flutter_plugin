@@ -139,14 +139,44 @@ function SignInContent() {
     }
 
     try {
-      console.log('📱 Attempting phone sign in...');
+      console.log('📱 SignIn: Starting phone signin process...');
+      
+      // IMPORTANT: Check if phone number exists in our system BEFORE sending OTP
+      console.log('🔍 SignIn: Checking if phone number exists in our database...');
+      
+      try {
+        const checkResponse = await fetch('/api/auth/check-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phoneNumber })
+        });
+        const checkResult = await checkResponse.json();
+        console.log('📋 SignIn: Phone number check result:', checkResult);
+        
+        if (!checkResult.exists) {
+          console.log('❌ SignIn: Phone number not found in our system');
+          setError('⚠️ Phone number not registered. Please create a new account first (you can use the same phone number during signup).');
+          return;
+        }
+        
+        console.log('✅ SignIn: Phone number exists, proceeding with OTP');
+        
+      } catch (checkError) {
+        console.error('❌ SignIn: Could not check phone number existence:', checkError);
+        setError('Unable to verify phone number. Please try again.');
+        return;
+      }
+
+      // Only send OTP if phone number exists in our system
+      console.log('📱 SignIn: Sending OTP to registered phone number...');
       const result = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier);
       setConfirmationResult(result);
       setStep('otp');
       setError('');
-      console.log('✅ OTP sent to phone number');
+      console.log('✅ SignIn: OTP sent to phone number');
+      
     } catch (error) {
-      console.error('📱 Phone sign in error:', error);
+      console.error('📱 SignIn: Phone sign in error:', error);
       setError('Failed to send OTP. Please check your phone number.');
     }
   };
@@ -158,19 +188,68 @@ function SignInContent() {
     }
 
     try {
-      console.log('🔐 Verifying OTP...');
+      console.log('🔐 SignIn: Verifying OTP...');
       
       // Verify OTP with Firebase
       const firebaseResult = await confirmationResult.confirm(otp);
       const firebaseUser = firebaseResult.user;
 
-      console.log('✅ Phone OTP verification successful:', firebaseUser.uid);
+      console.log('✅ SignIn: Phone OTP verification successful:', {
+        uid: firebaseUser.uid,
+        phoneNumber: firebaseUser.phoneNumber
+      });
+
+      // Wait a moment for Firebase auth state to update
+      console.log('⏳ SignIn: Waiting for auth state to update...');
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       // The AuthContext will handle getting user data and automatic redirection
-      // No manual redirect needed here
+      // But let's also check if the user exists in our Firestore as a safety measure
+      console.log('🔍 SignIn: Verifying user exists in our database...');
+
+      // Check if user exists in our Firestore
+      try {
+        const checkResponse = await fetch('/api/auth/check-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phoneNumber: firebaseUser.phoneNumber })
+        });
+        const checkResult = await checkResponse.json();
+        
+        if (!checkResult.firestoreUser) {
+          console.error('❌ SignIn: User verified with Firebase but not found in Firestore');
+          
+          // This shouldn't happen with our pre-check, but if it does,
+          // we need to clean up the orphaned Firebase user
+          console.log('🧹 SignIn: Cleaning up orphaned Firebase user...');
+          
+          try {
+            // Sign out the user to prevent issues
+            await auth.signOut();
+            console.log('✅ SignIn: Signed out orphaned user');
+            
+            // Could also call an API to delete the Firebase user, but for now just sign out
+            
+          } catch (cleanupError) {
+            console.error('❌ SignIn: Error cleaning up orphaned user:', cleanupError);
+          }
+          
+          setError('Phone number not found in our system. Please sign up first.');
+          return;
+        }
+
+        console.log('✅ SignIn: User verified in both Firebase and Firestore');
+        
+      } catch (checkError) {
+        console.error('❌ SignIn: Could not verify user in database:', checkError);
+        setError('Account verification failed. Please try again.');
+        return;
+      }
+
+      console.log('✅ SignIn: Phone signin completed successfully');
 
     } catch (error) {
-      console.error('🔐 OTP verification error:', error);
+      console.error('🔐 SignIn: OTP verification error:', error);
       setError('Invalid OTP. Please try again.');
     }
   };
@@ -280,6 +359,9 @@ function SignInContent() {
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
                     />
+                    <p className="mt-1 text-xs text-gray-500">
+                      📱 We'll send an OTP to verify your registered phone number
+                    </p>
                   </div>
                 ) : (
                   <>

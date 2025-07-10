@@ -3,25 +3,35 @@ import { NextResponse } from 'next/server';
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { email } = body;
+    const { email, phoneNumber } = body;
 
-    console.log('🔍 Check-User API: Looking for user with email:', email);
+    console.log('🔍 Check-User API: Looking for user with:', { email, phoneNumber });
 
     // Check if Firebase Admin is available
     try {
       const { adminAuth } = await import('@/lib/firebase-admin');
       const { UserService } = await import('@/lib/db');
 
-      // Try to get user by email from Firebase Auth
+      // Try to get user from Firebase Auth
       let firebaseUser = null;
       try {
-        firebaseUser = await adminAuth.getUserByEmail(email);
-        console.log('✅ Check-User: Found Firebase user:', {
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          phoneNumber: firebaseUser.phoneNumber,
-          providerData: firebaseUser.providerData.map(p => ({ providerId: p.providerId, uid: p.uid }))
-        });
+        if (email) {
+          firebaseUser = await adminAuth.getUserByEmail(email);
+          console.log('✅ Check-User: Found Firebase user by email:', {
+            uid: firebaseUser.uid,
+            email: firebaseUser.email,
+            phoneNumber: firebaseUser.phoneNumber,
+            providerData: firebaseUser.providerData.map(p => ({ providerId: p.providerId, uid: p.uid }))
+          });
+        } else if (phoneNumber) {
+          firebaseUser = await adminAuth.getUserByPhoneNumber(phoneNumber);
+          console.log('✅ Check-User: Found Firebase user by phone:', {
+            uid: firebaseUser.uid,
+            email: firebaseUser.email,
+            phoneNumber: firebaseUser.phoneNumber,
+            providerData: firebaseUser.providerData.map(p => ({ providerId: p.providerId, uid: p.uid }))
+          });
+        }
       } catch (firebaseError) {
         console.log('❌ Check-User: Firebase user not found:', firebaseError.code);
       }
