@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server';
-import { adminAuth } from '@/lib/firebase-admin';
-import { UserService } from '@/lib/db';
 
 export async function POST(request) {
   try {
@@ -38,92 +36,105 @@ export async function POST(request) {
 
     console.log('✅ Input validation passed');
 
-    let userRecord;
-
+    // Check if Firebase Admin is properly configured
     try {
-      console.log('🔥 Creating Firebase user...');
-      
-      // Create user with email or phone
-      if (email) {
-        console.log('📧 Creating user with email');
-        userRecord = await adminAuth.createUser({
-          email,
-          password,
-          emailVerified: false,
-        });
-      } else if (phoneNumber) {
-        console.log('📱 Creating user with phone');
-        userRecord = await adminAuth.createUser({
-          phoneNumber,
-          password,
-        });
-      }
+      const { adminAuth } = await import('@/lib/firebase-admin');
+      const { UserService } = await import('@/lib/db');
 
-      console.log('✅ Firebase user created:', userRecord?.uid);
+      let userRecord;
 
-      // Prepare user data for Firestore (only include defined values)
-      const userData = {
-        userType,
-        isRegistrationComplete: false,
-      };
-
-      // Only add email if it exists
-      if (email) {
-        userData.email = email;
-      }
-
-      // Only add phoneNumber if it exists
-      if (phoneNumber) {
-        userData.phoneNumber = phoneNumber;
-      }
-
-      console.log('💾 Prepared user data:', userData);
-
-      // Create user document in Firestore
-      console.log('💾 Creating Firestore document...');
-      await UserService.createUser(userRecord.uid, userData);
-
-      console.log('✅ Firestore document created');
-
-      // Generate custom token for immediate sign in
-      console.log('🎟️ Generating custom token...');
-      const customToken = await adminAuth.createCustomToken(userRecord.uid);
-
-      console.log('✅ Custom token generated');
-
-      const redirectUrl = `/registration/${userType}`;
-
-      return NextResponse.json({
-        success: true,
-        message: 'User created successfully',
-        redirectUrl,
-      }, { 
-        status: 201,
-        headers: {
-          'Set-Cookie': `auth_token=${customToken}; HttpOnly; Path=/; Max-Age=3600; SameSite=Strict${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`,
+      try {
+        console.log('🔥 Creating Firebase user...');
+        
+        // Create user with email or phone
+        if (email) {
+          console.log('📧 Creating user with email');
+          userRecord = await adminAuth.createUser({
+            email,
+            password,
+            emailVerified: false,
+          });
+        } else if (phoneNumber) {
+          console.log('📱 Creating user with phone');
+          userRecord = await adminAuth.createUser({
+            phoneNumber,
+            password,
+          });
         }
-      });
 
-    } catch (authError) {
-      console.error('🔥 Firebase Auth Error:', authError);
-      
-      const errorCode = authError.code;
-      
-      if (errorCode === 'auth/email-already-exists') {
+        console.log('✅ Firebase user created:', userRecord?.uid);
+
+        // Prepare user data for Firestore (only include defined values)
+        const userData = {
+          userType,
+          isRegistrationComplete: false,
+        };
+
+        // Only add email if it exists
+        if (email) {
+          userData.email = email;
+        }
+
+        // Only add phoneNumber if it exists
+        if (phoneNumber) {
+          userData.phoneNumber = phoneNumber;
+        }
+
+        console.log('💾 Prepared user data:', userData);
+
+        // Create user document in Firestore
+        console.log('💾 Creating Firestore document...');
+        await UserService.createUser(userRecord.uid, userData);
+
+        console.log('✅ Firestore document created');
+
+        // Generate custom token for immediate sign in
+        console.log('🎟️ Generating custom token...');
+        const customToken = await adminAuth.createCustomToken(userRecord.uid);
+
+        console.log('✅ Custom token generated');
+
+        const redirectUrl = `/registration/${userType}`;
+
         return NextResponse.json({
-          success: false,
-          message: 'An account with this email already exists',
-        }, { status: 409 });
-      }
-      
-      if (errorCode === 'auth/phone-number-already-exists') {
-        return NextResponse.json({
-          success: false,
-          message: 'An account with this phone number already exists',
-        }, { status: 409 });
+          success: true,
+          message: 'User created successfully',
+          redirectUrl,
+        }, { 
+          status: 201,
+          headers: {
+            'Set-Cookie': `auth_token=${customToken}; HttpOnly; Path=/; Max-Age=3600; SameSite=Strict${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`,
+          }
+        });
+
+      } catch (authError) {
+        console.error('🔥 Firebase Auth Error:', authError);
+        
+        const errorCode = authError.code;
+        
+        if (errorCode === 'auth/email-already-exists') {
+          return NextResponse.json({
+            success: false,
+            message: 'An account with this email already exists',
+          }, { status: 409 });
+        }
+        
+        if (errorCode === 'auth/phone-number-already-exists') {
+          return NextResponse.json({
+            success: false,
+            message: 'An account with this phone number already exists',
+          }, { status: 409 });
+        }
+
+        throw authError;
       }
 
-      throw authError;
+    } catch (importError) {
+      console.error('❌ Firebase Admin not configured:', importError);
+      return NextResponse.json({
+        success: false,
+        message: 'Authentication service not available',
+      }, { status: 503 });
     }
 
   } catch (error) {

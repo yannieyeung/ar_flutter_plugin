@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { signInWithCustomToken } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 import Link from 'next/link';
 
 export default function SignUpPage() {
@@ -53,8 +55,30 @@ export default function SignUpPage() {
       const data = await response.json();
 
       if (data.success) {
-        // Redirect to registration page for the user type
-        router.push(data.redirectUrl);
+        // Get the custom token from the cookie and sign in with Firebase
+        const cookies = document.cookie.split(';');
+        const authTokenCookie = cookies.find(cookie => cookie.trim().startsWith('auth_token='));
+        
+        if (authTokenCookie) {
+          const customToken = authTokenCookie.split('=')[1];
+          
+          try {
+            // Sign in with the custom token
+            await signInWithCustomToken(auth, customToken);
+            
+            // Wait a moment for the auth state to update
+            setTimeout(() => {
+              router.push(data.redirectUrl);
+            }, 1000);
+          } catch (firebaseError) {
+            console.error('Firebase sign in error:', firebaseError);
+            // Fallback to direct redirect
+            router.push(data.redirectUrl);
+          }
+        } else {
+          // Fallback to direct redirect
+          router.push(data.redirectUrl);
+        }
       } else {
         setError(data.message || 'Sign up failed');
       }

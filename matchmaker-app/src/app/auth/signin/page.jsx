@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { signInWithCustomToken } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 import Link from 'next/link';
 
-export default function SignInPage() {
+function SignInContent() {
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
@@ -52,9 +54,33 @@ export default function SignInPage() {
       const data = await response.json();
 
       if (data.success) {
-        // The API will set the auth cookie, redirect to appropriate page
-        const redirectTo = searchParams.get('redirect') || data.redirectUrl || '/dashboard';
-        router.push(redirectTo);
+        // Get the custom token from the cookie and sign in with Firebase
+        const cookies = document.cookie.split(';');
+        const authTokenCookie = cookies.find(cookie => cookie.trim().startsWith('auth_token='));
+        
+        if (authTokenCookie) {
+          const customToken = authTokenCookie.split('=')[1];
+          
+          try {
+            // Sign in with the custom token
+            await signInWithCustomToken(auth, customToken);
+            
+            // Wait a moment for the auth state to update
+            setTimeout(() => {
+              const redirectTo = searchParams.get('redirect') || data.redirectUrl || '/dashboard';
+              router.push(redirectTo);
+            }, 1000);
+          } catch (firebaseError) {
+            console.error('Firebase sign in error:', firebaseError);
+            // Fallback to direct redirect
+            const redirectTo = searchParams.get('redirect') || data.redirectUrl || '/dashboard';
+            router.push(redirectTo);
+          }
+        } else {
+          // Fallback to direct redirect
+          const redirectTo = searchParams.get('redirect') || data.redirectUrl || '/dashboard';
+          router.push(redirectTo);
+        }
       } else {
         setError(data.message || 'Sign in failed');
       }
@@ -184,5 +210,18 @@ export default function SignInPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+        <p className="mt-4 text-gray-600">Loading...</p>
+      </div>
+    </div>}>
+      <SignInContent />
+    </Suspense>
   );
 }
