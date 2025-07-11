@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { AuthGuard } from '@/components/AuthGuard';
 import { useRouter, useParams } from 'next/navigation';
 import { ClientUserService } from '@/lib/db-client';
+import MultiStepHelperRegistration from '@/components/MultiStepHelperRegistration';
 
 export default function RegistrationPage() {
   const { user, refreshUser } = useAuth();
@@ -105,6 +106,114 @@ export default function RegistrationPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleHelperRegistration = async (helperData) => {
+    if (!user?.uid) {
+      setError('User not found. Please sign in again.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      // Prepare comprehensive helper data
+      const updateData = {
+        // Personal Information
+        fullName: helperData.name,
+        dateOfBirth: helperData.dateOfBirth,
+        nationality: helperData.nationality,
+        countryOfBirth: helperData.countryOfBirth,
+        cityOfBirth: helperData.cityOfBirth,
+        religion: helperData.religion,
+        height: helperData.height,
+        weight: helperData.weight,
+        educationLevel: helperData.educationLevel,
+        numberOfSiblings: helperData.numberOfSiblings,
+        maritalStatus: helperData.maritalStatus,
+        numberOfChildren: helperData.numberOfChildren,
+        residentialAddress: helperData.residentialAddress,
+        repatriationPort: helperData.repatriationPort,
+        contactNumber: helperData.contactNumber,
+        
+        // Experience and Skills
+        hasBeenHelperBefore: helperData.hasBeenHelperBefore,
+        experience: helperData.experience,
+        relevantSkills: helperData.relevantSkills,
+        
+        // Medical Information
+        hasAllergies: helperData.hasAllergies,
+        allergiesDetails: helperData.allergiesDetails,
+        hasPastIllness: helperData.hasPastIllness,
+        illnessDetails: helperData.illnessDetails,
+        foodHandlingPreferences: helperData.foodHandlingPreferences,
+        requiredOffDays: helperData.requiredOffDays,
+        
+        // Job Preferences
+        preferences: helperData.preferences,
+        
+        // Availability & Interview
+        interview: helperData.interview,
+        readiness: helperData.readiness,
+        otherRemarks: helperData.otherRemarks,
+        
+        // Photos
+        profilePicture: helperData.profilePicture,
+        portfolioPhotos: helperData.portfolioPhotos,
+        certificates: helperData.certificates,
+        identityDocuments: helperData.identityDocuments,
+        experienceProof: helperData.experienceProof,
+        
+        // ML Profile
+        mlProfile: helperData.mlProfile,
+        
+        // Registration status
+        isRegistrationComplete: true,
+        registrationCompletedAt: new Date().toISOString(),
+        profileCompleteness: calculateProfileCompleteness(helperData)
+      };
+
+      // Update user profile
+      await ClientUserService.updateUser(user.uid, updateData);
+
+      // Refresh user data in context
+      await refreshUser();
+
+      // Redirect to dashboard
+      router.push('/dashboard');
+
+    } catch (error) {
+      console.error('Helper registration error:', error);
+      setError('Failed to complete registration. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const calculateProfileCompleteness = (data) => {
+    let completeness = 0;
+    const totalFields = 10;
+    
+    // Basic info
+    if (data.name) completeness += 1;
+    if (data.dateOfBirth) completeness += 1;
+    if (data.nationality) completeness += 1;
+    if (data.educationLevel) completeness += 1;
+    if (data.maritalStatus) completeness += 1;
+    
+    // Experience
+    if (data.hasBeenHelperBefore) completeness += 1;
+    
+    // Preferences
+    if (data.preferences && Object.keys(data.preferences).length > 0) completeness += 1;
+    
+    // Photos
+    if (data.profilePicture && data.profilePicture.length > 0) completeness += 1;
+    if (data.portfolioPhotos && data.portfolioPhotos.length > 0) completeness += 1;
+    if (data.certificates && data.certificates.length > 0) completeness += 1;
+    
+    return Math.round((completeness / totalFields) * 100);
   };
 
   const getUserTypeTitle = () => {
@@ -310,88 +419,106 @@ export default function RegistrationPage() {
   return (
     <AuthGuard>
       <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-extrabold text-gray-900">{getUserTypeTitle()}</h2>
-            <p className="mt-2 text-sm text-gray-600">
-              Complete your profile to start using MatchMaker
-            </p>
+        {userType === 'individual_helper' ? (
+          // Multi-step form for helpers
+          <div className="max-w-6xl mx-auto">
+            <MultiStepHelperRegistration
+              onSubmit={handleHelperRegistration}
+              isLoading={isLoading}
+            />
+            {error && (
+              <div className="mt-4 text-center">
+                <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                  <p className="text-red-600 text-sm">{error}</p>
+                </div>
+              </div>
+            )}
           </div>
+        ) : (
+          // Original form for employers and agencies
+          <div className="max-w-md mx-auto">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-extrabold text-gray-900">{getUserTypeTitle()}</h2>
+              <p className="mt-2 text-sm text-gray-600">
+                Complete your profile to start using MatchMaker
+              </p>
+            </div>
 
-          <div className="bg-white py-8 px-6 shadow rounded-lg sm:px-10">
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              {/* Common Fields */}
-              <div>
-                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
-                  Full Name *
-                </label>
-                <input
-                  type="text"
-                  name="fullName"
-                  id="fullName"
-                  required
-                  value={formData.fullName}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                />
-              </div>
+            <div className="bg-white py-8 px-6 shadow rounded-lg sm:px-10">
+              <form className="space-y-6" onSubmit={handleSubmit}>
+                {/* Common Fields */}
+                <div>
+                  <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    name="fullName"
+                    id="fullName"
+                    required
+                    value={formData.fullName}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  />
+                </div>
 
-              <div>
-                <label htmlFor="location" className="block text-sm font-medium text-gray-700">
-                  Location
-                </label>
-                <input
-                  type="text"
-                  name="location"
-                  id="location"
-                  value={formData.location}
-                  onChange={handleInputChange}
-                  placeholder="City, State"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                />
-              </div>
+                <div>
+                  <label htmlFor="location" className="block text-sm font-medium text-gray-700">
+                    Location
+                  </label>
+                  <input
+                    type="text"
+                    name="location"
+                    id="location"
+                    value={formData.location}
+                    onChange={handleInputChange}
+                    placeholder="City, State"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  />
+                </div>
 
-              {/* User Type Specific Fields */}
-              {renderUserTypeFields()}
+                {/* User Type Specific Fields */}
+                {renderUserTypeFields()}
 
-              <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                  Description
-                </label>
-                <textarea
-                  name="description"
-                  id="description"
-                  rows={4}
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  placeholder="Tell us about yourself and what you're looking for..."
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                />
-              </div>
+                <div>
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                    Description
+                  </label>
+                  <textarea
+                    name="description"
+                    id="description"
+                    rows={4}
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    placeholder="Tell us about yourself and what you're looking for..."
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  />
+                </div>
 
-              {error && (
-                <div className="text-red-600 text-sm text-center">{error}</div>
-              )}
+                {error && (
+                  <div className="text-red-600 text-sm text-center">{error}</div>
+                )}
 
-              <div>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Completing Registration...
-                    </div>
-                  ) : (
-                    'Complete Registration'
-                  )}
-                </button>
-              </div>
-            </form>
+                <div>
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Completing Registration...
+                      </div>
+                    ) : (
+                      'Complete Registration'
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </AuthGuard>
   );
