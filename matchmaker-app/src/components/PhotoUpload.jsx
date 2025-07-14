@@ -36,8 +36,21 @@ const PhotoUpload = ({
 
   const uploadToFirebase = async (file, index) => {
     try {
+      // Check if user is authenticated
+      if (!user || !user.uid) {
+        throw new Error('You must be logged in to upload photos');
+      }
+
       // Create user-specific storage path
-      const userPath = user ? createUserStoragePath(user.uid, uploadPath) : uploadPath;
+      const userPath = createUserStoragePath(user.uid, uploadPath);
+      
+      console.log('Starting upload:', {
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+        uploadPath: userPath,
+        userId: user.uid
+      });
       
       // Upload file to Firebase Storage
       const downloadURL = await uploadFile(file, userPath, (progress) => {
@@ -47,9 +60,19 @@ const PhotoUpload = ({
         }));
       });
       
+      console.log('Upload completed successfully:', downloadURL);
       return downloadURL;
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error('Upload error details:', {
+        error: error.message,
+        originalError: error.originalError?.message,
+        fileName: file.name,
+        fileSize: file.size,
+        userId: user?.uid
+      });
+      
+      // Show user-friendly error message
+      alert(`Failed to upload ${file.name}: ${error.message}`);
       throw error;
     }
   };

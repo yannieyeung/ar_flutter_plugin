@@ -1,0 +1,62 @@
+// Firebase Storage Security Rules for Job Matchmaker Platform
+// Copy these rules to your Firebase Console -> Storage -> Rules
+
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Users can upload and read their own files
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Profile pictures - authenticated users can read others' profile pics for job matching
+    match /users/{userId}/profile-pictures/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Portfolio photos - authenticated users can read others' portfolio for job matching
+    match /users/{userId}/portfolio-photos/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Helper photos - authenticated users can read
+    match /users/{userId}/helper-photos/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Certificates and documents - only owner can access
+    match /users/{userId}/certificates/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    match /users/{userId}/identity-documents/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    match /users/{userId}/experience-proof/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Job photos - employers can manage their job photos
+    match /jobs/{employerId}/job-photos/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == employerId;
+    }
+    
+    // Deny all other access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+// Notes:
+// 1. Copy these rules to Firebase Console -> Storage -> Rules
+// 2. Make sure to test the rules after deployment
+// 3. These rules allow authenticated users to upload their own files
+// 4. Profile and portfolio photos are readable by all authenticated users for job matching

@@ -1,8 +1,8 @@
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
-import { storage } from './firebase';
+import { storage, auth } from './firebase';
 
 /**
- * Upload a file to Firebase Storage
+ * Upload a file to Firebase Storage with enhanced error handling
  * @param {File} file - The file to upload
  * @param {string} path - The storage path
  * @param {function} onProgress - Progress callback function
@@ -10,10 +10,23 @@ import { storage } from './firebase';
  */
 export const uploadFile = async (file, path, onProgress = null) => {
   try {
-    // Create a unique filename
+    // Check authentication
+    if (!auth.currentUser) {
+      throw new Error('User must be authenticated to upload files');
+    }
+
+    // Validate file
+    if (!file || !(file instanceof File)) {
+      throw new Error('Invalid file provided');
+    }
+
+    // Create a unique filename with sanitization
     const timestamp = Date.now();
-    const fileName = `${timestamp}_${file.name}`;
+    const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const fileName = `${timestamp}_${sanitizedFileName}`;
     const fullPath = `${path}/${fileName}`;
+    
+    console.log(`Uploading file to: ${fullPath}`);
     
     // Create a reference to the file location
     const storageRef = ref(storage, fullPath);
@@ -31,17 +44,48 @@ export const uploadFile = async (file, path, onProgress = null) => {
           }
         },
         (error) => {
-          // Error callback
-          console.error('Upload error:', error);
-          reject(error);
+          // Enhanced error handling
+          console.error('Upload error details:', {
+            code: error.code,
+            message: error.message,
+            serverResponse: error.serverResponse
+          });
+          
+          let userFriendlyMessage = 'Upload failed. ';
+          
+          switch (error.code) {
+            case 'storage/unauthorized':
+              userFriendlyMessage += 'You do not have permission to upload files. Please check your authentication.';
+              break;
+            case 'storage/canceled':
+              userFriendlyMessage += 'Upload was canceled.';
+              break;
+            case 'storage/quota-exceeded':
+              userFriendlyMessage += 'Storage quota exceeded. Please contact support.';
+              break;
+            case 'storage/invalid-format':
+              userFriendlyMessage += 'Invalid file format.';
+              break;
+            case 'storage/retry-limit-exceeded':
+              userFriendlyMessage += 'Upload failed after multiple retries. Please try again later.';
+              break;
+            default:
+              userFriendlyMessage += 'Please check your internet connection and try again.';
+          }
+          
+          const enhancedError = new Error(userFriendlyMessage);
+          enhancedError.originalError = error;
+          reject(enhancedError);
         },
         async () => {
           // Success callback
           try {
             const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            console.log(`Upload successful: ${downloadURL}`);
             resolve(downloadURL);
           } catch (error) {
-            reject(error);
+            console.error('Failed to get download URL:', error);
+            reject(new Error('Upload completed but failed to get download URL. Please try again.'));
           }
         }
       );
