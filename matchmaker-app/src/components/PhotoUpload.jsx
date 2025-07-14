@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { uploadFile, validateFile, createUserStoragePath, STORAGE_PATHS } from '../lib/storage';
+import { smartOptimize } from '../lib/image-optimization';
 
 const PhotoUpload = ({
   label,
@@ -41,26 +42,55 @@ const PhotoUpload = ({
         throw new Error('You must be logged in to upload photos');
       }
 
+      console.log('Starting upload process:', {
+        originalFileName: file.name,
+        originalFileSize: file.size,
+        fileType: file.type,
+        uploadPath: uploadPath,
+        userId: user.uid
+      });
+
+      // Optimize image before upload (save costs!)
+      setUploadProgress(prev => ({
+        ...prev,
+        [index]: 5 // Show progress during optimization
+      }));
+
+      const optimizedFile = await smartOptimize(file, uploadPath);
+      const sizeSaved = file.size - optimizedFile.size;
+      const percentSaved = Math.round((sizeSaved / file.size) * 100);
+
+      console.log('Image optimization completed:', {
+        originalSize: file.size,
+        optimizedSize: optimizedFile.size,
+        sizeSaved: sizeSaved,
+        percentSaved: percentSaved
+      });
+
       // Create user-specific storage path
       const userPath = createUserStoragePath(user.uid, uploadPath);
       
-      console.log('Starting upload:', {
-        fileName: file.name,
-        fileSize: file.size,
-        fileType: file.type,
-        uploadPath: userPath,
-        userId: user.uid
-      });
+      setUploadProgress(prev => ({
+        ...prev,
+        [index]: 10 // Optimization complete, starting upload
+      }));
       
-      // Upload file to Firebase Storage
-      const downloadURL = await uploadFile(file, userPath, (progress) => {
+      // Upload optimized file to Firebase Storage
+      const downloadURL = await uploadFile(optimizedFile, userPath, (progress) => {
+        // Scale progress from 10% to 100%
+        const scaledProgress = 10 + (progress * 0.9);
         setUploadProgress(prev => ({
           ...prev,
-          [index]: Math.round(progress)
+          [index]: Math.round(scaledProgress)
         }));
       });
       
-      console.log('Upload completed successfully:', downloadURL);
+      console.log('Upload completed successfully:', {
+        downloadURL,
+        finalFileSize: optimizedFile.size,
+        costSavings: `${percentSaved}% smaller file`
+      });
+      
       return downloadURL;
     } catch (error) {
       console.error('Upload error details:', {
