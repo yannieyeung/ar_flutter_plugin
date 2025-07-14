@@ -42,6 +42,12 @@ fi
 echo "📋 Project ID: $PROJECT_ID"
 echo "🪣 Storage Bucket: $STORAGE_BUCKET"
 
+# Verify the storage bucket format
+if [[ $STORAGE_BUCKET != *.firebasestorage.app ]] && [[ $STORAGE_BUCKET != *.appspot.com ]]; then
+    echo "⚠️  Storage bucket format seems incorrect: $STORAGE_BUCKET"
+    echo "Expected format: project-id.firebasestorage.app or project-id.appspot.com"
+fi
+
 # Login to Firebase
 echo "🔐 Logging into Firebase..."
 firebase login
@@ -53,6 +59,7 @@ firebase use "$PROJECT_ID"
 # Apply CORS configuration
 echo "🌐 Applying CORS configuration..."
 if [ -f "cors.json" ]; then
+    echo "Applying CORS to: gs://$STORAGE_BUCKET"
     gsutil cors set cors.json "gs://$STORAGE_BUCKET"
     echo "✅ CORS configuration applied successfully!"
     

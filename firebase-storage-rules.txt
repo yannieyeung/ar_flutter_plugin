@@ -1,5 +1,5 @@
 // Firebase Storage Security Rules for Job Matchmaker Platform
-// Copy these rules to your Firebase Console -> Storage -> Rules
+// Copy these rules to: https://console.firebase.google.com/project/31671/storage/rules
 
 rules_version = '2';
 
