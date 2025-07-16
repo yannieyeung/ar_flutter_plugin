@@ -131,12 +131,6 @@ const MedicalInfoStep = ({ data, onChange, errors }) => (
 );
 
 const ExperienceStep = ({ data, onChange, errors }) => {
-  // Debug: Log the data to understand what's being passed
-  console.log('🔍 ExperienceStep data:', {
-    hasBeenHelperBefore: data.hasBeenHelperBefore,
-    allData: data
-  });
-  
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
