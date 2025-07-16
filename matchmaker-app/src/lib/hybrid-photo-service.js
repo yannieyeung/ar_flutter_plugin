@@ -1,9 +1,22 @@
 import { uploadFile as uploadToSupabase, getPublicUrl, deleteFile, STORAGE_BUCKETS } from './supabase';
+import { createClient } from '@supabase/supabase-js';
 import { db } from './firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, where, orderBy, serverTimestamp } from 'firebase/firestore';
 
 // Collection name for photo metadata in Firebase
 const PHOTO_METADATA_COLLECTION = 'user_photos';
+
+// Create a service role Supabase client that bypasses RLS
+const supabaseServiceRole = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
+);
 
 /**
  * Hybrid photo service that uploads photos to Supabase but stores metadata in Firebase
@@ -35,12 +48,15 @@ export class HybridPhotoService {
       // Determine which bucket to use based on photo type
       const bucket = photoType === 'profile' ? STORAGE_BUCKETS.PROFILE_IMAGES : STORAGE_BUCKETS.PROFILE_IMAGES;
       
-      // Upload to Supabase
+      // Upload to Supabase using service role (bypasses RLS)
       console.log('🔄 Uploading photo to Supabase...');
-      const supabaseData = await uploadToSupabase(bucket, file, supabasePath, onProgress);
+      const supabaseData = await this.uploadToSupabaseWithServiceRole(bucket, file, supabasePath, onProgress);
       
       // Get public URL from Supabase
-      const publicUrl = getPublicUrl(bucket, supabaseData.path);
+      const { data: urlData } = supabaseServiceRole.storage
+        .from(bucket)
+        .getPublicUrl(supabaseData.path);
+      const publicUrl = urlData.publicUrl;
       
       // Prepare metadata for Firebase
       const photoMetadata = {
@@ -129,6 +145,42 @@ export class HybridPhotoService {
   }
 
   /**
+   * Upload file to Supabase using service role (bypasses RLS)
+   * @param {string} bucket - Supabase bucket name
+   * @param {File} file - File to upload
+   * @param {string} path - Path in bucket
+   * @param {function} onProgress - Progress callback
+   * @returns {Promise<Object>} - Upload result
+   */
+  static async uploadToSupabaseWithServiceRole(bucket, file, path, onProgress = null) {
+    try {
+      // Simulate progress for UI consistency
+      if (onProgress) {
+        onProgress(0);
+        setTimeout(() => onProgress(50), 100);
+      }
+      
+      const { data, error } = await supabaseServiceRole.storage
+        .from(bucket)
+        .upload(path, file);
+        
+      if (error) {
+        console.error('Supabase upload error:', error);
+        throw error;
+      }
+      
+      if (onProgress) {
+        onProgress(100);
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Service role upload error:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Delete a photo from both Supabase and Firebase
    * @param {string} photoId - Photo metadata ID in Firebase
    * @param {string} supabasePath - Path to file in Supabase
@@ -137,9 +189,16 @@ export class HybridPhotoService {
    */
   static async deletePhoto(photoId, supabasePath, bucket) {
     try {
-      // Delete from Supabase
+      // Delete from Supabase using service role
       console.log('🔄 Deleting photo from Supabase...');
-      await deleteFile(bucket, supabasePath);
+      const { error } = await supabaseServiceRole.storage
+        .from(bucket)
+        .remove([supabasePath]);
+        
+      if (error) {
+        console.error('Supabase delete error:', error);
+        throw error;
+      }
       
       // Delete metadata from Firebase
       console.log('🔄 Deleting photo metadata from Firebase...');

@@ -66,18 +66,24 @@ async function createBucket(bucket) {
     if (error) {
       if (error.message.includes('already exists')) {
         console.log(`✅ Bucket ${bucket.id} already exists`);
-        return true;
+      } else {
+        throw error;
       }
-      throw error;
+    } else {
+      console.log(`✅ Successfully created bucket: ${bucket.id}`);
     }
 
-    console.log(`✅ Successfully created bucket: ${bucket.id}`);
+    // Note: RLS policies need to be set up manually in Supabase dashboard
+    // See HYBRID_PHOTO_SYSTEM.md for instructions
+    
     return true;
   } catch (error) {
     console.error(`❌ Error creating bucket ${bucket.id}:`, error.message);
     return false;
   }
 }
+
+
 
 async function main() {
   console.log('🚀 Starting Supabase bucket creation...');

@@ -148,6 +148,7 @@ function UserProfile() {
 1. **Supabase Project**: Create buckets for different photo types
 2. **Environment Variables**: Add Supabase credentials to `.env.local`
 3. **Firebase Collections**: `user_photos` collection is created automatically
+4. **RLS Policies**: Configure Row Level Security policies (see below)
 
 ## Photo Types
 
@@ -170,7 +171,57 @@ The system includes comprehensive error handling:
 
 - Photos are organized by user ID in Supabase
 - Firebase rules control metadata access
-- Supabase RLS (Row Level Security) can be configured for additional protection
+- **Current Setup**: Uses Supabase service role key to bypass RLS (secure but requires careful handling)
+- **Future Enhancement**: Can be upgraded to use proper RLS policies with user authentication
+
+### RLS Policy Setup (Optional)
+
+If you want to set up proper RLS policies instead of using the service role key:
+
+1. **Go to Supabase Dashboard** → Your Project → Authentication → Policies
+2. **Add policies for storage.objects table**:
+
+```sql
+-- Allow users to upload to their own folder
+CREATE POLICY "Allow users to upload to their own folder"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'profile-images' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Allow users to read their own files
+CREATE POLICY "Allow users to read their own files"
+ON storage.objects
+FOR SELECT
+TO authenticated
+USING (
+  bucket_id = 'profile-images' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Allow users to delete their own files
+CREATE POLICY "Allow users to delete their own files"
+ON storage.objects
+FOR DELETE
+TO authenticated
+USING (
+  bucket_id = 'profile-images' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Allow public read access for public buckets
+CREATE POLICY "Allow public read access"
+ON storage.objects
+FOR SELECT
+TO public
+USING (bucket_id = 'profile-images');
+```
+
+3. **Repeat for each bucket** (profile-images, documents, company-logos)
+4. **Update the hybrid photo service** to use regular Supabase client instead of service role
 
 ## Migration
 
