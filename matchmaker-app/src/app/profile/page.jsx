@@ -5,14 +5,18 @@ import { AuthGuard } from '@/components/AuthGuard';
 import { useUserPhotos } from '@/hooks/useUserPhotos';
 import { useState, useEffect } from 'react';
 import { ClientUserService } from '@/lib/db-client';
+import { ClientPhotoService } from '@/lib/client-photo-service';
 import Link from 'next/link';
 
 export default function ProfilePage() {
   const { user, refreshUser } = useAuth();
-  const { photos: allPhotos, loading: photosLoading } = useUserPhotos();
+  const { photos: allPhotos, loading: photosLoading, refetch: refetchPhotos } = useUserPhotos();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({});
   const [saving, setSaving] = useState(false);
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({});
+  const [deletingPhoto, setDeletingPhoto] = useState(null);
 
   // Initialize edit data when user data changes
   useEffect(() => {
@@ -25,7 +29,14 @@ export default function ProfilePage() {
         maritalStatus: user.maritalStatus || '',
         nationality: user.nationality || '',
         religion: user.religion || '',
-        relevantSkills: user.relevantSkills || ''
+        relevantSkills: user.relevantSkills || '',
+        dateOfBirth: user.dateOfBirth || '',
+        experience: user.experience || {},
+        emergencyContact: user.emergencyContact || '',
+        previousWork: user.previousWork || '',
+        languages: user.languages || [],
+        availability: user.availability || '',
+        expectedSalary: user.expectedSalary || ''
       });
     }
   }, [user]);
@@ -54,17 +65,114 @@ export default function ProfilePage() {
       maritalStatus: user.maritalStatus || '',
       nationality: user.nationality || '',
       religion: user.religion || '',
-      relevantSkills: user.relevantSkills || ''
+      relevantSkills: user.relevantSkills || '',
+      dateOfBirth: user.dateOfBirth || '',
+      experience: user.experience || {},
+      emergencyContact: user.emergencyContact || '',
+      previousWork: user.previousWork || '',
+      languages: user.languages || [],
+      availability: user.availability || '',
+      expectedSalary: user.expectedSalary || ''
     });
   };
 
+  const handlePhotoUpload = async (files, photoType) => {
+    if (!files || files.length === 0) return;
+
+    setUploadingPhotos(true);
+    
+    try {
+      const uploadPromises = Array.from(files).map(async (file, index) => {
+        const progressKey = `${photoType}-${index}`;
+        setUploadProgress(prev => ({ ...prev, [progressKey]: 0 }));
+
+        const result = await ClientPhotoService.uploadPhoto(
+          file,
+          user.uid,
+          photoType,
+          {},
+          (progress) => {
+            setUploadProgress(prev => ({ ...prev, [progressKey]: progress }));
+          }
+        );
+
+        setUploadProgress(prev => {
+          const newProgress = { ...prev };
+          delete newProgress[progressKey];
+          return newProgress;
+        });
+
+        return result;
+      });
+
+      await Promise.all(uploadPromises);
+      await refetchPhotos();
+    } catch (error) {
+      console.error('Error uploading photos:', error);
+      alert('Failed to upload photos. Please try again.');
+    } finally {
+      setUploadingPhotos(false);
+    }
+  };
+
+  const handlePhotoDelete = async (photo) => {
+    if (!confirm('Are you sure you want to delete this photo?')) return;
+
+    setDeletingPhoto(photo.id);
+    try {
+      await ClientPhotoService.deletePhoto(photo.id, photo.supabasePath, photo.bucket);
+      await refetchPhotos();
+    } catch (error) {
+      console.error('Error deleting photo:', error);
+      alert('Failed to delete photo. Please try again.');
+    } finally {
+      setDeletingPhoto(null);
+    }
+  };
+
+  const handleExperienceChange = (field, value) => {
+    setEditData(prev => ({
+      ...prev,
+      experience: {
+        ...prev.experience,
+        [field]: value
+      }
+    }));
+  };
+
+  const handleLanguageChange = (index, value) => {
+    const newLanguages = [...editData.languages];
+    newLanguages[index] = value;
+    setEditData(prev => ({ ...prev, languages: newLanguages }));
+  };
+
+  const addLanguage = () => {
+    setEditData(prev => ({ 
+      ...prev, 
+      languages: [...prev.languages, ''] 
+    }));
+  };
+
+  const removeLanguage = (index) => {
+    setEditData(prev => ({
+      ...prev,
+      languages: prev.languages.filter((_, i) => i !== index)
+    }));
+  };
+
+  // Filter photos by type
+  const profilePhotos = allPhotos.filter(photo => photo.photoType === 'profile');
+  const portfolioPhotos = allPhotos.filter(photo => photo.photoType === 'portfolio');
+  const certificates = allPhotos.filter(photo => photo.photoType === 'certificate');
+
+  // Helper functions
   const formatDate = (dateString) => {
     if (!dateString) return 'Not provided';
     return new Date(dateString).toLocaleDateString();
   };
 
   const calculateAge = (birthDate) => {
-    if (!birthDate) return 'Not provided';
+    if (!birthDate) return null;
     const today = new Date();
     const birth = new Date(birthDate);
     let age = today.getFullYear() - birth.getFullYear();
@@ -75,35 +183,47 @@ export default function ProfilePage() {
     return age;
   };
 
-  // Filter photos by type
-  const profilePhotos = allPhotos.filter(photo => photo.photoType === 'profile-pictures');
-  const portfolioPhotos = allPhotos.filter(photo => photo.photoType === 'portfolio-photos');
-  const certificates = allPhotos.filter(photo => photo.photoType === 'certificates');
-  const experienceProof = allPhotos.filter(photo => photo.photoType === 'experience-proof');
-  const identityDocs = allPhotos.filter(photo => photo.photoType === 'identity-documents');
+  const getCompletionPercentage = () => {
+    if (!user) return 0;
+    
+    const fields = [
+      user.fullName, user.contactNumber, user.residentialAddress,
+      user.educationLevel, user.maritalStatus, user.nationality,
+      user.religion, user.relevantSkills, user.dateOfBirth
+    ];
+    
+    const filledFields = fields.filter(field => field && field.trim() !== '').length;
+    const photoBonus = allPhotos.length > 0 ? 1 : 0;
+    
+    return Math.round(((filledFields + photoBonus) / (fields.length + 1)) * 100);
+  };
+
+  if (!user) {
+    return (
+      <AuthGuard>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+        </div>
+      </AuthGuard>
+    );
+  }
 
   return (
-    <AuthGuard requireRegistration={true}>
-      <div className="min-h-screen bg-gray-100">
-        {/* Header */}
-        <header className="bg-white shadow">
+    <AuthGuard>
+      <div className="min-h-screen bg-gray-50">
+        <nav className="bg-white shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-6">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
-                <p className="text-gray-600">View and manage your profile information</p>
-              </div>
-              <div className="flex space-x-4">
-                <Link
-                  href="/dashboard"
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                >
-                  Back to Dashboard
+            <div className="flex justify-between h-16">
+              <div className="flex items-center">
+                <Link href="/dashboard" className="text-indigo-600 hover:text-indigo-800">
+                  ← Back to Dashboard
                 </Link>
+              </div>
+              <div className="flex items-center space-x-4">
                 {!isEditing ? (
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                    className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   >
                     Edit Profile
                   </button>
@@ -111,14 +231,14 @@ export default function ProfilePage() {
                   <div className="flex space-x-2">
                     <button
                       onClick={handleCancel}
-                      className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                      className="bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleSave}
                       disabled={saving}
-                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
+                      className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
                     >
                       {saving ? 'Saving...' : 'Save Changes'}
                     </button>
@@ -127,67 +247,57 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
-        </header>
+        </nav>
 
-        {/* Main Content */}
         <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            {/* Profile Summary Card */}
-            <div className="md:col-span-1">
+          <div className="px-4 py-6 sm:px-0">
+            <div className="space-y-6">
+              
+              {/* Profile Summary Card */}
               <div className="bg-white overflow-hidden shadow rounded-lg">
                 <div className="px-4 py-5 sm:p-6">
-                  <div className="text-center">
-                    {/* Profile Picture */}
-                    <div className="mx-auto h-32 w-32 rounded-full overflow-hidden bg-gray-100 mb-4">
-                      {profilePhotos.length > 0 ? (
-                        <img
-                          src={profilePhotos[0].url}
-                          alt="Profile"
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="h-full w-full flex items-center justify-center text-gray-400">
-                          <svg className="h-16 w-16" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
-                          </svg>
-                        </div>
-                      )}
+                  <div className="flex items-center space-x-5">
+                    <div className="flex-shrink-0">
+                      <div className="relative">
+                        {profilePhotos.length > 0 ? (
+                          <img className="h-20 w-20 rounded-full object-cover" src={profilePhotos[0].url} alt={user.fullName} />
+                        ) : (
+                          <div className="h-20 w-20 rounded-full bg-gray-300 flex items-center justify-center">
+                            <svg className="h-10 w-10 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    
-                    <h3 className="text-lg font-medium text-gray-900">
-                      {user?.fullName || 'Name not provided'}
-                    </h3>
-                    <p className="text-sm text-gray-500 capitalize">
-                      {user?.userType || 'User type not set'}
-                    </p>
-                    
-                    {/* Status Badge */}
-                    <div className="mt-3">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        user?.isRegistrationComplete 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {user?.isRegistrationComplete ? 'Profile Complete' : 'Profile Incomplete'}
-                      </span>
+                    <div className="flex-1 min-w-0">
+                      <h1 className="text-2xl font-bold text-gray-900">{user.fullName || 'No Name'}</h1>
+                      <p className="text-sm font-medium text-gray-500 capitalize">
+                        {user.userType?.replace('_', ' ')} • {user.email || user.phoneNumber}
+                      </p>
+                      <div className="mt-2 flex items-center">
+                        <div className="flex-1">
+                          <div className="bg-gray-200 rounded-full h-2">
+                            <div 
+                              className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${getCompletionPercentage()}%` }}
+                            ></div>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">Profile {getCompletionPercentage()}% complete</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Profile Details */}
-            <div className="md:col-span-2 space-y-6">
-              
               {/* Personal Information */}
               <div className="bg-white overflow-hidden shadow rounded-lg">
                 <div className="px-4 py-5 sm:p-6">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                    Personal Information
-                  </h3>
-                  
-                  <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900">Personal Information</h3>
+                  </div>
+                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                     {/* Full Name */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Full Name</label>
@@ -227,12 +337,21 @@ export default function ProfilePage() {
                     {/* Date of Birth */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
-                      <p className="mt-1 text-sm text-gray-900">
-                        {formatDate(user?.dateOfBirth)} 
-                        {user?.dateOfBirth && (
-                          <span className="text-gray-500 ml-2">({calculateAge(user.dateOfBirth)} years old)</span>
-                        )}
-                      </p>
+                      {isEditing ? (
+                        <input
+                          type="date"
+                          value={editData.dateOfBirth}
+                          onChange={(e) => setEditData({...editData, dateOfBirth: e.target.value})}
+                          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
+                      ) : (
+                        <p className="mt-1 text-sm text-gray-900">
+                          {formatDate(user?.dateOfBirth)} 
+                          {user?.dateOfBirth && (
+                            <span className="text-gray-500 ml-2">({calculateAge(user.dateOfBirth)} years old)</span>
+                          )}
+                        </p>
+                      )}
                     </div>
 
                     {/* Nationality */}
@@ -309,77 +428,196 @@ export default function ProfilePage() {
                         <p className="mt-1 text-sm text-gray-900">{user?.religion || 'Not provided'}</p>
                       )}
                     </div>
-                  </div>
 
-                  {/* Address */}
-                  <div className="mt-6">
-                    <label className="block text-sm font-medium text-gray-700">Residential Address</label>
-                    {isEditing ? (
-                      <textarea
-                        value={editData.residentialAddress}
-                        onChange={(e) => setEditData({...editData, residentialAddress: e.target.value})}
-                        rows={3}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                      />
-                    ) : (
-                      <p className="mt-1 text-sm text-gray-900">{user?.residentialAddress || 'Not provided'}</p>
-                    )}
+                    {/* Residential Address */}
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700">Residential Address</label>
+                      {isEditing ? (
+                        <textarea
+                          value={editData.residentialAddress}
+                          onChange={(e) => setEditData({...editData, residentialAddress: e.target.value})}
+                          rows={3}
+                          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
+                      ) : (
+                        <p className="mt-1 text-sm text-gray-900">{user?.residentialAddress || 'Not provided'}</p>
+                      )}
+                    </div>
+
+                    {/* Emergency Contact */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Emergency Contact</label>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editData.emergencyContact}
+                          onChange={(e) => setEditData({...editData, emergencyContact: e.target.value})}
+                          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          placeholder="Name and phone number"
+                        />
+                      ) : (
+                        <p className="mt-1 text-sm text-gray-900">{user?.emergencyContact || 'Not provided'}</p>
+                      )}
+                    </div>
+
+                    {/* Expected Salary */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Expected Salary</label>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editData.expectedSalary}
+                          onChange={(e) => setEditData({...editData, expectedSalary: e.target.value})}
+                          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          placeholder="e.g., $2000/month"
+                        />
+                      ) : (
+                        <p className="mt-1 text-sm text-gray-900">{user?.expectedSalary || 'Not provided'}</p>
+                      )}
+                    </div>
+
+                    {/* Languages */}
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700">Languages</label>
+                      {isEditing ? (
+                        <div className="mt-1 space-y-2">
+                          {editData.languages.map((language, index) => (
+                            <div key={index} className="flex items-center space-x-2">
+                              <input
+                                type="text"
+                                value={language}
+                                onChange={(e) => handleLanguageChange(index, e.target.value)}
+                                className="flex-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                placeholder="Language"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeLanguage(index)}
+                                className="text-red-600 hover:text-red-800"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ))}
+                          <button
+                            type="button"
+                            onClick={addLanguage}
+                            className="text-indigo-600 hover:text-indigo-800 text-sm"
+                          >
+                            + Add Language
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="mt-1 flex flex-wrap gap-2">
+                          {user?.languages?.filter(lang => lang.trim()).map((language, index) => (
+                            <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                              {language}
+                            </span>
+                          )) || <p className="text-sm text-gray-900">Not provided</p>}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Availability */}
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700">Availability</label>
+                      {isEditing ? (
+                        <textarea
+                          value={editData.availability}
+                          onChange={(e) => setEditData({...editData, availability: e.target.value})}
+                          rows={2}
+                          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          placeholder="Days and hours available"
+                        />
+                      ) : (
+                        <p className="mt-1 text-sm text-gray-900">{user?.availability || 'Not provided'}</p>
+                      )}
+                    </div>
+
+                    {/* Skills & Experience */}
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700">Skills & Experience</label>
+                      {isEditing ? (
+                        <textarea
+                          value={editData.relevantSkills}
+                          onChange={(e) => setEditData({...editData, relevantSkills: e.target.value})}
+                          rows={4}
+                          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          placeholder="Describe your relevant skills and experience..."
+                        />
+                      ) : (
+                        <p className="mt-1 text-sm text-gray-900">{user?.relevantSkills || 'Not provided'}</p>
+                      )}
+                    </div>
+
+                    {/* Previous Work */}
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700">Previous Work Experience</label>
+                      {isEditing ? (
+                        <textarea
+                          value={editData.previousWork}
+                          onChange={(e) => setEditData({...editData, previousWork: e.target.value})}
+                          rows={3}
+                          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          placeholder="Describe your previous work experience..."
+                        />
+                      ) : (
+                        <p className="mt-1 text-sm text-gray-900">{user?.previousWork || 'Not provided'}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Experience & Skills */}
-              {user?.userType === 'helper' && (
+              {/* Experience Details (Helper-specific) */}
+              {user.userType === 'individual_helper' && (
                 <div className="bg-white overflow-hidden shadow rounded-lg">
                   <div className="px-4 py-5 sm:p-6">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                      Experience & Skills
-                    </h3>
+                    <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Specialized Experience</h3>
                     
-                    <div className="space-y-4">
-                      {/* Previous Experience */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Previous Helper Experience</label>
-                        <p className="mt-1 text-sm text-gray-900">
-                          {user?.hasBeenHelperBefore === 'yes' ? 'Yes, I have experience' : 'No, I\'m new to this'}
-                        </p>
+                    {isEditing ? (
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        {[
+                          { key: 'elderCare', label: 'Elder Care' },
+                          { key: 'childCare', label: 'Child Care' },
+                          { key: 'petCare', label: 'Pet Care' },
+                          { key: 'housekeeping', label: 'Housekeeping' },
+                          { key: 'cooking', label: 'Cooking' },
+                          { key: 'gardening', label: 'Gardening' },
+                          { key: 'tutoring', label: 'Tutoring' },
+                          { key: 'companionship', label: 'Companionship' }
+                        ].map((item) => (
+                          <div key={item.key} className="flex items-center">
+                            <input
+                              type="checkbox"
+                              id={item.key}
+                              checked={editData.experience?.[item.key] || false}
+                              onChange={(e) => handleExperienceChange(item.key, e.target.checked)}
+                              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                            />
+                            <label htmlFor={item.key} className="ml-2 block text-sm text-gray-900">
+                              {item.label}
+                            </label>
+                          </div>
+                        ))}
                       </div>
-
-                      {/* Skills */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Skills & Experience</label>
-                        {isEditing ? (
-                          <textarea
-                            value={editData.relevantSkills}
-                            onChange={(e) => setEditData({...editData, relevantSkills: e.target.value})}
-                            rows={4}
-                            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            placeholder="Describe your relevant skills and experience..."
-                          />
-                        ) : (
-                          <p className="mt-1 text-sm text-gray-900">{user?.relevantSkills || 'Not provided'}</p>
+                    ) : (
+                      <div className="mt-1 flex flex-wrap gap-2">
+                        {user?.experience && Object.entries(user.experience).map(([key, value]) => {
+                          if (value === true) {
+                            return (
+                              <span key={key} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                              </span>
+                            );
+                          }
+                          return null;
+                        })}
+                        {(!user?.experience || Object.values(user.experience).every(v => !v)) && (
+                          <p className="text-sm text-gray-900">No specialized experience selected</p>
                         )}
                       </div>
-
-                      {/* Experience Details */}
-                      {user?.experience && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700">Specialized Experience</label>
-                          <div className="mt-1 flex flex-wrap gap-2">
-                            {Object.entries(user.experience).map(([key, value]) => {
-                              if (value === true) {
-                                return (
-                                  <span key={key} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                    {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                                  </span>
-                                );
-                              }
-                              return null;
-                            })}
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -387,9 +625,60 @@ export default function ProfilePage() {
               {/* Photos Section */}
               <div className="bg-white overflow-hidden shadow rounded-lg">
                 <div className="px-4 py-5 sm:p-6">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                    Photos & Documents
-                  </h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900">Photos & Documents</h3>
+                    {isEditing && (
+                      <div className="flex space-x-2">
+                        <label className="bg-indigo-600 text-white px-3 py-1 rounded-md text-sm font-medium hover:bg-indigo-700 cursor-pointer">
+                          <input
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            onChange={(e) => handlePhotoUpload(e.target.files, 'profile')}
+                            className="hidden"
+                          />
+                          Upload Profile Photo
+                        </label>
+                        <label className="bg-green-600 text-white px-3 py-1 rounded-md text-sm font-medium hover:bg-green-700 cursor-pointer">
+                          <input
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            onChange={(e) => handlePhotoUpload(e.target.files, 'portfolio')}
+                            className="hidden"
+                          />
+                          Upload Portfolio
+                        </label>
+                        <label className="bg-purple-600 text-white px-3 py-1 rounded-md text-sm font-medium hover:bg-purple-700 cursor-pointer">
+                          <input
+                            type="file"
+                            multiple
+                            accept="image/*,.pdf"
+                            onChange={(e) => handlePhotoUpload(e.target.files, 'certificate')}
+                            className="hidden"
+                          />
+                          Upload Certificate
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Upload Progress */}
+                  {Object.keys(uploadProgress).length > 0 && (
+                    <div className="mb-4 space-y-2">
+                      {Object.entries(uploadProgress).map(([key, progress]) => (
+                        <div key={key} className="flex items-center space-x-2">
+                          <div className="flex-1 bg-gray-200 rounded-full h-2">
+                            <div 
+                              className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${progress}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-sm text-gray-500">{progress}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   
                   {photosLoading ? (
                     <div className="text-center py-4">
@@ -398,6 +687,38 @@ export default function ProfilePage() {
                     </div>
                   ) : (
                     <div className="space-y-6">
+                      {/* Profile Photos */}
+                      {profilePhotos.length > 0 && (
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-700 mb-2">Profile Photos ({profilePhotos.length})</h4>
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {profilePhotos.map((photo) => (
+                              <div key={photo.id} className="relative group">
+                                <img
+                                  src={photo.url}
+                                  alt={photo.originalName}
+                                  className="w-full h-24 object-cover rounded-lg"
+                                />
+                                <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-center justify-center">
+                                  <div className="text-center">
+                                    <p className="text-white text-xs mb-2">{photo.originalName}</p>
+                                    {isEditing && (
+                                      <button
+                                        onClick={() => handlePhotoDelete(photo)}
+                                        disabled={deletingPhoto === photo.id}
+                                        className="bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700 disabled:opacity-50"
+                                      >
+                                        {deletingPhoto === photo.id ? 'Deleting...' : 'Delete'}
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
                       {/* Portfolio Photos */}
                       {portfolioPhotos.length > 0 && (
                         <div>
@@ -411,7 +732,18 @@ export default function ProfilePage() {
                                   className="w-full h-24 object-cover rounded-lg"
                                 />
                                 <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-center justify-center">
-                                  <p className="text-white text-xs text-center p-2">{photo.originalName}</p>
+                                  <div className="text-center">
+                                    <p className="text-white text-xs mb-2">{photo.originalName}</p>
+                                    {isEditing && (
+                                      <button
+                                        onClick={() => handlePhotoDelete(photo)}
+                                        disabled={deletingPhoto === photo.id}
+                                        className="bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700 disabled:opacity-50"
+                                      >
+                                        {deletingPhoto === photo.id ? 'Deleting...' : 'Delete'}
+                                      </button>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             ))}
@@ -432,7 +764,18 @@ export default function ProfilePage() {
                                   className="w-full h-24 object-cover rounded-lg"
                                 />
                                 <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-center justify-center">
-                                  <p className="text-white text-xs text-center p-2">{photo.originalName}</p>
+                                  <div className="text-center">
+                                    <p className="text-white text-xs mb-2">{photo.originalName}</p>
+                                    {isEditing && (
+                                      <button
+                                        onClick={() => handlePhotoDelete(photo)}
+                                        disabled={deletingPhoto === photo.id}
+                                        className="bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700 disabled:opacity-50"
+                                      >
+                                        {deletingPhoto === photo.id ? 'Deleting...' : 'Delete'}
+                                      </button>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             ))}
@@ -446,7 +789,10 @@ export default function ProfilePage() {
                           <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
-                          <p className="text-sm text-gray-500">No photos uploaded yet</p>
+                          <p className="text-sm text-gray-500 mb-2">No photos uploaded yet</p>
+                          {isEditing && (
+                            <p className="text-xs text-gray-400">Use the upload buttons above to add photos</p>
+                          )}
                         </div>
                       )}
                     </div>
