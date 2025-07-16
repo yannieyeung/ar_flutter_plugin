@@ -161,9 +161,16 @@ export default function ProfilePage() {
   };
 
   // Filter photos by type
-  const profilePhotos = allPhotos.filter(photo => photo.photoType === 'profile');
-  const portfolioPhotos = allPhotos.filter(photo => photo.photoType === 'portfolio');
-  const certificates = allPhotos.filter(photo => photo.photoType === 'certificate');
+  console.log('All photos in profile:', allPhotos);
+  const profilePhotos = allPhotos.filter(photo => photo.photoType === 'profile-pictures');
+  const portfolioPhotos = allPhotos.filter(photo => photo.photoType === 'portfolio-photos');
+  const certificates = allPhotos.filter(photo => photo.photoType === 'certificates');
+  const experienceProof = allPhotos.filter(photo => photo.photoType === 'experience-proof');
+  const identityDocs = allPhotos.filter(photo => photo.photoType === 'identity-documents');
+  
+  console.log('Profile photos:', profilePhotos);
+  console.log('Portfolio photos:', portfolioPhotos);
+  console.log('Certificates:', certificates);
 
   // Helper functions
   const formatDate = (dateString) => {
@@ -627,40 +634,60 @@ export default function ProfilePage() {
                 <div className="px-4 py-5 sm:p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg leading-6 font-medium text-gray-900">Photos & Documents</h3>
-                    {isEditing && (
-                      <div className="flex space-x-2">
-                        <label className="bg-indigo-600 text-white px-3 py-1 rounded-md text-sm font-medium hover:bg-indigo-700 cursor-pointer">
-                          <input
-                            type="file"
-                            multiple
-                            accept="image/*"
-                            onChange={(e) => handlePhotoUpload(e.target.files, 'profile')}
-                            className="hidden"
-                          />
-                          Upload Profile Photo
-                        </label>
-                        <label className="bg-green-600 text-white px-3 py-1 rounded-md text-sm font-medium hover:bg-green-700 cursor-pointer">
-                          <input
-                            type="file"
-                            multiple
-                            accept="image/*"
-                            onChange={(e) => handlePhotoUpload(e.target.files, 'portfolio')}
-                            className="hidden"
-                          />
-                          Upload Portfolio
-                        </label>
-                        <label className="bg-purple-600 text-white px-3 py-1 rounded-md text-sm font-medium hover:bg-purple-700 cursor-pointer">
-                          <input
-                            type="file"
-                            multiple
-                            accept="image/*,.pdf"
-                            onChange={(e) => handlePhotoUpload(e.target.files, 'certificate')}
-                            className="hidden"
-                          />
-                          Upload Certificate
-                        </label>
-                      </div>
-                    )}
+                                          {isEditing && (
+                        <div className="flex flex-wrap gap-2">
+                          <label className="bg-indigo-600 text-white px-3 py-1 rounded-md text-sm font-medium hover:bg-indigo-700 cursor-pointer">
+                            <input
+                              type="file"
+                              multiple
+                              accept="image/*"
+                              onChange={(e) => handlePhotoUpload(e.target.files, 'profile-pictures')}
+                              className="hidden"
+                            />
+                            Profile Photo
+                          </label>
+                          <label className="bg-green-600 text-white px-3 py-1 rounded-md text-sm font-medium hover:bg-green-700 cursor-pointer">
+                            <input
+                              type="file"
+                              multiple
+                              accept="image/*"
+                              onChange={(e) => handlePhotoUpload(e.target.files, 'portfolio-photos')}
+                              className="hidden"
+                            />
+                            Portfolio
+                          </label>
+                          <label className="bg-purple-600 text-white px-3 py-1 rounded-md text-sm font-medium hover:bg-purple-700 cursor-pointer">
+                            <input
+                              type="file"
+                              multiple
+                              accept="image/*,.pdf"
+                              onChange={(e) => handlePhotoUpload(e.target.files, 'certificates')}
+                              className="hidden"
+                            />
+                            Certificate
+                          </label>
+                          <label className="bg-blue-600 text-white px-3 py-1 rounded-md text-sm font-medium hover:bg-blue-700 cursor-pointer">
+                            <input
+                              type="file"
+                              multiple
+                              accept="image/*,.pdf"
+                              onChange={(e) => handlePhotoUpload(e.target.files, 'experience-proof')}
+                              className="hidden"
+                            />
+                            Experience Proof
+                          </label>
+                          <label className="bg-yellow-600 text-white px-3 py-1 rounded-md text-sm font-medium hover:bg-yellow-700 cursor-pointer">
+                            <input
+                              type="file"
+                              multiple
+                              accept="image/*,.pdf"
+                              onChange={(e) => handlePhotoUpload(e.target.files, 'identity-documents')}
+                              className="hidden"
+                            />
+                            ID Documents
+                          </label>
+                        </div>
+                      )}
                   </div>
                   
                   {/* Upload Progress */}
@@ -757,6 +784,70 @@ export default function ProfilePage() {
                           <h4 className="text-sm font-medium text-gray-700 mb-2">Certificates ({certificates.length})</h4>
                           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             {certificates.map((photo) => (
+                              <div key={photo.id} className="relative group">
+                                <img
+                                  src={photo.url}
+                                  alt={photo.originalName}
+                                  className="w-full h-24 object-cover rounded-lg"
+                                />
+                                <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-center justify-center">
+                                  <div className="text-center">
+                                    <p className="text-white text-xs mb-2">{photo.originalName}</p>
+                                    {isEditing && (
+                                      <button
+                                        onClick={() => handlePhotoDelete(photo)}
+                                        disabled={deletingPhoto === photo.id}
+                                        className="bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700 disabled:opacity-50"
+                                      >
+                                        {deletingPhoto === photo.id ? 'Deleting...' : 'Delete'}
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Experience Proof */}
+                      {experienceProof.length > 0 && (
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-700 mb-2">Experience Proof ({experienceProof.length})</h4>
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {experienceProof.map((photo) => (
+                              <div key={photo.id} className="relative group">
+                                <img
+                                  src={photo.url}
+                                  alt={photo.originalName}
+                                  className="w-full h-24 object-cover rounded-lg"
+                                />
+                                <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-center justify-center">
+                                  <div className="text-center">
+                                    <p className="text-white text-xs mb-2">{photo.originalName}</p>
+                                    {isEditing && (
+                                      <button
+                                        onClick={() => handlePhotoDelete(photo)}
+                                        disabled={deletingPhoto === photo.id}
+                                        className="bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700 disabled:opacity-50"
+                                      >
+                                        {deletingPhoto === photo.id ? 'Deleting...' : 'Delete'}
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Identity Documents */}
+                      {identityDocs.length > 0 && (
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-700 mb-2">Identity Documents ({identityDocs.length})</h4>
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {identityDocs.map((photo) => (
                               <div key={photo.id} className="relative group">
                                 <img
                                   src={photo.url}
