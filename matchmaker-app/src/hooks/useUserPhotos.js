@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { HybridPhotoService } from '../lib/hybrid-photo-service';
+import { ClientPhotoService } from '../lib/client-photo-service';
 import { useAuth } from '../contexts/AuthContext';
 
 export const useUserPhotos = (photoType = null) => {
@@ -17,7 +17,7 @@ export const useUserPhotos = (photoType = null) => {
 
     try {
       setLoading(true);
-      const userPhotos = await HybridPhotoService.getUserPhotos(user.uid, photoType);
+      const userPhotos = await ClientPhotoService.getUserPhotos(user.uid, photoType);
       setPhotos(userPhotos);
       setError(null);
     } catch (err) {

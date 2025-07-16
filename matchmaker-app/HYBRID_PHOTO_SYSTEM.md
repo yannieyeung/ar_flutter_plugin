@@ -11,20 +11,29 @@ The hybrid photo system combines the best of both Firebase and Supabase:
 ## Architecture
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Photo File    │───▶│   Supabase      │    │   Firebase      │
-│   (Image)       │    │   Storage       │    │   Firestore     │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-                                              │                 │
-                                              │   Photo         │
-                                              │   Metadata      │
-                                              │   - URL         │
-                                              │   - Path        │
-                                              │   - User ID     │
-                                              │   - Upload Date │
-                                              │   - File Info   │
-                                              └─────────────────┘
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Client        │───▶│   API Route     │───▶│   Supabase      │    │   Firebase      │
+│   PhotoUpload   │    │   /api/upload   │    │   Storage       │    │   Firestore     │
+└─────────────────┘    └─────────────────┘    └─────────────────┘    └─────────────────┘
+                                                                     │                 │
+                                                                     │   Photo         │
+                                                                     │   Metadata      │
+                                                                     │   - URL         │
+                                                                     │   - Path        │
+                                                                     │   - User ID     │
+                                                                     │   - Upload Date │
+                                                                     │   - File Info   │
+                                                                     └─────────────────┘
 ```
+
+**Flow**: Client → Server API → Supabase Storage + Firebase Metadata
+
+## Security Benefits
+
+- **Service Role Key**: Only used server-side in API routes (never exposed to browser)
+- **Client Safety**: Browser code only has access to public keys
+- **API Validation**: Server validates all uploads before processing
+- **Type Safety**: File type and size validation on server
 
 ## Usage
 
@@ -51,15 +60,15 @@ function MyComponent() {
 }
 ```
 
-### 2. Hybrid Photo Service
+### 2. Client Photo Service
 
 Direct access to the photo service:
 
 ```javascript
-import { HybridPhotoService } from '../lib/hybrid-photo-service';
+import { ClientPhotoService } from '../lib/client-photo-service';
 
-// Upload a photo
-const photoData = await HybridPhotoService.uploadPhoto(
+// Upload a photo (uses server API)
+const photoData = await ClientPhotoService.uploadPhoto(
   file,           // File object
   userId,         // User ID
   'profile',      // Photo type
@@ -68,10 +77,10 @@ const photoData = await HybridPhotoService.uploadPhoto(
 );
 
 // Get user photos
-const photos = await HybridPhotoService.getUserPhotos(userId, 'profile');
+const photos = await ClientPhotoService.getUserPhotos(userId, 'profile');
 
 // Delete a photo
-await HybridPhotoService.deletePhoto(photoId, supabasePath, bucket);
+await ClientPhotoService.deletePhoto(photoId, supabasePath, bucket);
 ```
 
 ### 3. useUserPhotos Hook

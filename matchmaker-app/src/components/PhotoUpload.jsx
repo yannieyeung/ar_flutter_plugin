@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { HybridPhotoService } from '../lib/hybrid-photo-service';
+import { ClientPhotoService } from '../lib/client-photo-service';
 
 const PhotoUpload = ({
   label,
@@ -21,7 +21,7 @@ const PhotoUpload = ({
   const { user } = useAuth();
 
   const validateFileHelper = (file) => {
-    const validation = HybridPhotoService.validateFile(file);
+    const validation = ClientPhotoService.validateFile(file);
     return validation.errors;
   };
 
@@ -32,7 +32,7 @@ const PhotoUpload = ({
       }
       
       // Upload photo to Supabase and save metadata to Firebase
-      const photoData = await HybridPhotoService.uploadPhoto(
+      const photoData = await ClientPhotoService.uploadPhoto(
         file,
         user.uid,
         uploadPath, // Use uploadPath as photoType
@@ -141,7 +141,7 @@ const PhotoUpload = ({
       const photoToDelete = photos.find(photo => photo.id === photoId);
       if (photoToDelete && photoToDelete.supabasePath && photoToDelete.bucket) {
         // Delete from both Supabase and Firebase
-        await HybridPhotoService.deletePhoto(photoId, photoToDelete.supabasePath, photoToDelete.bucket);
+        await ClientPhotoService.deletePhoto(photoId, photoToDelete.supabasePath, photoToDelete.bucket);
       }
       
       // Remove from local state
