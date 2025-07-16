@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useAuth } from '@/contexts/AuthContext';
-import { AuthGuard } from '@/components/AuthGuard';
-import Link from 'next/link';
+import { useAuth } from "@/contexts/AuthContext";
+import { AuthGuard } from "@/components/AuthGuard";
+import Link from "next/link";
 
 export default function DashboardPage() {
   const { user, signOut } = useAuth();
@@ -20,7 +20,9 @@ export default function DashboardPage() {
             <div className="flex justify-between items-center py-6">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-                <p className="text-gray-600">Welcome back, {user?.email || user?.phoneNumber}!</p>
+                <p className="text-gray-600">
+                  Welcome back, {user?.email || user?.phoneNumber}!
+                </p>
               </div>
               <button
                 onClick={handleSignOut}
@@ -45,7 +47,7 @@ export default function DashboardPage() {
                 </p>
 
                 <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-                  {user?.userType === 'employer' && (
+                  {user?.userType === "employer" && (
                     <>
                       <div className="bg-white p-6 rounded-lg shadow">
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -75,7 +77,7 @@ export default function DashboardPage() {
                     </>
                   )}
 
-                  {user?.userType === 'agency' && (
+                  {user?.userType === "agency" && (
                     <>
                       <div className="bg-white p-6 rounded-lg shadow">
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -105,14 +107,15 @@ export default function DashboardPage() {
                     </>
                   )}
 
-                  {user?.userType === 'individual_helper' && (
+                  {user?.userType === "individual_helper" && (
                     <>
                       <div className="bg-white p-6 rounded-lg shadow">
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">
                           Find Jobs
                         </h3>
                         <p className="text-gray-600 mb-4">
-                          Search for employment opportunities that match your skills.
+                          Search for employment opportunities that match your
+                          skills.
                         </p>
                         <button className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
                           Browse Jobs (Coming Soon)
@@ -141,10 +144,25 @@ export default function DashboardPage() {
                     Your Profile
                   </h3>
                   <div className="bg-gray-50 rounded-lg p-4 text-left max-w-md mx-auto">
-                    <p><strong>User Type:</strong> {user?.userType?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
-                    <p><strong>Contact:</strong> {user?.email || user?.phoneNumber}</p>
-                    <p><strong>Registration:</strong> Complete ✅</p>
-                    <p><strong>Member Since:</strong> {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</p>
+                    <p>
+                      <strong>User Type:</strong>{" "}
+                      {user?.userType
+                        ?.replace("_", " ")
+                        .replace(/\b\w/g, (l) => l.toUpperCase())}
+                    </p>
+                    <p>
+                      <strong>Contact:</strong>{" "}
+                      {user?.email || user?.phoneNumber}
+                    </p>
+                    <p>
+                      <strong>Registration:</strong> Complete ✅
+                    </p>
+                    <p>
+                      <strong>Member Since:</strong>{" "}
+                      {user?.createdAt
+                        ? new Date(user.createdAt).toLocaleDateString()
+                        : "N/A"}
+                    </p>
                   </div>
                 </div>
               </div>
