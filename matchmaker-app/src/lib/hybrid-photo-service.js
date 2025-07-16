@@ -1,22 +1,39 @@
-import { uploadFile as uploadToSupabase, getPublicUrl, deleteFile, STORAGE_BUCKETS } from './supabase';
+import { STORAGE_BUCKETS } from './supabase.js';
 import { createClient } from '@supabase/supabase-js';
-import { db } from './firebase';
+import { db } from './firebase.js';
 import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, where, orderBy, serverTimestamp } from 'firebase/firestore';
 
 // Collection name for photo metadata in Firebase
 const PHOTO_METADATA_COLLECTION = 'user_photos';
 
-// Create a service role Supabase client that bypasses RLS
-const supabaseServiceRole = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
-  {
+// Function to get service role Supabase client with proper validation
+function getSupabaseServiceRole() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  
+  if (!supabaseUrl) {
+    throw new Error('NEXT_PUBLIC_SUPABASE_URL environment variable is required');
+  }
+  
+  if (!supabaseServiceKey) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY environment variable is required');
+  }
+  
+  if (supabaseUrl === 'your_supabase_project_url_here') {
+    throw new Error('Please update NEXT_PUBLIC_SUPABASE_URL in your .env.local file with your actual Supabase project URL');
+  }
+  
+  if (supabaseServiceKey === 'your_supabase_service_role_key_here') {
+    throw new Error('Please update SUPABASE_SERVICE_ROLE_KEY in your .env.local file with your actual Supabase service role key');
+  }
+  
+  return createClient(supabaseUrl, supabaseServiceKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false
     }
-  }
-);
+  });
+}
 
 /**
  * Hybrid photo service that uploads photos to Supabase but stores metadata in Firebase
@@ -53,7 +70,8 @@ export class HybridPhotoService {
       const supabaseData = await this.uploadToSupabaseWithServiceRole(bucket, file, supabasePath, onProgress);
       
       // Get public URL from Supabase
-      const { data: urlData } = supabaseServiceRole.storage
+      const supabase = getSupabaseServiceRole();
+      const { data: urlData } = supabase.storage
         .from(bucket)
         .getPublicUrl(supabaseData.path);
       const publicUrl = urlData.publicUrl;
@@ -160,7 +178,8 @@ export class HybridPhotoService {
         setTimeout(() => onProgress(50), 100);
       }
       
-      const { data, error } = await supabaseServiceRole.storage
+      const supabase = getSupabaseServiceRole();
+      const { data, error } = await supabase.storage
         .from(bucket)
         .upload(path, file);
         
@@ -191,7 +210,8 @@ export class HybridPhotoService {
     try {
       // Delete from Supabase using service role
       console.log('🔄 Deleting photo from Supabase...');
-      const { error } = await supabaseServiceRole.storage
+      const supabase = getSupabaseServiceRole();
+      const { error } = await supabase.storage
         .from(bucket)
         .remove([supabasePath]);
         
