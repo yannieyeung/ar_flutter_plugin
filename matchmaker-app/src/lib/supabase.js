@@ -24,9 +24,16 @@ export const STORAGE_BUCKETS = {
 };
 
 // Helper functions for storage
-export const uploadFile = async (bucket, file, path) => {
+export const uploadFile = async (bucket, file, path, onProgress = null) => {
   const fileName = `${Date.now()}_${file.name}`;
   const filePath = path ? `${path}/${fileName}` : fileName;
+  
+  // Note: Supabase doesn't provide progress callback like Firebase
+  // So we'll simulate progress for UI consistency
+  if (onProgress) {
+    onProgress(0);
+    setTimeout(() => onProgress(50), 100);
+  }
   
   const { data, error } = await supabase.storage
     .from(bucket)
@@ -35,6 +42,10 @@ export const uploadFile = async (bucket, file, path) => {
   if (error) {
     console.error('Upload error:', error);
     throw error;
+  }
+  
+  if (onProgress) {
+    onProgress(100);
   }
   
   return data;
