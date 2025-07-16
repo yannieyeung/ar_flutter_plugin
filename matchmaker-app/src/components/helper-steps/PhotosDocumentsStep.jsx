@@ -1,5 +1,5 @@
 import React from 'react';
-import PhotoUpload from '../PhotoUpload';
+import HybridPhotoUpload from '../HybridPhotoUpload';
 
 const PhotosDocumentsStep = ({ data, onChange, errors }) => {
   const handlePhotoChange = (field, photos) => {
@@ -16,26 +16,26 @@ const PhotosDocumentsStep = ({ data, onChange, errors }) => {
 
       {/* Profile Picture */}
       <div className="bg-gray-50 p-6 rounded-lg">
-        <PhotoUpload
+        <HybridPhotoUpload
           label="Profile Picture"
           description="Upload a clear, professional photo of yourself. This will be shown to potential employers."
           maxFiles={1}
           photos={data.profilePicture || []}
           onChange={(photos) => handlePhotoChange('profilePicture', photos)}
-          uploadPath="profile-pictures"
+          category="profile"
           required={false}
         />
       </div>
 
       {/* Portfolio Photos */}
       <div className="bg-gray-50 p-6 rounded-lg">
-        <PhotoUpload
+        <HybridPhotoUpload
           label="Portfolio Photos"
           description="Showcase your work! Upload photos of meals you've cooked, spaces you've organized, or any work you're proud of."
           maxFiles={6}
           photos={data.portfolioPhotos || []}
           onChange={(photos) => handlePhotoChange('portfolioPhotos', photos)}
-          uploadPath="portfolio-photos"
+          category="portfolio"
           required={false}
         />
       </div>
@@ -43,13 +43,13 @@ const PhotosDocumentsStep = ({ data, onChange, errors }) => {
       {/* Work Experience Proof (conditional) */}
       {data.hasBeenHelperBefore === 'yes' && (
         <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
-          <PhotoUpload
+          <HybridPhotoUpload
             label="Work Experience Proof"
             description="Upload documents that prove your work experience, such as employment certificates, recommendation letters, or work permits."
             maxFiles={5}
             photos={data.experienceProof || []}
             onChange={(photos) => handlePhotoChange('experienceProof', photos)}
-            uploadPath="experience-proof"
+            category="experience-proof"
             required={false}
           />
           
@@ -68,13 +68,13 @@ const PhotosDocumentsStep = ({ data, onChange, errors }) => {
 
       {/* Certificates & Training */}
       <div className="bg-gray-50 p-6 rounded-lg">
-        <PhotoUpload
+        <HybridPhotoUpload
           label="Certificates & Training"
           description="Upload any relevant certificates, training documents, or qualifications you have earned."
           maxFiles={5}
           photos={data.certificates || []}
           onChange={(photos) => handlePhotoChange('certificates', photos)}
-          uploadPath="certificates"
+          category="certificates"
           required={false}
         />
         
@@ -93,13 +93,13 @@ const PhotosDocumentsStep = ({ data, onChange, errors }) => {
 
       {/* Identity Documents */}
       <div className="bg-yellow-50 p-6 rounded-lg border border-yellow-200">
-        <PhotoUpload
+        <HybridPhotoUpload
           label="Identity Documents"
           description="Upload copies of your official identification documents. These help verify your identity and eligibility to work."
           maxFiles={3}
           photos={data.identityDocuments || []}
           onChange={(photos) => handlePhotoChange('identityDocuments', photos)}
-          uploadPath="identity-documents"
+          category="identity-documents"
           required={false}
         />
         

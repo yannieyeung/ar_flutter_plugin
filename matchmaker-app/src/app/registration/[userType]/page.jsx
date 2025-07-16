@@ -6,6 +6,8 @@ import { AuthGuard } from '@/components/AuthGuard';
 import { useRouter, useParams } from 'next/navigation';
 import { ClientUserService } from '@/lib/db-client';
 import MultiStepHelperRegistration from '@/components/MultiStepHelperRegistration';
+import { HybridDataService } from '@/lib/hybrid-data-service';
+import HybridPhotoUpload from '@/components/HybridPhotoUpload';
 
 export default function RegistrationPage() {
   const { user, refreshUser } = useAuth();
@@ -37,8 +39,17 @@ export default function RegistrationPage() {
     hourlyRate: '',
   });
 
+  // Image state for hybrid approach
+  const [images, setImages] = useState({
+    profile: [],
+    portfolio: [],
+    certificates: [],
+    identityDocuments: []
+  });
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [uploadProgress, setUploadProgress] = useState('');
 
   // Validate user type
   useEffect(() => {
@@ -65,6 +76,7 @@ export default function RegistrationPage() {
 
     setIsLoading(true);
     setError('');
+    setUploadProgress('Preparing registration data...');
 
     try {
       // Prepare update data based on user type
@@ -72,6 +84,7 @@ export default function RegistrationPage() {
         fullName: formData.fullName,
         description: formData.description,
         location: formData.location,
+        userType: userType,
         isRegistrationComplete: true,
       };
 
@@ -91,18 +104,55 @@ export default function RegistrationPage() {
         updateData.hourlyRate = formData.hourlyRate;
       }
 
-      // Update user profile
-      await ClientUserService.updateUser(user.uid, updateData);
+      // Prepare image files for upload
+      const imageFiles = {};
+      
+      // Convert image states to File arrays
+      Object.keys(images).forEach(category => {
+        if (images[category] && images[category].length > 0) {
+          // If images are already uploaded (from HybridPhotoUpload), skip
+          // If they are File objects, add them for upload
+          const fileObjects = images[category].filter(img => img instanceof File);
+          if (fileObjects.length > 0) {
+            imageFiles[category] = fileObjects;
+          }
+        }
+      });
+
+      console.log('Starting hybrid registration save:', {
+        userId: user.uid,
+        userType: userType,
+        imageCategories: Object.keys(imageFiles),
+        totalImages: Object.values(imageFiles).flat().length
+      });
+
+      // Use hybrid data service to save user data and images
+      const savedData = await HybridDataService.saveUserWithImages(
+        user.uid,
+        updateData,
+        imageFiles,
+        (message, progress) => {
+          setUploadProgress(`${message} (${Math.round(progress)}%)`);
+        }
+      );
+
+      console.log('Hybrid registration completed:', savedData);
 
       // Refresh user data in context
       await refreshUser();
 
-      // Redirect to dashboard
-      router.push('/dashboard');
+      // Show success message
+      setUploadProgress('Registration completed successfully! 🎉');
+      
+      // Redirect to dashboard after a short delay
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 1500);
 
     } catch (error) {
-      console.error('Registration update error:', error);
+      console.error('Hybrid registration error:', error);
       setError('Failed to complete registration. Please try again.');
+      setUploadProgress('');
     } finally {
       setIsLoading(false);
     }
@@ -480,6 +530,67 @@ export default function RegistrationPage() {
                 {/* User Type Specific Fields */}
                 {renderUserTypeFields()}
 
+                {/* Image Upload Sections for Hybrid Approach */}
+                <div className="border-t pt-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    📷 Photos & Documents
+                    <span className="ml-2 text-sm text-blue-600">(Stored in Supabase - 90% cheaper!)</span>
+                  </h3>
+                  
+                  {/* Profile Picture */}
+                  <div className="mb-6">
+                    <HybridPhotoUpload
+                      label="Profile Picture"
+                      description="Upload a professional photo of yourself"
+                      category="profile"
+                      maxFiles={1}
+                      photos={images.profile}
+                      onChange={(photos) => setImages(prev => ({ ...prev, profile: photos }))}
+                    />
+                  </div>
+
+                  {/* Portfolio Photos (for helpers and agencies) */}
+                  {(userType === 'individual_helper' || userType === 'agency') && (
+                    <div className="mb-6">
+                      <HybridPhotoUpload
+                        label="Portfolio Photos"
+                        description="Show examples of your work and experience"
+                        category="portfolio"
+                        maxFiles={5}
+                        photos={images.portfolio}
+                        onChange={(photos) => setImages(prev => ({ ...prev, portfolio: photos }))}
+                      />
+                    </div>
+                  )}
+
+                  {/* Certificates (for helpers) */}
+                  {userType === 'individual_helper' && (
+                    <div className="mb-6">
+                      <HybridPhotoUpload
+                        label="Certificates & Qualifications"
+                        description="Upload certificates, licenses, or training documents"
+                        category="certificates"
+                        maxFiles={3}
+                        acceptedTypes={['image/jpeg', 'image/png', 'image/webp', 'application/pdf']}
+                        photos={images.certificates}
+                        onChange={(photos) => setImages(prev => ({ ...prev, certificates: photos }))}
+                      />
+                    </div>
+                  )}
+
+                  {/* Identity Documents (optional) */}
+                  <div className="mb-6">
+                    <HybridPhotoUpload
+                      label="Identity Verification (Optional)"
+                      description="Upload ID documents for verification (stored securely)"
+                      category="identity-documents"
+                      maxFiles={2}
+                      photos={images.identityDocuments}
+                      onChange={(photos) => setImages(prev => ({ ...prev, identityDocuments: photos }))}
+                    />
+                  </div>
+                </div>
+
                 <div>
                   <label htmlFor="description" className="block text-sm font-medium text-gray-700">
                     Description
@@ -495,6 +606,16 @@ export default function RegistrationPage() {
                   />
                 </div>
 
+                {/* Upload Progress */}
+                {uploadProgress && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                      <p className="text-blue-700 text-sm">{uploadProgress}</p>
+                    </div>
+                  </div>
+                )}
+
                 {error && (
                   <div className="text-red-600 text-sm text-center">{error}</div>
                 )}
@@ -508,10 +629,13 @@ export default function RegistrationPage() {
                     {isLoading ? (
                       <div className="flex items-center">
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Completing Registration...
+                        {uploadProgress ? 'Saving...' : 'Completing Registration...'}
                       </div>
                     ) : (
-                      'Complete Registration'
+                      <div className="flex items-center">
+                        <span>Complete Registration</span>
+                        <span className="ml-2 text-xs">(💾 Images → Supabase)</span>
+                      </div>
                     )}
                   </button>
                 </div>

@@ -1,0 +1,25 @@
+[
+  {
+    "origin": [
+      "http://localhost:3000",
+      "http://localhost:3001", 
+      "http://127.0.0.1:3000",
+      "https://*.vercel.app",
+      "https://your-production-domain.com"
+    ],
+    "method": ["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"],
+    "maxAgeSeconds": 3600,
+    "responseHeader": [
+      "Content-Type",
+      "Authorization",
+      "Range",
+      "Accept",
+      "Accept-Encoding",
+      "User-Agent",
+      "Referer",
+      "Origin",
+      "X-Client-Version",
+      "X-Firebase-Storage-Version"
+    ]
+  }
+]

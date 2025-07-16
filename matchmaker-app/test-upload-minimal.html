@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Firebase Storage Upload Test</title>
+</head>
+<body>
+    <h1>🔥 Firebase Storage Upload Test</h1>
+    
+    <div>
+        <input type="file" id="fileInput" accept="image/*">
+        <button onclick="testUpload()">Test Upload</button>
+    </div>
+    
+    <div id="status"></div>
+    <div id="result"></div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+        import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+        import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js';
+
+        // Replace with your actual Firebase config
+        const firebaseConfig = {
+            apiKey: "your-api-key",
+            authDomain: "31671.firebaseapp.com", 
+            projectId: "31671",
+            storageBucket: "31671.firebasestorage.app",
+            messagingSenderId: "your-sender-id",
+            appId: "your-app-id"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const storage = getStorage(app);
+
+        // Sign in anonymously for testing
+        signInAnonymously(auth).then(() => {
+            document.getElementById('status').innerHTML = '✅ Authenticated';
+        }).catch((error) => {
+            document.getElementById('status').innerHTML = '❌ Auth failed: ' + error.message;
+        });
+
+        window.testUpload = async function() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a file first');
+                return;
+            }
+
+            if (!auth.currentUser) {
+                alert('Not authenticated');
+                return;
+            }
+
+            try {
+                document.getElementById('result').innerHTML = '⏳ Uploading...';
+                
+                const storageRef = ref(storage, `test/${Date.now()}_${file.name}`);
+                const snapshot = await uploadBytes(storageRef, file);
+                const downloadURL = await getDownloadURL(snapshot.ref);
+                
+                document.getElementById('result').innerHTML = `
+                    ✅ Upload successful!<br>
+                    <strong>URL:</strong> <a href="${downloadURL}" target="_blank">${downloadURL}</a>
+                `;
+                
+                console.log('Upload successful:', downloadURL);
+                
+            } catch (error) {
+                document.getElementById('result').innerHTML = `❌ Upload failed: ${error.message}`;
+                console.error('Upload error:', error);
+            }
+        };
+    </script>
+</body>
+</html>
