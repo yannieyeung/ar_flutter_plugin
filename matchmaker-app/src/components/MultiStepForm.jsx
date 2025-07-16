@@ -12,17 +12,46 @@ const MultiStepForm = ({
   const [formData, setFormData] = useState({});
   const [stepErrors, setStepErrors] = useState({});
 
-  const updateFormData = (stepData) => {
+  const updateFormData = (newData) => {
+    // Get current step data
+    const currentStepData = formData[`step_${currentStep}`] || {};
+    
+    // Get all previous step data for context
+    const allPreviousData = {};
+    for (let i = 0; i < currentStep; i++) {
+      Object.assign(allPreviousData, formData[`step_${i}`] || {});
+    }
+    
+    // Find what changed by comparing newData with combined previous + current
+    const combinedPreviousAndCurrent = { ...allPreviousData, ...currentStepData };
+    const changedFields = {};
+    
+    Object.keys(newData).forEach(key => {
+      if (newData[key] !== combinedPreviousAndCurrent[key]) {
+        changedFields[key] = newData[key];
+      }
+    });
+    
+    // Only update the current step with the changed fields
     setFormData(prev => ({
       ...prev,
-      [`step_${currentStep}`]: stepData
+      [`step_${currentStep}`]: {
+        ...currentStepData,
+        ...changedFields
+      }
     }));
   };
 
   const validateCurrentStep = () => {
     const currentStepComponent = steps[currentStep];
     if (currentStepComponent.validate) {
-      const errors = currentStepComponent.validate(formData[`step_${currentStep}`] || {});
+      // Combine all previous step data for validation context
+      const allPreviousData = {};
+      for (let i = 0; i <= currentStep; i++) {
+        Object.assign(allPreviousData, formData[`step_${i}`] || {});
+      }
+      
+      const errors = currentStepComponent.validate(allPreviousData);
       setStepErrors(prev => ({
         ...prev,
         [currentStep]: errors
@@ -72,9 +101,15 @@ const MultiStepForm = ({
     const step = steps[currentStep];
     const StepComponent = step.component;
     
+    // Combine all previous step data for context
+    const allPreviousData = {};
+    for (let i = 0; i <= currentStep; i++) {
+      Object.assign(allPreviousData, formData[`step_${i}`] || {});
+    }
+    
     return (
       <StepComponent
-        data={formData[`step_${currentStep}`] || {}}
+        data={allPreviousData}
         onChange={updateFormData}
         errors={stepErrors[currentStep] || {}}
         onNext={nextStep}

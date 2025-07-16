@@ -130,14 +130,21 @@ const MedicalInfoStep = ({ data, onChange, errors }) => (
   </div>
 );
 
-const ExperienceStep = ({ data, onChange, errors }) => (
-  <div className="space-y-6">
-    <div className="text-center mb-8">
-      <h2 className="text-xl font-semibold text-gray-900 mb-2">Work Experience & Skills</h2>
-      <p className="text-gray-600">Tell us about your previous experience and skills</p>
-    </div>
-    
-    {data.hasBeenHelperBefore === 'yes' ? (
+const ExperienceStep = ({ data, onChange, errors }) => {
+  // Debug: Log the data to understand what's being passed
+  console.log('🔍 ExperienceStep data:', {
+    hasBeenHelperBefore: data.hasBeenHelperBefore,
+    allData: data
+  });
+  
+  return (
+    <div className="space-y-6">
+      <div className="text-center mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Work Experience & Skills</h2>
+        <p className="text-gray-600">Tell us about your previous experience and skills</p>
+      </div>
+      
+      {data.hasBeenHelperBefore === 'yes' ? (
       <div className="space-y-6">
         <div className="bg-blue-50 p-4 rounded-lg">
           <p className="text-blue-800">Great! Since you have helper experience, please share your skills:</p>
@@ -230,7 +237,8 @@ const ExperienceStep = ({ data, onChange, errors }) => (
       </div>
     )}
   </div>
-);
+  );
+};
 
 const PreferencesStep = ({ data, onChange, errors }) => (
   <div className="space-y-6">
