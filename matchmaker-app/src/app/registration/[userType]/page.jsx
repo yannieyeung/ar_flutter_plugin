@@ -139,7 +139,7 @@ export default function RegistrationPage() {
         
         // Experience and Skills
         hasBeenHelperBefore: helperData.hasBeenHelperBefore,
-        experience: helperData.experience,
+        experience: helperData.experience || {},
         relevantSkills: helperData.relevantSkills,
         
         // Medical Information
@@ -173,6 +173,12 @@ export default function RegistrationPage() {
         registrationCompletedAt: new Date().toISOString(),
         profileCompleteness: calculateProfileCompleteness(helperData)
       };
+
+      // Debug: Log the update data to see what's being sent
+      console.log('🔍 Update data being sent to Firebase:', {
+        experience: updateData.experience,
+        hasBeenHelperBefore: updateData.hasBeenHelperBefore
+      });
 
       // Update user profile
       await ClientUserService.updateUser(user.uid, updateData);
