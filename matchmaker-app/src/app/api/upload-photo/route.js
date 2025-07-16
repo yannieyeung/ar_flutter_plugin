@@ -24,9 +24,9 @@ function getServerSupabaseClient() {
 const STORAGE_BUCKETS = {
   'profile-pictures': 'profile-images',
   'portfolio-photos': 'profile-images',
-  'certificates': 'documents',
-  'experience-proof': 'documents',
-  'identity-documents': 'documents'
+  'certificates': 'profile-images',  // Changed to profile-images for image uploads
+  'experience-proof': 'profile-images',  // Changed to profile-images for image uploads
+  'identity-documents': 'profile-images'  // Changed to profile-images for image uploads
 };
 
 export async function POST(request) {
@@ -69,7 +69,13 @@ export async function POST(request) {
     const bucket = STORAGE_BUCKETS[photoType] || 'profile-images';
     
     // Upload to Supabase
-    console.log('📤 Uploading to Supabase:', { bucket, path: supabasePath });
+    console.log('📤 Uploading to Supabase:', { 
+      bucket, 
+      path: supabasePath, 
+      fileType: file.type, 
+      fileSize: file.size 
+    });
+    
     const supabase = getServerSupabaseClient();
     
     const { data: uploadData, error: uploadError } = await supabase.storage
@@ -78,6 +84,7 @@ export async function POST(request) {
       
     if (uploadError) {
       console.error('Supabase upload error:', uploadError);
+      console.error('Upload details:', { bucket, path: supabasePath, fileType: file.type });
       return NextResponse.json(
         { error: `Upload failed: ${uploadError.message}` },
         { status: 500 }

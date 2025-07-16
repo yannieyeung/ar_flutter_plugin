@@ -41,7 +41,15 @@ const buckets = [
     name: 'Documents',
     public: false,
     fileSizeLimit: 10 * 1024 * 1024, // 10MB
-    allowedMimeTypes: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+    allowedMimeTypes: [
+      'image/jpeg', 
+      'image/jpg', 
+      'image/png', 
+      'image/webp',
+      'application/pdf', 
+      'application/msword', 
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ]
   },
   {
     id: 'company-logos',

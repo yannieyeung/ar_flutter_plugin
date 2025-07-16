@@ -10,12 +10,28 @@ export const COLLECTIONS = {
   HELPERS: 'helpers',
 };
 
-// Helper function to remove undefined values
+// Helper function to remove undefined values recursively
 const removeUndefinedValues = (obj) => {
+  if (obj === null || obj === undefined) {
+    return null;
+  }
+  
+  if (typeof obj !== 'object' || Array.isArray(obj)) {
+    return obj;
+  }
+  
   const cleaned = {};
   for (const key in obj) {
     if (obj[key] !== undefined) {
-      cleaned[key] = obj[key];
+      if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
+        // Recursively clean nested objects
+        const cleanedNested = removeUndefinedValues(obj[key]);
+        if (Object.keys(cleanedNested).length > 0) {
+          cleaned[key] = cleanedNested;
+        }
+      } else {
+        cleaned[key] = obj[key];
+      }
     }
   }
   return cleaned;
