@@ -126,10 +126,10 @@ export class HybridPhotoService {
    */
   static async getUserPhotos(userId, photoType = null) {
     try {
+      // Create base query without orderBy to avoid composite index requirement
       let q = query(
         collection(db, PHOTO_METADATA_COLLECTION),
-        where('userId', '==', userId),
-        orderBy('uploadedAt', 'desc')
+        where('userId', '==', userId)
       );
       
       if (photoType) {
@@ -154,6 +154,9 @@ export class HybridPhotoService {
           ...data
         });
       });
+      
+      // Sort by uploadedAt in JavaScript to avoid Firebase composite index
+      photos.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
       
       return photos;
     } catch (error) {
