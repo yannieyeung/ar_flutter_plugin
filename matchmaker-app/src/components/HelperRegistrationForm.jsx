@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const HelperRegistrationForm = ({ onSubmit, isLoading = false }) => {
+  const { signOut, user } = useAuth();
   const [formData, setFormData] = useState({
     // A. Personal Information
     name: '',
@@ -298,7 +300,23 @@ const HelperRegistrationForm = ({ onSubmit, isLoading = false }) => {
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Helper Registration Form</h2>
+      <div className="flex justify-between items-start mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">Helper Registration Form</h2>
+        <div className="flex items-center space-x-4">
+          {user && (
+            <div className="text-sm text-gray-600">
+              Signed in as: <span className="font-medium">{user.email || user.phoneNumber}</span>
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={signOut}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
+          >
+            Sign Out
+          </button>
+        </div>
+      </div>
       
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* A. Personal Information */}

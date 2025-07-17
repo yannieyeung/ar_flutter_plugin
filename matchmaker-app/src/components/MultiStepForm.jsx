@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const MultiStepForm = ({ 
   steps, 
@@ -8,6 +9,7 @@ const MultiStepForm = ({
   title = "Multi-Step Form",
   allowSkip = false
 }) => {
+  const { signOut, user } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({});
   const [stepErrors, setStepErrors] = useState({});
@@ -129,7 +131,22 @@ const MultiStepForm = ({
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">{title}</h1>
+        <div className="flex justify-between items-start mb-4">
+          <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+          <div className="flex items-center space-x-4">
+            {user && (
+              <div className="text-sm text-gray-600">
+                Signed in as: <span className="font-medium">{user.email || user.phoneNumber}</span>
+              </div>
+            )}
+            <button
+              onClick={signOut}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
         
         {/* Progress Bar */}
         <div className="mb-6">
