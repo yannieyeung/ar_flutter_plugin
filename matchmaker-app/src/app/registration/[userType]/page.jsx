@@ -8,7 +8,7 @@ import { ClientUserService } from '@/lib/db-client';
 import MultiStepHelperRegistration from '@/components/MultiStepHelperRegistration';
 
 export default function RegistrationPage() {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, signOut } = useAuth();
   const router = useRouter();
   const params = useParams();
   const userType = params.userType;
@@ -139,7 +139,7 @@ export default function RegistrationPage() {
         
         // Experience and Skills
         hasBeenHelperBefore: helperData.hasBeenHelperBefore,
-        experience: helperData.experience,
+        experience: helperData.experience || {},
         relevantSkills: helperData.relevantSkills,
         
         // Medical Information
@@ -438,10 +438,28 @@ export default function RegistrationPage() {
           // Original form for employers and agencies
           <div className="max-w-md mx-auto">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-extrabold text-gray-900">{getUserTypeTitle()}</h2>
-              <p className="mt-2 text-sm text-gray-600">
-                Complete your profile to start using MatchMaker
-              </p>
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex-1">
+                  <h2 className="text-3xl font-extrabold text-gray-900">{getUserTypeTitle()}</h2>
+                  <p className="mt-2 text-sm text-gray-600">
+                    Complete your profile to start using MatchMaker
+                  </p>
+                </div>
+                <div className="flex flex-col items-end space-y-2">
+                  {user && (
+                    <div className="text-xs text-gray-600">
+                      Signed in as: <span className="font-medium">{user.email || user.phoneNumber}</span>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={signOut}
+                    className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div className="bg-white py-8 px-6 shadow rounded-lg sm:px-10">

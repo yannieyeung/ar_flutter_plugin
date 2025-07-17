@@ -228,6 +228,58 @@ const PersonalInfoStep = ({ data, onChange, errors }) => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
+            Emergency Contact
+          </label>
+          <input
+            type="text"
+            value={data.emergencyContact || ''}
+            onChange={(e) => handleInputChange('emergencyContact', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Name and phone number of emergency contact"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Expected Salary (SGD per month)
+          </label>
+          <input
+            type="text"
+            value={data.expectedSalary || ''}
+            onChange={(e) => handleInputChange('expectedSalary', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g., $800, $900-1000"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Availability Schedule
+          </label>
+          <textarea
+            value={data.availability || ''}
+            onChange={(e) => handleInputChange('availability', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows="2"
+            placeholder="e.g., Monday to Friday, flexible hours, weekends available"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Languages Spoken
+          </label>
+          <input
+            type="text"
+            value={data.languages || ''}
+            onChange={(e) => handleInputChange('languages', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g., English, Mandarin, Tagalog (separate with commas)"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Have you worked as a helper before? <span className="text-red-500">*</span>
           </label>
           <div className="flex space-x-6">

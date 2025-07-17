@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { uploadFile, validateFile, createUserStoragePath, STORAGE_PATHS } from '../lib/storage';
+import { ClientPhotoService } from '../lib/client-photo-service';
 
 const PhotoUpload = ({
   label,
@@ -21,33 +21,31 @@ const PhotoUpload = ({
   const { user } = useAuth();
 
   const validateFileHelper = (file) => {
-    const errors = [];
-    
-    if (!acceptedTypes.includes(file.type)) {
-      errors.push(`File type ${file.type} not supported. Please use JPG, PNG, or WebP.`);
-    }
-    
-    if (file.size > maxFileSize) {
-      errors.push(`File size too large. Maximum size is ${Math.round(maxFileSize / 1024 / 1024)}MB.`);
-    }
-    
-    return errors;
+    const validation = ClientPhotoService.validateFile(file);
+    return validation.errors;
   };
 
-  const uploadToFirebase = async (file, index) => {
+  const uploadToSupabase = async (file, index) => {
     try {
-      // Create user-specific storage path
-      const userPath = user ? createUserStoragePath(user.uid, uploadPath) : uploadPath;
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
       
-      // Upload file to Firebase Storage
-      const downloadURL = await uploadFile(file, userPath, (progress) => {
-        setUploadProgress(prev => ({
-          ...prev,
-          [index]: Math.round(progress)
-        }));
-      });
+      // Upload photo to Supabase and save metadata to Firebase
+      const photoData = await ClientPhotoService.uploadPhoto(
+        file,
+        user.uid,
+        uploadPath, // Use uploadPath as photoType
+        {}, // Additional metadata
+        (progress) => {
+          setUploadProgress(prev => ({
+            ...prev,
+            [index]: Math.round(progress)
+          }));
+        }
+      );
       
-      return downloadURL;
+      return photoData;
     } catch (error) {
       console.error('Upload error:', error);
       throw error;
@@ -85,14 +83,17 @@ const PhotoUpload = ({
     
     try {
       const uploadPromises = validFiles.map(async (file, index) => {
-        const url = await uploadToFirebase(file, index);
+        const photoData = await uploadToSupabase(file, index);
         return {
-          id: Date.now() + index,
-          name: file.name,
-          url: url,
-          size: file.size,
-          type: file.type,
-          uploadedAt: new Date().toISOString()
+          id: photoData.id,
+          name: photoData.originalName,
+          url: photoData.url,
+          size: photoData.fileSize,
+          type: photoData.mimeType,
+          uploadedAt: photoData.uploadedAt,
+          supabasePath: photoData.supabasePath,
+          bucket: photoData.bucket,
+          photoType: photoData.photoType
         };
       });
       
@@ -135,9 +136,21 @@ const PhotoUpload = ({
     }
   };
 
-  const removePhoto = (photoId) => {
-    const newPhotos = photos.filter(photo => photo.id !== photoId);
-    onChange(newPhotos);
+  const removePhoto = async (photoId) => {
+    try {
+      const photoToDelete = photos.find(photo => photo.id === photoId);
+      if (photoToDelete && photoToDelete.supabasePath && photoToDelete.bucket) {
+        // Delete from both Supabase and Firebase
+        await ClientPhotoService.deletePhoto(photoId, photoToDelete.supabasePath, photoToDelete.bucket);
+      }
+      
+      // Remove from local state
+      const newPhotos = photos.filter(photo => photo.id !== photoId);
+      onChange(newPhotos);
+    } catch (error) {
+      console.error('Error deleting photo:', error);
+      alert('Failed to delete photo. Please try again.');
+    }
   };
 
   const formatFileSize = (bytes) => {

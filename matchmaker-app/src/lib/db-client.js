@@ -9,6 +9,33 @@ export const COLLECTIONS = {
   HELPERS: 'helpers',
 };
 
+// Helper function to remove undefined values recursively
+const removeUndefinedValues = (obj) => {
+  if (obj === null || obj === undefined) {
+    return null;
+  }
+  
+  if (typeof obj !== 'object' || Array.isArray(obj)) {
+    return obj;
+  }
+  
+  const cleaned = {};
+  for (const key in obj) {
+    if (obj[key] !== undefined) {
+      if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
+        // Recursively clean nested objects
+        const cleanedNested = removeUndefinedValues(obj[key]);
+        if (Object.keys(cleanedNested).length > 0) {
+          cleaned[key] = cleanedNested;
+        }
+      } else {
+        cleaned[key] = obj[key];
+      }
+    }
+  }
+  return cleaned;
+};
+
 // Client-side user operations
 export class ClientUserService {
   static async getUser(uid) {
@@ -44,9 +71,13 @@ export class ClientUserService {
 
   static async updateUser(uid, updateData) {
     const userRef = doc(db, COLLECTIONS.USERS, uid);
-    await updateDoc(userRef, {
+    
+    // Remove undefined values to prevent Firestore errors
+    const cleanedData = removeUndefinedValues({
       ...updateData,
       updatedAt: serverTimestamp(),
     });
+    
+    await updateDoc(userRef, cleanedData);
   }
 }

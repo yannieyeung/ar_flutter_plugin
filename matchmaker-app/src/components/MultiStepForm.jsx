@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const MultiStepForm = ({ 
   steps, 
@@ -8,21 +9,51 @@ const MultiStepForm = ({
   title = "Multi-Step Form",
   allowSkip = false
 }) => {
+  const { signOut, user } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({});
   const [stepErrors, setStepErrors] = useState({});
 
-  const updateFormData = (stepData) => {
+  const updateFormData = (newData) => {
+    // Get current step data
+    const currentStepData = formData[`step_${currentStep}`] || {};
+    
+    // Get all previous step data for context
+    const allPreviousData = {};
+    for (let i = 0; i < currentStep; i++) {
+      Object.assign(allPreviousData, formData[`step_${i}`] || {});
+    }
+    
+    // Find what changed by comparing newData with combined previous + current
+    const combinedPreviousAndCurrent = { ...allPreviousData, ...currentStepData };
+    const changedFields = {};
+    
+    Object.keys(newData).forEach(key => {
+      if (newData[key] !== combinedPreviousAndCurrent[key]) {
+        changedFields[key] = newData[key];
+      }
+    });
+    
+    // Only update the current step with the changed fields
     setFormData(prev => ({
       ...prev,
-      [`step_${currentStep}`]: stepData
+      [`step_${currentStep}`]: {
+        ...currentStepData,
+        ...changedFields
+      }
     }));
   };
 
   const validateCurrentStep = () => {
     const currentStepComponent = steps[currentStep];
     if (currentStepComponent.validate) {
-      const errors = currentStepComponent.validate(formData[`step_${currentStep}`] || {});
+      // Combine all previous step data for validation context
+      const allPreviousData = {};
+      for (let i = 0; i <= currentStep; i++) {
+        Object.assign(allPreviousData, formData[`step_${i}`] || {});
+      }
+      
+      const errors = currentStepComponent.validate(allPreviousData);
       setStepErrors(prev => ({
         ...prev,
         [currentStep]: errors
@@ -72,9 +103,15 @@ const MultiStepForm = ({
     const step = steps[currentStep];
     const StepComponent = step.component;
     
+    // Combine all previous step data for context
+    const allPreviousData = {};
+    for (let i = 0; i <= currentStep; i++) {
+      Object.assign(allPreviousData, formData[`step_${i}`] || {});
+    }
+    
     return (
       <StepComponent
-        data={formData[`step_${currentStep}`] || {}}
+        data={allPreviousData}
         onChange={updateFormData}
         errors={stepErrors[currentStep] || {}}
         onNext={nextStep}
@@ -94,7 +131,22 @@ const MultiStepForm = ({
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">{title}</h1>
+        <div className="flex justify-between items-start mb-4">
+          <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+          <div className="flex items-center space-x-4">
+            {user && (
+              <div className="text-sm text-gray-600">
+                Signed in as: <span className="font-medium">{user.email || user.phoneNumber}</span>
+              </div>
+            )}
+            <button
+              onClick={signOut}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
         
         {/* Progress Bar */}
         <div className="mb-6">
