@@ -797,18 +797,16 @@ export default function ProfilePage() {
                   <div className="px-4 py-5 sm:p-6">
                     <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Specialized Experience</h3>
                     
-                    {isEditing ? (
-                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        {[
-                          { key: 'elderCare', label: 'Elder Care' },
-                          { key: 'childCare', label: 'Child Care' },
-                          { key: 'petCare', label: 'Pet Care' },
-                          { key: 'housekeeping', label: 'Housekeeping' },
-                          { key: 'cooking', label: 'Cooking' },
-                          { key: 'gardening', label: 'Gardening' },
-                          { key: 'tutoring', label: 'Tutoring' },
-                          { key: 'companionship', label: 'Companionship' }
-                        ].map((item) => (
+                                          {isEditing ? (
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                          {[
+                            { key: 'careOfInfant', label: 'Care of Infants (0-12 months)' },
+                            { key: 'careOfChildren', label: 'Care of Children (1-12 years)' },
+                            { key: 'careOfDisabled', label: 'Care of Disabled Persons' },
+                            { key: 'careOfOldAge', label: 'Care of Elderly' },
+                            { key: 'generalHousework', label: 'General Housework' },
+                            { key: 'cooking', label: 'Cooking' }
+                          ].map((item) => (
                           <div key={item.key} className="flex items-center">
                             <input
                               type="checkbox"
@@ -823,23 +821,30 @@ export default function ProfilePage() {
                           </div>
                         ))}
                       </div>
-                    ) : (
-                      <div className="mt-1 flex flex-wrap gap-2">
-                        {user?.experience && Object.entries(user.experience).map(([key, value]) => {
-                          if (value === true) {
-                            return (
-                              <span key={key} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                              </span>
+                                          ) : (
+                        <div className="mt-1 flex flex-wrap gap-2">
+                          {(() => {
+                            const experienceItems = [
+                              { key: 'careOfInfant', label: 'Care of Infants (0-12 months)' },
+                              { key: 'careOfChildren', label: 'Care of Children (1-12 years)' },
+                              { key: 'careOfDisabled', label: 'Care of Disabled Persons' },
+                              { key: 'careOfOldAge', label: 'Care of Elderly' },
+                              { key: 'generalHousework', label: 'General Housework' },
+                              { key: 'cooking', label: 'Cooking' }
+                            ];
+
+                            const selectedExperience = experienceItems.filter(item => 
+                              user?.experience?.[item.key] === true
                             );
-                          }
-                          return null;
-                        })}
-                        {(!user?.experience || Object.values(user.experience).every(v => !v)) && (
-                          <p className="text-sm text-gray-900">No specialized experience selected</p>
-                        )}
-                      </div>
-                    )}
+
+                            return selectedExperience.length > 0 ? selectedExperience.map((item) => (
+                              <span key={item.key} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {item.label}
+                              </span>
+                            )) : <p className="text-sm text-gray-900">No specialized experience selected</p>;
+                          })()}
+                        </div>
+                      )}
                   </div>
                 </div>
               )}
