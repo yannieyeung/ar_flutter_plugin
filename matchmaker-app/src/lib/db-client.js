@@ -114,25 +114,12 @@ export class ClientUserService {
       
       let q = collection(db, COLLECTIONS.JOB_POSTINGS);
       
-      // Apply filters first, then order by
-      if (filters.employerId && filters.status) {
-        q = query(q, 
-          where('employerId', '==', filters.employerId),
-          where('status', '==', filters.status),
-          orderBy('createdAt', 'desc')
-        );
-      } else if (filters.employerId) {
-        q = query(q, 
-          where('employerId', '==', filters.employerId),
-          orderBy('createdAt', 'desc')
-        );
+      // Simplified query to avoid index requirements
+      // Apply only one filter at a time to avoid composite index requirements
+      if (filters.employerId) {
+        q = query(q, where('employerId', '==', filters.employerId));
       } else if (filters.status) {
-        q = query(q, 
-          where('status', '==', filters.status),
-          orderBy('createdAt', 'desc')
-        );
-      } else {
-        q = query(q, orderBy('createdAt', 'desc'));
+        q = query(q, where('status', '==', filters.status));
       }
       
       const querySnapshot = await getDocs(q);
@@ -141,8 +128,18 @@ export class ClientUserService {
       querySnapshot.forEach((doc) => {
         const data = doc.data();
         // Convert Firestore timestamps to Date objects
-        data.createdAt = data.createdAt ? new Date(data.createdAt.seconds * 1000) : new Date();
-        data.updatedAt = data.updatedAt ? new Date(data.updatedAt.seconds * 1000) : new Date();
+        if (data.createdAt && data.createdAt.seconds) {
+          data.createdAt = new Date(data.createdAt.seconds * 1000);
+        } else {
+          data.createdAt = new Date();
+        }
+        
+        if (data.updatedAt && data.updatedAt.seconds) {
+          data.updatedAt = new Date(data.updatedAt.seconds * 1000);
+        } else {
+          data.updatedAt = new Date();
+        }
+        
         data.postedAt = data.postedAt ? new Date(data.postedAt) : data.createdAt;
         
         jobPostings.push({
@@ -151,8 +148,19 @@ export class ClientUserService {
         });
       });
       
-      console.log('📋 ClientUserService: Found job postings:', jobPostings.length);
-      return jobPostings;
+      // Filter in memory if both filters are provided
+      let filteredJobs = jobPostings;
+      if (filters.employerId && filters.status) {
+        filteredJobs = jobPostings.filter(job => 
+          job.employerId === filters.employerId && job.status === filters.status
+        );
+      }
+      
+      // Sort by creation date (newest first)
+      filteredJobs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      
+      console.log('📋 ClientUserService: Found job postings:', filteredJobs.length);
+      return filteredJobs;
     } catch (error) {
       console.error('❌ ClientUserService: Error fetching job postings:', error);
       throw error;

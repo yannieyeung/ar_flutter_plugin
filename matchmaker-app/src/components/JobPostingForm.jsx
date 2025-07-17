@@ -7,7 +7,6 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
     jobDescription: '',
     location: {
       address: '',
-      district: '',
       city: '',
       country: '',
       coordinates: { lat: '', lng: '' }
@@ -16,6 +15,7 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
     // Employer Demographics (for better matching)
     employer: {
       householdSize: '',
+      houseType: '',
       hasInfants: false,
       hasChildren: false,
       hasElderly: false,
@@ -164,12 +164,17 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
   const [errors, setErrors] = useState({});
 
   // Enhanced constants for form options
-  const AREA_TYPES = [
-    'City Center', 'Downtown', 'Uptown', 'Midtown', 'Suburb',
-    'Residential Area', 'Business District', 'Shopping District',
-    'Industrial Area', 'Waterfront', 'Historic District', 'New Development',
-    'East Side', 'West Side', 'North Side', 'South Side',
-    'University Area', 'Airport Area', 'Other'
+  const HOUSE_TYPES = [
+    'Studio Apartment',
+    'One Bedroom Apartment',
+    'Two Bedroom Apartment',
+    'Three Bedroom Apartment',
+    'Four Bedroom Apartment',
+    'Five Bedroom Apartment',
+    '2-Storey House',
+    '3-Storey House',
+    '4-Storey House',
+    'Others'
   ];
 
   const CUISINES = [
@@ -353,6 +358,7 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
         // Household demographics for context matching
         householdProfile: {
           size: parseInt(data.employer.householdSize) || 0,
+          houseType: data.employer.houseType || '',
           hasInfants: data.employer.hasInfants,
           hasChildren: data.employer.hasChildren,
           hasElderly: data.employer.hasElderly,
@@ -452,7 +458,6 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
         locationPreferences: {
           city: data.location.city,
           country: data.location.country,
-          areaType: data.location.district,
           coordinates: data.location.coordinates
         },
         
@@ -654,7 +659,7 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
               {errors.jobDescription && <p className="text-red-500 text-sm mt-1">{errors.jobDescription}</p>}
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">City *</label>
                 <input
@@ -679,22 +684,6 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
                   required
                 />
                 {errors.country && <p className="text-red-500 text-sm mt-1">{errors.country}</p>}
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Area Type</label>
-                <select
-                  value={formData.location.district}
-                  onChange={(e) => handleInputChange('location', 'district', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Select Area Type</option>
-                  {AREA_TYPES.map(areaType => (
-                    <option key={areaType} value={areaType}>{areaType}</option>
-                  ))}
-                </select>
               </div>
               
               <div>
@@ -740,6 +729,22 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
                 {errors.householdSize && <p className="text-red-500 text-sm mt-1">{errors.householdSize}</p>}
               </div>
               
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">House Type</label>
+                <select
+                  value={formData.employer.houseType}
+                  onChange={(e) => handleInputChange('employer', 'houseType', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select House Type</option>
+                  {HOUSE_TYPES.map(houseType => (
+                    <option key={houseType} value={houseType}>{houseType}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Cultural Background</label>
                 <input
