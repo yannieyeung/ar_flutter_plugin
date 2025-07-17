@@ -112,18 +112,27 @@ export class ClientUserService {
     try {
       console.log('🔍 ClientUserService: Fetching job postings with filters:', filters);
       
-      let q = query(
-        collection(db, COLLECTIONS.JOB_POSTINGS),
-        orderBy('createdAt', 'desc')
-      );
+      let q = collection(db, COLLECTIONS.JOB_POSTINGS);
       
-      // Apply filters
-      if (filters.employerId) {
-        q = query(q, where('employerId', '==', filters.employerId));
-      }
-      
-      if (filters.status) {
-        q = query(q, where('status', '==', filters.status));
+      // Apply filters first, then order by
+      if (filters.employerId && filters.status) {
+        q = query(q, 
+          where('employerId', '==', filters.employerId),
+          where('status', '==', filters.status),
+          orderBy('createdAt', 'desc')
+        );
+      } else if (filters.employerId) {
+        q = query(q, 
+          where('employerId', '==', filters.employerId),
+          orderBy('createdAt', 'desc')
+        );
+      } else if (filters.status) {
+        q = query(q, 
+          where('status', '==', filters.status),
+          orderBy('createdAt', 'desc')
+        );
+      } else {
+        q = query(q, orderBy('createdAt', 'desc'));
       }
       
       const querySnapshot = await getDocs(q);

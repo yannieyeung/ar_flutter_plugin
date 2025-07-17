@@ -246,8 +246,13 @@ export default function DashboardPage() {
                               {job.jobDescription}
                             </p>
                             <div className="flex justify-between items-center text-xs text-gray-500">
-                              <span>{job.location?.district || 'Location not specified'}</span>
-                              <span>{job.salary?.amount} {job.salary?.currency || 'SGD'}</span>
+                              <span>
+                                {job.location?.city && job.location?.country 
+                                  ? `${job.location.city}, ${job.location.country}`
+                                  : job.location?.city || job.location?.country || 'Location not specified'
+                                }
+                              </span>
+                              <span>{job.salary?.amount} {job.salary?.currency || 'USD'}</span>
                             </div>
                             <div className="flex justify-between items-center mt-3 text-xs text-gray-500">
                               <span>

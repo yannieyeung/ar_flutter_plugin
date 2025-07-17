@@ -8,7 +8,8 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
     location: {
       address: '',
       district: '',
-      city: 'Singapore',
+      city: '',
+      country: '',
       coordinates: { lat: '', lng: '' }
     },
     
@@ -117,7 +118,7 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
     // Compensation - Enhanced
     salary: {
       amount: '',
-      currency: 'SGD',
+      currency: 'USD',
       period: 'monthly',
       negotiable: false,
       performanceBonus: false,
@@ -147,7 +148,7 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
       preferredMethod: '',
       interviewMethod: '',
       availableForInterview: '',
-      timeZone: 'Asia/Singapore',
+      timeZone: '',
       contactLanguage: 'English'
     },
     
@@ -163,13 +164,12 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
   const [errors, setErrors] = useState({});
 
   // Enhanced constants for form options
-  const DISTRICTS = [
-    'Central', 'Marina Bay', 'Raffles Place', 'Tanjong Pagar', 'Chinatown',
-    'Orchard', 'Somerset', 'Dhoby Ghaut', 'Bugis', 'Little India',
-    'Novena', 'Toa Payoh', 'Bishan', 'Ang Mo Kio', 'Yishun',
-    'Woodlands', 'Sembawang', 'Tampines', 'Pasir Ris', 'Bedok',
-    'Geylang', 'Kallang', 'Queenstown', 'Bukit Timah', 'Holland Village',
-    'Clementi', 'Jurong East', 'Jurong West', 'Choa Chu Kang', 'Yew Tee'
+  const AREA_TYPES = [
+    'City Center', 'Downtown', 'Uptown', 'Midtown', 'Suburb',
+    'Residential Area', 'Business District', 'Shopping District',
+    'Industrial Area', 'Waterfront', 'Historic District', 'New Development',
+    'East Side', 'West Side', 'North Side', 'South Side',
+    'University Area', 'Airport Area', 'Other'
   ];
 
   const CUISINES = [
@@ -183,8 +183,10 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
   ];
 
   const LANGUAGES = [
-    'English', 'Mandarin', 'Hokkien', 'Teochew', 'Cantonese', 'Malay',
-    'Tamil', 'Hindi', 'Tagalog', 'Indonesian', 'Burmese', 'Sinhalese'
+    'English', 'Mandarin', 'Cantonese', 'Malay', 'Tamil', 'Hindi',
+    'Tagalog', 'Indonesian', 'Burmese', 'Sinhalese', 'Thai', 'Vietnamese',
+    'Arabic', 'French', 'German', 'Spanish', 'Japanese', 'Korean',
+    'Portuguese', 'Russian', 'Dutch', 'Italian', 'Other'
   ];
 
   const BENEFITS = [
@@ -313,7 +315,8 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
     
     if (!formData.jobTitle) errors.jobTitle = 'Job title is required';
     if (!formData.jobDescription) errors.jobDescription = 'Job description is required';
-    if (!formData.location.district) errors.district = 'District is required';
+    if (!formData.location.city) errors.city = 'City is required';
+    if (!formData.location.country) errors.country = 'Country is required';
     if (!formData.salary.amount) errors.salary = 'Salary is required';
     if (!formData.startDate) errors.startDate = 'Start date is required';
     if (!formData.employer.householdSize) errors.householdSize = 'Household size is required';
@@ -447,8 +450,9 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
         
         // Location preferences
         locationPreferences: {
-          district: data.location.district,
           city: data.location.city,
+          country: data.location.country,
+          areaType: data.location.district,
           coordinates: data.location.coordinates
         },
         
@@ -533,8 +537,8 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
   };
 
   const normalizeSalary = (amount) => {
-    // Normalize salary to 0-1 range for ML (SGD range: 500-2000)
-    const salaryRanges = { min: 500, max: 2000 };
+    // Normalize salary to 0-1 range for ML (generic range: 200-5000)
+    const salaryRanges = { min: 200, max: 5000 };
     const normalizedSalary = (amount - salaryRanges.min) / (salaryRanges.max - salaryRanges.min);
     return Math.min(Math.max(normalizedSalary, 0), 1);
   };
@@ -650,32 +654,47 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
               {errors.jobDescription && <p className="text-red-500 text-sm mt-1">{errors.jobDescription}</p>}
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">District *</label>
-                <select
-                  value={formData.location.district}
-                  onChange={(e) => handleNestedInputChange('location', 'district', 'district', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                >
-                  <option value="">Select District</option>
-                  {DISTRICTS.map(district => (
-                    <option key={district} value={district}>{district}</option>
-                  ))}
-                </select>
-                {errors.district && <p className="text-red-500 text-sm mt-1">{errors.district}</p>}
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">City *</label>
                 <input
                   type="text"
                   value={formData.location.city}
-                  onChange={(e) => handleNestedInputChange('location', 'city', 'city', e.target.value)}
+                  onChange={(e) => handleInputChange('location', 'city', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Singapore"
+                  placeholder="Enter city name"
+                  required
                 />
+                {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city}</p>}
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Country *</label>
+                <input
+                  type="text"
+                  value={formData.location.country}
+                  onChange={(e) => handleInputChange('location', 'country', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter country name"
+                  required
+                />
+                {errors.country && <p className="text-red-500 text-sm mt-1">{errors.country}</p>}
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Area Type</label>
+                <select
+                  value={formData.location.district}
+                  onChange={(e) => handleInputChange('location', 'district', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select Area Type</option>
+                  {AREA_TYPES.map(areaType => (
+                    <option key={areaType} value={areaType}>{areaType}</option>
+                  ))}
+                </select>
               </div>
               
               <div>
@@ -1774,29 +1793,44 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Salary Amount *</label>
-                <input
-                  type="number"
-                  value={formData.salary.amount}
-                  onChange={(e) => handleNestedInputChange('salary', 'amount', 'value', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="800"
-                  required
-                />
+                                 <input
+                   type="number"
+                   value={formData.salary.amount}
+                   onChange={(e) => handleNestedInputChange('salary', 'amount', 'value', e.target.value)}
+                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   placeholder="e.g., 1000"
+                   required
+                 />
                 {errors.salary && <p className="text-red-500 text-sm mt-1">{errors.salary}</p>}
               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Currency</label>
-                <select
-                  value={formData.salary.currency}
-                  onChange={(e) => handleNestedInputChange('salary', 'currency', 'value', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="SGD">SGD</option>
-                  <option value="USD">USD</option>
-                  <option value="HKD">HKD</option>
-                </select>
-              </div>
+                             <div>
+                 <label className="block text-sm font-medium text-gray-700 mb-2">Currency</label>
+                 <select
+                   value={formData.salary.currency}
+                   onChange={(e) => handleNestedInputChange('salary', 'currency', 'value', e.target.value)}
+                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                 >
+                   <option value="USD">USD - US Dollar</option>
+                   <option value="EUR">EUR - Euro</option>
+                   <option value="GBP">GBP - British Pound</option>
+                   <option value="SGD">SGD - Singapore Dollar</option>
+                   <option value="HKD">HKD - Hong Kong Dollar</option>
+                   <option value="AUD">AUD - Australian Dollar</option>
+                   <option value="CAD">CAD - Canadian Dollar</option>
+                   <option value="MYR">MYR - Malaysian Ringgit</option>
+                   <option value="THB">THB - Thai Baht</option>
+                   <option value="PHP">PHP - Philippine Peso</option>
+                   <option value="IDR">IDR - Indonesian Rupiah</option>
+                   <option value="INR">INR - Indian Rupee</option>
+                   <option value="AED">AED - UAE Dirham</option>
+                   <option value="SAR">SAR - Saudi Riyal</option>
+                   <option value="JPY">JPY - Japanese Yen</option>
+                   <option value="KRW">KRW - South Korean Won</option>
+                   <option value="CNY">CNY - Chinese Yuan</option>
+                   <option value="OTHER">Other</option>
+                 </select>
+               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Period</label>
@@ -2027,19 +2061,33 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
               </select>
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Communication Language</label>
-              <select
-                value={formData.contact.contactLanguage}
-                onChange={(e) => handleInputChange('contact', 'contactLanguage', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="English">English</option>
-                <option value="Mandarin">Mandarin</option>
-                <option value="Malay">Malay</option>
-                <option value="Tamil">Tamil</option>
-              </select>
-            </div>
+                         <div>
+               <label className="block text-sm font-medium text-gray-700 mb-2">Communication Language</label>
+               <select
+                 value={formData.contact.contactLanguage}
+                 onChange={(e) => handleInputChange('contact', 'contactLanguage', e.target.value)}
+                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+               >
+                 <option value="English">English</option>
+                 <option value="Mandarin">Mandarin</option>
+                 <option value="Spanish">Spanish</option>
+                 <option value="French">French</option>
+                 <option value="German">German</option>
+                 <option value="Arabic">Arabic</option>
+                 <option value="Japanese">Japanese</option>
+                 <option value="Korean">Korean</option>
+                 <option value="Hindi">Hindi</option>
+                 <option value="Portuguese">Portuguese</option>
+                 <option value="Russian">Russian</option>
+                 <option value="Italian">Italian</option>
+                 <option value="Dutch">Dutch</option>
+                 <option value="Malay">Malay</option>
+                 <option value="Tamil">Tamil</option>
+                 <option value="Thai">Thai</option>
+                 <option value="Vietnamese">Vietnamese</option>
+                 <option value="Other">Other</option>
+               </select>
+             </div>
           </div>
         </section>
 
