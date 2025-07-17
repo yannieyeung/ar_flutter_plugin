@@ -1,8 +1,17 @@
-import React from 'react';
+import React from "react";
 
 const PersonalInfoStep = ({ data, onChange, errors }) => {
   const COUNTRIES = [
-    'Philippines', 'Indonesia', 'Myanmar', 'Sri Lanka', 'India', 'Bangladesh', 'Nepal', 'Thailand', 'Vietnam', 'Cambodia'
+    "Philippines",
+    "Indonesia",
+    "Myanmar",
+    "Sri Lanka",
+    "India",
+    "Bangladesh",
+    "Nepal",
+    "Thailand",
+    "Vietnam",
+    "Cambodia",
   ];
 
   const handleInputChange = (field, value) => {
@@ -13,7 +22,9 @@ const PersonalInfoStep = ({ data, onChange, errors }) => {
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Personal Information</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          Personal Information
+        </h2>
         <p className="text-gray-600">Let's start with your basic information</p>
       </div>
 
@@ -24,12 +35,14 @@ const PersonalInfoStep = ({ data, onChange, errors }) => {
           </label>
           <input
             type="text"
-            value={data.name || ''}
-            onChange={(e) => handleInputChange('name', e.target.value)}
+            value={data.name || ""}
+            onChange={(e) => handleInputChange("name", e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Enter your full name"
           />
-          {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+          {errors.name && (
+            <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+          )}
         </div>
 
         <div>
@@ -38,33 +51,43 @@ const PersonalInfoStep = ({ data, onChange, errors }) => {
           </label>
           <input
             type="date"
-            value={data.dateOfBirth || ''}
-            onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+            value={data.dateOfBirth || ""}
+            onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          {errors.dateOfBirth && <p className="text-red-500 text-sm mt-1">{errors.dateOfBirth}</p>}
+          {errors.dateOfBirth && (
+            <p className="text-red-500 text-sm mt-1">{errors.dateOfBirth}</p>
+          )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Country of Birth</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Country of Birth
+          </label>
           <select
-            value={data.countryOfBirth || ''}
-            onChange={(e) => handleInputChange('countryOfBirth', e.target.value)}
+            value={data.countryOfBirth || ""}
+            onChange={(e) =>
+              handleInputChange("countryOfBirth", e.target.value)
+            }
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Select Country</option>
-            {COUNTRIES.map(country => (
-              <option key={country} value={country}>{country}</option>
+            {COUNTRIES.map((country) => (
+              <option key={country} value={country}>
+                {country}
+              </option>
             ))}
           </select>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">City/Town of Birth</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            City/Town of Birth
+          </label>
           <input
             type="text"
-            value={data.cityOfBirth || ''}
-            onChange={(e) => handleInputChange('cityOfBirth', e.target.value)}
+            value={data.cityOfBirth || ""}
+            onChange={(e) => handleInputChange("cityOfBirth", e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Enter your city or town of birth"
           />
@@ -76,31 +99,37 @@ const PersonalInfoStep = ({ data, onChange, errors }) => {
           </label>
           <input
             type="text"
-            value={data.nationality || ''}
-            onChange={(e) => handleInputChange('nationality', e.target.value)}
+            value={data.nationality || ""}
+            onChange={(e) => handleInputChange("nationality", e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="e.g., Filipino, Indonesian"
           />
-          {errors.nationality && <p className="text-red-500 text-sm mt-1">{errors.nationality}</p>}
+          {errors.nationality && (
+            <p className="text-red-500 text-sm mt-1">{errors.nationality}</p>
+          )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Religion</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Religion
+          </label>
           <input
             type="text"
-            value={data.religion || ''}
-            onChange={(e) => handleInputChange('religion', e.target.value)}
+            value={data.religion || ""}
+            onChange={(e) => handleInputChange("religion", e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="e.g., Catholic, Buddhist, Muslim"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Height (cm)</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Height (cm)
+          </label>
           <input
             type="number"
-            value={data.height || ''}
-            onChange={(e) => handleInputChange('height', e.target.value)}
+            value={data.height || ""}
+            onChange={(e) => handleInputChange("height", e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="e.g., 160"
             min="120"
@@ -109,11 +138,13 @@ const PersonalInfoStep = ({ data, onChange, errors }) => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Weight (kg)</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Weight (kg)
+          </label>
           <input
             type="number"
-            value={data.weight || ''}
-            onChange={(e) => handleInputChange('weight', e.target.value)}
+            value={data.weight || ""}
+            onChange={(e) => handleInputChange("weight", e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="e.g., 55"
             min="30"
@@ -126,8 +157,10 @@ const PersonalInfoStep = ({ data, onChange, errors }) => {
             Education Level <span className="text-red-500">*</span>
           </label>
           <select
-            value={data.educationLevel || ''}
-            onChange={(e) => handleInputChange('educationLevel', e.target.value)}
+            value={data.educationLevel || ""}
+            onChange={(e) =>
+              handleInputChange("educationLevel", e.target.value)
+            }
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Select Education Level</option>
@@ -136,19 +169,27 @@ const PersonalInfoStep = ({ data, onChange, errors }) => {
             <option value="high_school">High School</option>
             <option value="university">University</option>
           </select>
-          {errors.educationLevel && <p className="text-red-500 text-sm mt-1">{errors.educationLevel}</p>}
+          {errors.educationLevel && (
+            <p className="text-red-500 text-sm mt-1">{errors.educationLevel}</p>
+          )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Number of Siblings</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Number of Siblings
+          </label>
           <select
-            value={data.numberOfSiblings || ''}
-            onChange={(e) => handleInputChange('numberOfSiblings', e.target.value)}
+            value={data.numberOfSiblings || ""}
+            onChange={(e) =>
+              handleInputChange("numberOfSiblings", e.target.value)
+            }
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Select Number</option>
             {[...Array(11)].map((_, i) => (
-              <option key={i} value={i}>{i}</option>
+              <option key={i} value={i}>
+                {i}
+              </option>
             ))}
           </select>
         </div>
@@ -158,8 +199,8 @@ const PersonalInfoStep = ({ data, onChange, errors }) => {
             Marital Status <span className="text-red-500">*</span>
           </label>
           <select
-            value={data.maritalStatus || ''}
-            onChange={(e) => handleInputChange('maritalStatus', e.target.value)}
+            value={data.maritalStatus || ""}
+            onChange={(e) => handleInputChange("maritalStatus", e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Select Status</option>
@@ -168,19 +209,27 @@ const PersonalInfoStep = ({ data, onChange, errors }) => {
             <option value="divorced">Divorced</option>
             <option value="widowed">Widowed</option>
           </select>
-          {errors.maritalStatus && <p className="text-red-500 text-sm mt-1">{errors.maritalStatus}</p>}
+          {errors.maritalStatus && (
+            <p className="text-red-500 text-sm mt-1">{errors.maritalStatus}</p>
+          )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Number of Children</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Number of Children
+          </label>
           <select
-            value={data.numberOfChildren || ''}
-            onChange={(e) => handleInputChange('numberOfChildren', e.target.value)}
+            value={data.numberOfChildren || ""}
+            onChange={(e) =>
+              handleInputChange("numberOfChildren", e.target.value)
+            }
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Select Number</option>
             {[...Array(11)].map((_, i) => (
-              <option key={i} value={i}>{i}</option>
+              <option key={i} value={i}>
+                {i}
+              </option>
             ))}
           </select>
         </div>
@@ -192,8 +241,10 @@ const PersonalInfoStep = ({ data, onChange, errors }) => {
             Residential Address in Home Country
           </label>
           <textarea
-            value={data.residentialAddress || ''}
-            onChange={(e) => handleInputChange('residentialAddress', e.target.value)}
+            value={data.residentialAddress || ""}
+            onChange={(e) =>
+              handleInputChange("residentialAddress", e.target.value)
+            }
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             rows="3"
             placeholder="Enter your complete home address"
@@ -206,8 +257,10 @@ const PersonalInfoStep = ({ data, onChange, errors }) => {
           </label>
           <input
             type="text"
-            value={data.repatriationPort || ''}
-            onChange={(e) => handleInputChange('repatriationPort', e.target.value)}
+            value={data.repatriationPort || ""}
+            onChange={(e) =>
+              handleInputChange("repatriationPort", e.target.value)
+            }
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="e.g., Ninoy Aquino International Airport"
           />
@@ -219,8 +272,8 @@ const PersonalInfoStep = ({ data, onChange, errors }) => {
           </label>
           <input
             type="tel"
-            value={data.contactNumber || ''}
-            onChange={(e) => handleInputChange('contactNumber', e.target.value)}
+            value={data.contactNumber || ""}
+            onChange={(e) => handleInputChange("contactNumber", e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="+63 912 345 6789"
           />
@@ -232,8 +285,10 @@ const PersonalInfoStep = ({ data, onChange, errors }) => {
           </label>
           <input
             type="text"
-            value={data.emergencyContact || ''}
-            onChange={(e) => handleInputChange('emergencyContact', e.target.value)}
+            value={data.emergencyContact || ""}
+            onChange={(e) =>
+              handleInputChange("emergencyContact", e.target.value)
+            }
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Name and phone number of emergency contact"
           />
@@ -245,14 +300,16 @@ const PersonalInfoStep = ({ data, onChange, errors }) => {
           </label>
           <input
             type="text"
-            value={data.expectedSalary || ''}
-            onChange={(e) => handleInputChange('expectedSalary', e.target.value)}
+            value={data.expectedSalary || ""}
+            onChange={(e) =>
+              handleInputChange("expectedSalary", e.target.value)
+            }
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="e.g., $800, $900-1000"
           />
         </div>
 
-        <div>
+        {/* <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Availability Schedule
           </label>
@@ -276,11 +333,12 @@ const PersonalInfoStep = ({ data, onChange, errors }) => {
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="e.g., English, Mandarin, Tagalog (separate with commas)"
           />
-        </div>
+        </div> */}
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Have you worked as a helper before? <span className="text-red-500">*</span>
+            Have you worked as a helper before?{" "}
+            <span className="text-red-500">*</span>
           </label>
           <div className="flex space-x-6">
             <label className="flex items-center">
@@ -288,8 +346,10 @@ const PersonalInfoStep = ({ data, onChange, errors }) => {
                 type="radio"
                 name="hasBeenHelperBefore"
                 value="yes"
-                checked={data.hasBeenHelperBefore === 'yes'}
-                onChange={(e) => handleInputChange('hasBeenHelperBefore', e.target.value)}
+                checked={data.hasBeenHelperBefore === "yes"}
+                onChange={(e) =>
+                  handleInputChange("hasBeenHelperBefore", e.target.value)
+                }
                 className="mr-2"
               />
               Yes, I have experience
@@ -299,14 +359,20 @@ const PersonalInfoStep = ({ data, onChange, errors }) => {
                 type="radio"
                 name="hasBeenHelperBefore"
                 value="no"
-                checked={data.hasBeenHelperBefore === 'no'}
-                onChange={(e) => handleInputChange('hasBeenHelperBefore', e.target.value)}
+                checked={data.hasBeenHelperBefore === "no"}
+                onChange={(e) =>
+                  handleInputChange("hasBeenHelperBefore", e.target.value)
+                }
                 className="mr-2"
               />
               No, I'm new to this
             </label>
           </div>
-          {errors.hasBeenHelperBefore && <p className="text-red-500 text-sm mt-1">{errors.hasBeenHelperBefore}</p>}
+          {errors.hasBeenHelperBefore && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.hasBeenHelperBefore}
+            </p>
+          )}
         </div>
       </div>
     </div>
