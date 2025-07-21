@@ -432,16 +432,24 @@ const HelperRegistrationForm = ({ onSubmit, isLoading = false }) => {
   };
 
   const handleExperienceChange = (type, field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      experience: {
-        ...prev.experience,
-        [type]: typeof prev.experience[type] === 'object' ? {
-          ...prev.experience[type],
-          [field]: value
-        } : value
-      }
-    }));
+    console.log('handleExperienceChange called:', { type, field, value });
+    console.log('Current experience state:', formData.experience[type]);
+    
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        experience: {
+          ...prev.experience,
+          [type]: typeof prev.experience[type] === 'object' ? {
+            ...prev.experience[type],
+            [field]: value
+          } : value
+        }
+      };
+      
+      console.log('New experience state will be:', newData.experience[type]);
+      return newData;
+    });
   };
 
   const handleNestedExperienceChange = (type, subfield, field, value) => {
@@ -1508,9 +1516,14 @@ const HelperRegistrationForm = ({ onSubmit, isLoading = false }) => {
             <h3 className="text-lg font-semibold text-gray-800 mb-4">D. Job Experience</h3>
             
             <div className="space-y-6">
-              {/* Care of Infant */}
+              {/* Care of Infant - Debug Version */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Care of Infant</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Care of Infant 
+                  <span className="text-xs text-gray-500 ml-2">
+                    (Current: {formData.experience.careOfInfant.hasExperience ? 'Yes' : 'No'})
+                  </span>
+                </label>
                 <div className="flex space-x-4 mb-2">
                   <label className="flex items-center">
                     <input
@@ -1518,7 +1531,10 @@ const HelperRegistrationForm = ({ onSubmit, isLoading = false }) => {
                       name="careOfInfant"
                       value="yes"
                       checked={formData.experience.careOfInfant.hasExperience === true}
-                      onChange={(e) => handleExperienceChange('careOfInfant', 'hasExperience', true)}
+                      onChange={(e) => {
+                        console.log('Clicking YES for care of infant');
+                        handleExperienceChange('careOfInfant', 'hasExperience', true);
+                      }}
                       className="mr-2"
                     />
                     Yes
@@ -1529,11 +1545,34 @@ const HelperRegistrationForm = ({ onSubmit, isLoading = false }) => {
                       name="careOfInfant"
                       value="no"
                       checked={formData.experience.careOfInfant.hasExperience === false}
-                      onChange={(e) => handleExperienceChange('careOfInfant', 'hasExperience', false)}
+                      onChange={(e) => {
+                        console.log('Clicking NO for care of infant');
+                        handleExperienceChange('careOfInfant', 'hasExperience', false);
+                      }}
                       className="mr-2"
                     />
                     No
                   </label>
+                </div>
+                
+                {/* Always show this section for testing */}
+                <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
+                  <p className="text-sm">
+                    DEBUG: hasExperience = {JSON.stringify(formData.experience.careOfInfant.hasExperience)}
+                  </p>
+                  <p className="text-sm">
+                    Should show details: {formData.experience.careOfInfant.hasExperience ? 'YES' : 'NO'}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      console.log('Manual toggle clicked');
+                      handleExperienceChange('careOfInfant', 'hasExperience', !formData.experience.careOfInfant.hasExperience);
+                    }}
+                    className="mt-2 px-3 py-1 bg-blue-500 text-white rounded text-xs"
+                  >
+                    Manual Toggle (Current: {formData.experience.careOfInfant.hasExperience ? 'Yes' : 'No'})
+                  </button>
                 </div>
                 
                 {formData.experience.careOfInfant.hasExperience && (
@@ -2122,13 +2161,14 @@ const HelperRegistrationForm = ({ onSubmit, isLoading = false }) => {
               </div>
             </div>
 
-            {/* Ex-employer Snapshots */}
+            {/* Enhanced Ex-employer Snapshots */}
             <div className="mt-6">
-              <h4 className="text-md font-semibold text-gray-800 mb-4">Ex-employer Snapshots</h4>
+              <h4 className="text-md font-semibold text-gray-800 mb-4">Enhanced Ex-employer Details</h4>
               
               {formData.employers.map((employer, index) => (
                 <div key={index} className="border border-gray-200 rounded-lg p-4 mb-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Basic employer info */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Employer Name</label>
                       <input
@@ -2153,16 +2193,27 @@ const HelperRegistrationForm = ({ onSubmit, isLoading = false }) => {
                       </select>
                     </div>
                     
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                      <input
+                        type="text"
+                        value={employer.city}
+                        onChange={(e) => handleEmployerChange(index, 'city', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g., Singapore, Dubai"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Duration and house details */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <div className="flex space-x-2">
                       <div className="flex-1">
                         <label className="block text-sm font-medium text-gray-700 mb-1">From Year</label>
                         <input
                           type="number"
                           value={employer.duration.from}
-                          onChange={(e) => handleEmployerChange(index, 'duration', {
-                            ...employer.duration,
-                            from: e.target.value
-                          })}
+                          onChange={(e) => handleEmployerChange(index, 'duration.from', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           min="1990"
                           max="2024"
@@ -2173,18 +2224,169 @@ const HelperRegistrationForm = ({ onSubmit, isLoading = false }) => {
                         <input
                           type="number"
                           value={employer.duration.to}
-                          onChange={(e) => handleEmployerChange(index, 'duration', {
-                            ...employer.duration,
-                            to: e.target.value
-                          })}
+                          onChange={(e) => handleEmployerChange(index, 'duration.to', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           min="1990"
                           max="2024"
                         />
                       </div>
                     </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Household Size</label>
+                      <select
+                        value={employer.householdSize}
+                        onChange={(e) => handleEmployerChange(index, 'householdSize', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Select Size</option>
+                        <option value="1">1 person</option>
+                        <option value="2">2 people</option>
+                        <option value="3">3 people</option>
+                        <option value="4">4 people</option>
+                        <option value="5">5 people</option>
+                        <option value="6+">6+ people</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">House Type</label>
+                      <select
+                        value={employer.houseType}
+                        onChange={(e) => handleEmployerChange(index, 'houseType', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Select House Type</option>
+                        {HOUSE_TYPES.map(houseType => (
+                          <option key={houseType} value={houseType}>{houseType}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
-                  
+
+                  {/* Tasks performed */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Tasks Performed</label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {HOUSEWORK_TASKS.map(task => (
+                        <label key={task} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={employer.tasksPerformed?.includes(task) || false}
+                            onChange={(e) => {
+                              const newTasks = e.target.checked
+                                ? [...(employer.tasksPerformed || []), task]
+                                : (employer.tasksPerformed || []).filter(t => t !== task);
+                              handleEmployerChange(index, 'tasksPerformed', newTasks);
+                            }}
+                            className="mr-2"
+                          />
+                          {task.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Salary information */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Salary Amount</label>
+                      <input
+                        type="number"
+                        value={employer.salary?.amount || ''}
+                        onChange={(e) => handleEmployerChange(index, 'salary.amount', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g., 1200"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+                      <select
+                        value={employer.salary?.currency || 'USD'}
+                        onChange={(e) => handleEmployerChange(index, 'salary.currency', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="USD">USD</option>
+                        <option value="SGD">SGD</option>
+                        <option value="HKD">HKD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                        <option value="AUD">AUD</option>
+                        <option value="MYR">MYR</option>
+                        <option value="AED">AED</option>
+                        <option value="SAR">SAR</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Pay Period</label>
+                      <select
+                        value={employer.salary?.period || 'monthly'}
+                        onChange={(e) => handleEmployerChange(index, 'salary.period', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="monthly">Monthly</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="daily">Daily</option>
+                        <option value="hourly">Hourly</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Additional details */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Reason for Leaving</label>
+                      <input
+                        type="text"
+                        value={employer.reasonForLeaving}
+                        onChange={(e) => handleEmployerChange(index, 'reasonForLeaving', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g., Contract ended, Family moved"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Would They Recommend You?</label>
+                      <select
+                        value={employer.wouldRecommend}
+                        onChange={(e) => handleEmployerChange(index, 'wouldRecommend', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Select answer</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                        <option value="unsure">Unsure</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Challenges and achievements */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Main Challenges</label>
+                      <textarea
+                        value={employer.challenges}
+                        onChange={(e) => handleEmployerChange(index, 'challenges', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        rows="2"
+                        placeholder="What were the main challenges in this role?"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Key Achievements</label>
+                      <textarea
+                        value={employer.achievements}
+                        onChange={(e) => handleEmployerChange(index, 'achievements', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        rows="2"
+                        placeholder="What were your main accomplishments?"
+                      />
+                    </div>
+                  </div>
+
                   <div className="flex justify-end mt-2">
                     <button
                       type="button"
