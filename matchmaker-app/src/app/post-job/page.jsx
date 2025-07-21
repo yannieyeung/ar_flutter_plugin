@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { AuthGuard } from '@/components/AuthGuard';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import JobPostingForm from '@/components/JobPostingForm';
+import MultiStepJobPosting from '@/components/MultiStepJobPosting';
 import { ClientUserService } from '@/lib/db-client';
 
 export default function PostJobPage() {
@@ -174,7 +174,7 @@ export default function PostJobPage() {
             )}
 
             {/* Job Posting Form */}
-            <JobPostingForm 
+            <MultiStepJobPosting 
               onSubmit={handleJobSubmit}
               isLoading={isSubmitting}
             />
