@@ -664,7 +664,7 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">City *</label>
                 <input
                   type="text"
-                  value={formData.location.city}
+                  value={formData.location?.city || ''}
                   onChange={(e) => handleInputChange('location', 'city', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter city name"
@@ -677,7 +677,7 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Country *</label>
                 <input
                   type="text"
-                  value={formData.location.country}
+                  value={formData.location?.country || ''}
                   onChange={(e) => handleInputChange('location', 'country', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter country name"
@@ -713,7 +713,7 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Household Size *</label>
                 <select
-                  value={formData.employer.householdSize}
+                  value={formData.employer?.householdSize || ''}
                   onChange={(e) => handleInputChange('employer', 'householdSize', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
@@ -732,7 +732,7 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">House Type</label>
                 <select
-                  value={formData.employer.houseType}
+                  value={formData.employer?.houseType || ''}
                   onChange={(e) => handleInputChange('employer', 'houseType', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
@@ -764,7 +764,7 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
                   <label key={language} className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={formData.employer.householdLanguages.includes(language)}
+                      checked={(formData.employer?.householdLanguages || []).includes(language)}
                       onChange={(e) => handleArrayInputChange('employer', 'householdLanguages', language, e.target.checked)}
                       className="mr-2"
                     />
@@ -842,8 +842,8 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
                     <label key={petType} className="flex items-center">
                       <input
                         type="checkbox"
-                        checked={formData.employer.petTypes.includes(petType)}
-                        onChange={(e) => handleArrayInputChange('employer', 'petTypes', petType, e.target.checked)}
+                                              checked={(formData.employer?.petTypes || []).includes(petType)}
+                      onChange={(e) => handleArrayInputChange('employer', 'petTypes', petType, e.target.checked)}
                         className="mr-2"
                       />
                       {petType.charAt(0).toUpperCase() + petType.slice(1)}
@@ -1392,8 +1392,8 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
                       <input
                         type="number"
                         placeholder="Min"
-                        value={formData.requirements.ageRange.min}
-                        onChange={(e) => handleNestedInputChange('requirements', 'ageRange', 'min', parseInt(e.target.value))}
+                        value={formData.requirements.ageRange.min || ''}
+                        onChange={(e) => handleNestedInputChange('requirements', 'ageRange', 'min', e.target.value ? parseInt(e.target.value) : '')}
                         className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         min="21"
                         max="65"
@@ -1402,8 +1402,8 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
                       <input
                         type="number"
                         placeholder="Max"
-                        value={formData.requirements.ageRange.max}
-                        onChange={(e) => handleNestedInputChange('requirements', 'ageRange', 'max', parseInt(e.target.value))}
+                        value={formData.requirements.ageRange.max || ''}
+                        onChange={(e) => handleNestedInputChange('requirements', 'ageRange', 'max', e.target.value ? parseInt(e.target.value) : '')}
                         className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         min="21"
                         max="65"
@@ -1565,14 +1565,14 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
                     <div className="flex space-x-2">
                       <input
                         type="time"
-                        value={formData.requirements.workingHours.start}
+                        value={formData.requirements?.workingHours?.start || '08:00'}
                         onChange={(e) => handleNestedInputChange('requirements', 'workingHours', 'start', e.target.value)}
                         className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                       <span className="py-2">-</span>
                       <input
                         type="time"
-                        value={formData.requirements.workingHours.end}
+                        value={formData.requirements?.workingHours?.end || '18:00'}
                         onChange={(e) => handleNestedInputChange('requirements', 'workingHours', 'end', e.target.value)}
                         className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
@@ -1800,8 +1800,8 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Salary Amount *</label>
                                  <input
                    type="number"
-                   value={formData.salary.amount}
-                   onChange={(e) => handleNestedInputChange('salary', 'amount', 'value', e.target.value)}
+                   value={formData.salary.amount || ''}
+                   onChange={(e) => handleInputChange('salary', 'amount', e.target.value)}
                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                    placeholder="e.g., 1000"
                    required
@@ -1872,7 +1872,7 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
                   <input
                     type="number"
                     placeholder="Min"
-                    value={formData.salary.salaryRange.min}
+                    value={formData.salary.salaryRange.min || ''}
                     onChange={(e) => handleNestedInputChange('salary', 'salaryRange', 'min', e.target.value)}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
@@ -1880,7 +1880,7 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
                   <input
                     type="number"
                     placeholder="Max"
-                    value={formData.salary.salaryRange.max}
+                    value={formData.salary.salaryRange.max || ''}
                     onChange={(e) => handleNestedInputChange('salary', 'salaryRange', 'max', e.target.value)}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
@@ -1986,7 +1986,7 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
                   <label key={benefit} className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={formData.benefits.includes(benefit)}
+                      checked={(formData.benefits || []).includes(benefit)}
                       onChange={(e) => handleArrayInputChange('', 'benefits', benefit, e.target.checked)}
                       className="mr-2"
                     />
@@ -2003,7 +2003,7 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
                   <label key={accommodation} className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={formData.accommodations.includes(accommodation)}
+                      checked={(formData.accommodations || []).includes(accommodation)}
                       onChange={(e) => handleArrayInputChange('', 'accommodations', accommodation, e.target.checked)}
                       className="mr-2"
                     />
