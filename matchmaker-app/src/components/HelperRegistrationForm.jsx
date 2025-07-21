@@ -1517,8 +1517,8 @@ const HelperRegistrationForm = ({ onSubmit, isLoading = false }) => {
                       type="radio"
                       name="careOfInfant"
                       value="yes"
-                      checked={formData.experience.careOfInfant.hasExperience}
-                      onChange={(e) => handleExperienceChange('careOfInfant', 'hasExperience', e.target.value === 'yes')}
+                      checked={formData.experience.careOfInfant.hasExperience === true}
+                      onChange={(e) => handleExperienceChange('careOfInfant', 'hasExperience', true)}
                       className="mr-2"
                     />
                     Yes
@@ -1528,8 +1528,8 @@ const HelperRegistrationForm = ({ onSubmit, isLoading = false }) => {
                       type="radio"
                       name="careOfInfant"
                       value="no"
-                      checked={!formData.experience.careOfInfant.hasExperience}
-                      onChange={(e) => handleExperienceChange('careOfInfant', 'hasExperience', e.target.value === 'yes')}
+                      checked={formData.experience.careOfInfant.hasExperience === false}
+                      onChange={(e) => handleExperienceChange('careOfInfant', 'hasExperience', false)}
                       className="mr-2"
                     />
                     No
@@ -1596,8 +1596,8 @@ const HelperRegistrationForm = ({ onSubmit, isLoading = false }) => {
                       type="radio"
                       name="careOfChildren"
                       value="yes"
-                      checked={formData.experience.careOfChildren.hasExperience}
-                      onChange={(e) => handleExperienceChange('careOfChildren', 'hasExperience', e.target.value === 'yes')}
+                      checked={formData.experience.careOfChildren.hasExperience === true}
+                      onChange={(e) => handleExperienceChange('careOfChildren', 'hasExperience', true)}
                       className="mr-2"
                     />
                     Yes
@@ -1607,8 +1607,8 @@ const HelperRegistrationForm = ({ onSubmit, isLoading = false }) => {
                       type="radio"
                       name="careOfChildren"
                       value="no"
-                      checked={!formData.experience.careOfChildren.hasExperience}
-                      onChange={(e) => handleExperienceChange('careOfChildren', 'hasExperience', e.target.value === 'yes')}
+                      checked={formData.experience.careOfChildren.hasExperience === false}
+                      onChange={(e) => handleExperienceChange('careOfChildren', 'hasExperience', false)}
                       className="mr-2"
                     />
                     No
@@ -1665,42 +1665,198 @@ const HelperRegistrationForm = ({ onSubmit, isLoading = false }) => {
                 )}
               </div>
 
-              {/* Other experience types */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="flex items-center text-sm font-medium text-gray-700">
+              {/* Other experience types - Enhanced */}
+              <div className="space-y-4">
+                {/* Care of Disabled - Enhanced */}
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center mb-3">
                     <input
                       type="checkbox"
-                      checked={formData.experience.careOfDisabled}
-                      onChange={(e) => handleExperienceChange('careOfDisabled', null, e.target.checked)}
-                      className="mr-2"
+                      id="careOfDisabledExp"
+                      checked={formData.experience.careOfDisabled.hasExperience}
+                      onChange={(e) => handleExperienceChange('careOfDisabled', 'hasExperience', e.target.checked)}
+                      className="mr-3"
                     />
-                    Care of Disabled
-                  </label>
+                    <label htmlFor="careOfDisabledExp" className="text-sm font-medium text-gray-700">
+                      Care of Disabled Persons
+                    </label>
+                  </div>
+                  
+                  {formData.experience.careOfDisabled.hasExperience && (
+                    <div className="ml-6 space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Disability Types Handled</label>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                          {['mobility', 'cognitive', 'sensory', 'developmental', 'mental_health', 'other'].map(type => (
+                            <label key={type} className="flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={formData.experience.careOfDisabled.disabilityTypes.includes(type)}
+                                onChange={(e) => {
+                                  const newTypes = e.target.checked
+                                    ? [...formData.experience.careOfDisabled.disabilityTypes, type]
+                                    : formData.experience.careOfDisabled.disabilityTypes.filter(t => t !== type);
+                                  handleExperienceChange('careOfDisabled', 'disabilityTypes', newTypes);
+                                }}
+                                className="mr-2"
+                              />
+                              {type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Specific Tasks</label>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                          {DISABLED_CARE_TASKS.map(task => (
+                            <label key={task} className="flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={formData.experience.careOfDisabled.specificTasks.includes(task)}
+                                onChange={(e) => {
+                                  const newTasks = e.target.checked
+                                    ? [...formData.experience.careOfDisabled.specificTasks, task]
+                                    : formData.experience.careOfDisabled.specificTasks.filter(t => t !== task);
+                                  handleExperienceChange('careOfDisabled', 'specificTasks', newTasks);
+                                }}
+                                className="mr-2"
+                              />
+                              {task.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                
-                <div>
-                  <label className="flex items-center text-sm font-medium text-gray-700">
+
+                {/* Care of Old Age - Enhanced */}
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center mb-3">
                     <input
                       type="checkbox"
-                      checked={formData.experience.careOfOldAge}
-                      onChange={(e) => handleExperienceChange('careOfOldAge', null, e.target.checked)}
-                      className="mr-2"
+                      id="careOfOldAgeExp"
+                      checked={formData.experience.careOfOldAge.hasExperience}
+                      onChange={(e) => handleExperienceChange('careOfOldAge', 'hasExperience', e.target.checked)}
+                      className="mr-3"
                     />
-                    Care of Old Age
-                  </label>
+                    <label htmlFor="careOfOldAgeExp" className="text-sm font-medium text-gray-700">
+                      Care of Elderly
+                    </label>
+                  </div>
+                  
+                  {formData.experience.careOfOldAge.hasExperience && (
+                    <div className="ml-6 space-y-3">
+                      <div className="space-y-2">
+                        <label className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={formData.experience.careOfOldAge.mobilityAssistance}
+                            onChange={(e) => handleExperienceChange('careOfOldAge', 'mobilityAssistance', e.target.checked)}
+                            className="mr-2"
+                          />
+                          Mobility assistance experience
+                        </label>
+                        
+                        <label className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={formData.experience.careOfOldAge.medicationManagement}
+                            onChange={(e) => handleExperienceChange('careOfOldAge', 'medicationManagement', e.target.checked)}
+                            className="mr-2"
+                          />
+                          Medication management experience
+                        </label>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Specific Tasks</label>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                          {ELDERLY_CARE_TASKS.map(task => (
+                            <label key={task} className="flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={formData.experience.careOfOldAge.specificTasks.includes(task)}
+                                onChange={(e) => {
+                                  const newTasks = e.target.checked
+                                    ? [...formData.experience.careOfOldAge.specificTasks, task]
+                                    : formData.experience.careOfOldAge.specificTasks.filter(t => t !== task);
+                                  handleExperienceChange('careOfOldAge', 'specificTasks', newTasks);
+                                }}
+                                className="mr-2"
+                              />
+                              {task.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                
-                <div>
-                  <label className="flex items-center text-sm font-medium text-gray-700">
+
+                {/* General Housework - Enhanced */}
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center mb-3">
                     <input
                       type="checkbox"
-                      checked={formData.experience.generalHousework}
-                      onChange={(e) => handleExperienceChange('generalHousework', null, e.target.checked)}
-                      className="mr-2"
+                      id="generalHouseworkExp"
+                      checked={formData.experience.generalHousework.hasExperience}
+                      onChange={(e) => handleExperienceChange('generalHousework', 'hasExperience', e.target.checked)}
+                      className="mr-3"
                     />
-                    General Housework
-                  </label>
+                    <label htmlFor="generalHouseworkExp" className="text-sm font-medium text-gray-700">
+                      General Housework
+                    </label>
+                  </div>
+                  
+                  {formData.experience.generalHousework.hasExperience && (
+                    <div className="ml-6 space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">House Sizes Handled</label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {['small', 'medium', 'large'].map(size => (
+                            <label key={size} className="flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={formData.experience.generalHousework.houseSizes.includes(size)}
+                                onChange={(e) => {
+                                  const newSizes = e.target.checked
+                                    ? [...formData.experience.generalHousework.houseSizes, size]
+                                    : formData.experience.generalHousework.houseSizes.filter(s => s !== size);
+                                  handleExperienceChange('generalHousework', 'houseSizes', newSizes);
+                                }}
+                                className="mr-2"
+                              />
+                              {size.charAt(0).toUpperCase() + size.slice(1)}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Specific Tasks</label>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                          {HOUSEWORK_TASKS.map(task => (
+                            <label key={task} className="flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={formData.experience.generalHousework.specificTasks.includes(task)}
+                                onChange={(e) => {
+                                  const newTasks = e.target.checked
+                                    ? [...formData.experience.generalHousework.specificTasks, task]
+                                    : formData.experience.generalHousework.specificTasks.filter(t => t !== task);
+                                  handleExperienceChange('generalHousework', 'specificTasks', newTasks);
+                                }}
+                                className="mr-2"
+                              />
+                              {task.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1713,8 +1869,8 @@ const HelperRegistrationForm = ({ onSubmit, isLoading = false }) => {
                       type="radio"
                       name="cooking"
                       value="yes"
-                      checked={formData.experience.cooking.hasExperience}
-                      onChange={(e) => handleExperienceChange('cooking', 'hasExperience', e.target.value === 'yes')}
+                      checked={formData.experience.cooking.hasExperience === true}
+                      onChange={(e) => handleExperienceChange('cooking', 'hasExperience', true)}
                       className="mr-2"
                     />
                     Yes
@@ -1724,8 +1880,8 @@ const HelperRegistrationForm = ({ onSubmit, isLoading = false }) => {
                       type="radio"
                       name="cooking"
                       value="no"
-                      checked={!formData.experience.cooking.hasExperience}
-                      onChange={(e) => handleExperienceChange('cooking', 'hasExperience', e.target.value === 'yes')}
+                      checked={formData.experience.cooking.hasExperience === false}
+                      onChange={(e) => handleExperienceChange('cooking', 'hasExperience', false)}
                       className="mr-2"
                     />
                     No
@@ -1757,28 +1913,211 @@ const HelperRegistrationForm = ({ onSubmit, isLoading = false }) => {
                 )}
               </div>
 
-              {/* Languages and Other Skills */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Languages Spoken</label>
-                  <textarea
-                    value={formData.experience.languagesSpoken}
-                    onChange={(e) => handleExperienceChange('languagesSpoken', null, e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows="2"
-                    placeholder="e.g., English, Mandarin, Cantonese"
-                  />
-                </div>
+              {/* Enhanced Languages Section */}
+              <div>
+                <h4 className="text-md font-semibold text-gray-700 mb-3">Languages Spoken</h4>
                 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Other Skills</label>
-                  <textarea
-                    value={formData.experience.otherSkills}
-                    onChange={(e) => handleExperienceChange('otherSkills', null, e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows="2"
-                    placeholder="e.g., Pet care, gardening, tutoring"
-                  />
+                {formData.experience.languagesSpoken.map((language, index) => (
+                  <div key={index} className="border border-gray-200 rounded-lg p-4 mb-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Language</label>
+                        <select
+                          value={language.language}
+                          onChange={(e) => handleLanguageChange(index, 'language', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="">Select Language</option>
+                          {LANGUAGES.map(lang => (
+                            <option key={lang} value={lang}>{lang}</option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Proficiency Level</label>
+                        <select
+                          value={language.proficiency}
+                          onChange={(e) => handleLanguageChange(index, 'proficiency', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          {PROFICIENCY_LEVELS.map(level => (
+                            <option key={level} value={level}>{level.charAt(0).toUpperCase() + level.slice(1)}</option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <label className="flex items-center mt-6">
+                          <input
+                            type="checkbox"
+                            checked={language.canTeach}
+                            onChange={(e) => handleLanguageChange(index, 'canTeach', e.target.checked)}
+                            className="mr-2"
+                          />
+                          Can teach this language
+                        </label>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end mt-2">
+                      <button
+                        type="button"
+                        onClick={() => removeLanguage(index)}
+                        className="text-red-600 hover:text-red-800 text-sm"
+                      >
+                        Remove Language
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                
+                <button
+                  type="button"
+                  onClick={addLanguage}
+                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                >
+                  + Add Another Language
+                </button>
+              </div>
+
+              {/* Enhanced Other Skills Section */}
+              <div>
+                <h4 className="text-md font-semibold text-gray-700 mb-3">Additional Skills</h4>
+                
+                <div className="space-y-4">
+                  {/* Pet Care */}
+                  <div className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center mb-3">
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.experience.otherSkills.petCare.hasExperience}
+                          onChange={(e) => handleNestedExperienceChange('otherSkills', 'petCare', 'hasExperience', e.target.checked)}
+                          className="mr-2"
+                        />
+                        Pet Care Experience
+                      </label>
+                    </div>
+                    
+                    {formData.experience.otherSkills.petCare.hasExperience && (
+                      <div className="ml-6">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Pet Types</label>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                          {PET_TYPES.map(petType => (
+                            <label key={petType} className="flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={formData.experience.otherSkills.petCare.petTypes.includes(petType)}
+                                onChange={(e) => {
+                                  const newPetTypes = e.target.checked
+                                    ? [...formData.experience.otherSkills.petCare.petTypes, petType]
+                                    : formData.experience.otherSkills.petCare.petTypes.filter(p => p !== petType);
+                                  handleNestedExperienceChange('otherSkills', 'petCare', 'petTypes', newPetTypes);
+                                }}
+                                className="mr-2"
+                              />
+                              {petType.charAt(0).toUpperCase() + petType.slice(1)}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Driving */}
+                  <div className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center mb-3">
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.experience.otherSkills.driving.hasExperience}
+                          onChange={(e) => handleNestedExperienceChange('otherSkills', 'driving', 'hasExperience', e.target.checked)}
+                          className="mr-2"
+                        />
+                        Driving Experience
+                      </label>
+                    </div>
+                    
+                    {formData.experience.otherSkills.driving.hasExperience && (
+                      <div className="ml-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">License Type</label>
+                          <input
+                            type="text"
+                            value={formData.experience.otherSkills.driving.licenseType}
+                            onChange={(e) => handleNestedExperienceChange('otherSkills', 'driving', 'licenseType', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="e.g., Class 3, Class 4"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Years of Experience</label>
+                          <input
+                            type="number"
+                            value={formData.experience.otherSkills.driving.yearsExperience}
+                            onChange={(e) => handleNestedExperienceChange('otherSkills', 'driving', 'yearsExperience', parseInt(e.target.value) || 0)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            min="0"
+                            max="50"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* First Aid */}
+                  <div className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center mb-3">
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.experience.otherSkills.firstAid.hasCertification}
+                          onChange={(e) => handleNestedExperienceChange('otherSkills', 'firstAid', 'hasCertification', e.target.checked)}
+                          className="mr-2"
+                        />
+                        First Aid Certification
+                      </label>
+                    </div>
+                    
+                    {formData.experience.otherSkills.firstAid.hasCertification && (
+                      <div className="ml-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Certification Level</label>
+                          <input
+                            type="text"
+                            value={formData.experience.otherSkills.firstAid.certificationLevel}
+                            onChange={(e) => handleNestedExperienceChange('otherSkills', 'firstAid', 'certificationLevel', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="e.g., Basic, Advanced, CPR"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Expiry Date</label>
+                          <input
+                            type="date"
+                            value={formData.experience.otherSkills.firstAid.expiryDate}
+                            onChange={(e) => handleNestedExperienceChange('otherSkills', 'firstAid', 'expiryDate', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Other Skills Text Area */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Other Skills (free text)</label>
+                    <textarea
+                      value={formData.experience.otherSkills.other}
+                      onChange={(e) => handleExperienceChange('otherSkills', 'other', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      rows="3"
+                      placeholder="e.g., Gardening, tutoring, musical instruments, etc."
+                    />
+                  </div>
                 </div>
               </div>
             </div>
