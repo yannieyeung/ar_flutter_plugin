@@ -320,11 +320,11 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
     
     if (!formData.jobTitle) errors.jobTitle = 'Job title is required';
     if (!formData.jobDescription) errors.jobDescription = 'Job description is required';
-    if (!formData.location.city) errors.city = 'City is required';
-    if (!formData.location.country) errors.country = 'Country is required';
-    if (!formData.salary.amount) errors.salary = 'Salary is required';
+    if (!formData.location?.city) errors.city = 'City is required';
+    if (!formData.location?.country) errors.country = 'Country is required';
+    if (!formData.salary?.amount) errors.salary = 'Salary is required';
     if (!formData.startDate) errors.startDate = 'Start date is required';
-    if (!formData.employer.householdSize) errors.householdSize = 'Household size is required';
+    if (!formData.employer?.householdSize) errors.householdSize = 'Household size is required';
     
     return errors;
   };
@@ -1800,7 +1800,7 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Salary Amount *</label>
                                  <input
                    type="number"
-                   value={formData.salary.amount || ''}
+                   value={formData.salary?.amount || ''}
                    onChange={(e) => handleInputChange('salary', 'amount', e.target.value)}
                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                    placeholder="e.g., 1000"
@@ -1812,8 +1812,8 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
                              <div>
                  <label className="block text-sm font-medium text-gray-700 mb-2">Currency</label>
                  <select
-                   value={formData.salary.currency}
-                   onChange={(e) => handleNestedInputChange('salary', 'currency', 'value', e.target.value)}
+                   value={formData.salary?.currency || 'USD'}
+                   onChange={(e) => handleInputChange('salary', 'currency', e.target.value)}
                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                  >
                    <option value="USD">USD - US Dollar</option>
@@ -1840,8 +1840,8 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Period</label>
                 <select
-                  value={formData.salary.period}
-                  onChange={(e) => handleNestedInputChange('salary', 'period', 'value', e.target.value)}
+                  value={formData.salary?.period || 'monthly'}
+                  onChange={(e) => handleInputChange('salary', 'period', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="monthly">Monthly</option>
@@ -1855,8 +1855,8 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
                 <input
                   type="checkbox"
                   id="negotiable"
-                  checked={formData.salary.negotiable}
-                  onChange={(e) => handleNestedInputChange('salary', 'negotiable', 'value', e.target.checked)}
+                  checked={formData.salary?.negotiable || false}
+                  onChange={(e) => handleInputChange('salary', 'negotiable', e.target.checked)}
                   className="mr-2"
                 />
                 <label htmlFor="negotiable" className="text-sm text-gray-700">
@@ -1872,7 +1872,7 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
                   <input
                     type="number"
                     placeholder="Min"
-                    value={formData.salary.salaryRange.min || ''}
+                    value={formData.salary?.salaryRange?.min || ''}
                     onChange={(e) => handleNestedInputChange('salary', 'salaryRange', 'min', e.target.value)}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
@@ -1880,7 +1880,7 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
                   <input
                     type="number"
                     placeholder="Max"
-                    value={formData.salary.salaryRange.max || ''}
+                    value={formData.salary?.salaryRange?.max || ''}
                     onChange={(e) => handleNestedInputChange('salary', 'salaryRange', 'max', e.target.value)}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
@@ -1891,8 +1891,8 @@ const JobPostingForm = ({ onSubmit, isLoading = false }) => {
                 <label className="flex items-center">
                   <input
                     type="checkbox"
-                    checked={formData.salary.performanceBonus}
-                    onChange={(e) => handleNestedInputChange('salary', 'performanceBonus', 'value', e.target.checked)}
+                    checked={formData.salary?.performanceBonus || false}
+                    onChange={(e) => handleInputChange('salary', 'performanceBonus', e.target.checked)}
                     className="mr-2"
                   />
                   Performance bonus available
