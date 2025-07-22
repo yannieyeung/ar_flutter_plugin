@@ -202,7 +202,9 @@ const MultiStepForm = ({
   };
 
   const getProgressPercentage = () => {
-    return ((currentStep + 1) / steps.length) * 100;
+    // Count how many steps are actually completed (validation passed)
+    const completedSteps = Object.values(stepCompletionStatus).filter(status => status === true).length;
+    return (completedSteps / steps.length) * 100;
   };
 
   return (
