@@ -328,8 +328,9 @@ const CareRequirementsStep = ({ data, onChange, errors }) => {
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Care Requirements</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Care Requirements <span className="text-red-500">*</span></h2>
         <p className="text-gray-600">What type of care do you need for your family members?</p>
+        {errors.careRequirements && <p className="text-red-500 text-sm mt-2">{errors.careRequirements}</p>}
       </div>
       
       <div className="space-y-6">
@@ -1006,7 +1007,8 @@ const WorkRequirementsStep = ({ data, onChange, errors }) => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Nationality Preferences</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Nationality Preferences <span className="text-red-500">*</span></label>
+              {errors.nationalityPreferences && <p className="text-red-500 text-sm mb-2">{errors.nationalityPreferences}</p>}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {NATIONALITIES.map(nationality => (
                   <label key={nationality} className="flex items-center">
@@ -1167,7 +1169,8 @@ const WorkRequirementsStep = ({ data, onChange, errors }) => {
           <h3 className="text-lg font-medium text-gray-900 mb-4">Schedule Requirements</h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Working Days</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Working Days <span className="text-red-500">*</span></label>
+              {errors.workingDays && <p className="text-red-500 text-sm mb-2">{errors.workingDays}</p>}
               <div className="grid grid-cols-4 gap-2">
                 {WORKING_DAYS.map(day => (
                   <label key={day} className="flex items-center">
@@ -1902,12 +1905,44 @@ const MultiStepJobPosting = ({ onSubmit, isLoading }) => {
     {
       title: 'Care Needs',
       component: CareRequirementsStep,
-      validate: (data) => ({}) // No required fields for care requirements
+      validate: (data) => {
+        const errors = {};
+        
+        // Check if at least one care requirement is selected
+        const careRequirements = data.requirements || {};
+        const hasAnyCareRequirement = 
+          careRequirements.careOfInfant?.required ||
+          careRequirements.careOfChildren?.required ||
+          careRequirements.careOfOldAge?.required ||
+          careRequirements.careOfDisabled?.required ||
+          careRequirements.generalHousework?.required ||
+          careRequirements.cooking?.required;
+        
+        if (!hasAnyCareRequirement) {
+          errors.careRequirements = 'Please select at least one care requirement';
+        }
+        
+        return errors;
+      }
     },
     {
       title: 'Work Details',
       component: WorkRequirementsStep,
-      validate: (data) => ({}) // No required fields for work requirements  
+      validate: (data) => {
+        const errors = {};
+        
+        // Nationality Preferences - require at least one selection
+        if (!data.requirements?.nationalityPreferences || data.requirements.nationalityPreferences.length === 0) {
+          errors.nationalityPreferences = 'Please select at least one nationality preference';
+        }
+        
+        // Schedule Requirements - require working days selection
+        if (!data.requirements?.workingDays || data.requirements.workingDays.length === 0) {
+          errors.workingDays = 'Please select at least one working day';
+        }
+        
+        return errors;
+      }
     },
     {
       title: 'Compensation',
