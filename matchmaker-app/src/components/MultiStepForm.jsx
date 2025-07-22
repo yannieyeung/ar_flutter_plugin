@@ -262,11 +262,9 @@ const MultiStepForm = ({
                     w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium relative
                     ${isCompleted 
                       ? 'bg-green-600 text-white' 
-                      : isIncomplete 
-                        ? 'bg-red-500 text-white'
-                        : isCurrent
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-300 text-gray-600'
+                      : isCurrent
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-300 text-gray-600'
                     }
                     ${isCurrent ? 'ring-2 ring-blue-300' : ''}
                     transition-all duration-200
@@ -275,47 +273,29 @@ const MultiStepForm = ({
                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
-                    ) : isIncomplete ? (
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
                     ) : (
                       index + 1
                     )}
+                    
+                    {/* Red badge exclamation mark for incomplete steps */}
+                    {isIncomplete && (
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">!</span>
+                      </div>
+                    )}
                   </div>
-                  
-                  {/* Badge indicator for incomplete steps */}
-                  {isIncomplete && (
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-xs font-bold">!</span>
-                    </div>
-                  )}
                   
                   <span className={`
                     mt-2 text-xs text-center max-w-16
                     ${isCompleted 
                       ? 'text-green-600 font-medium' 
-                      : isIncomplete 
-                        ? 'text-red-600 font-medium' 
-                        : isCurrent 
-                          ? 'text-blue-600 font-medium' 
-                          : 'text-gray-500'
+                      : isCurrent 
+                        ? 'text-blue-600 font-medium' 
+                        : 'text-gray-500'
                     }
                   `}>
                     {step.title}
                   </span>
-                  
-                  {/* Status indicator text */}
-                  {isIncomplete && (
-                    <span className="text-xs text-red-500 mt-1">
-                      Incomplete
-                    </span>
-                  )}
-                  {isCompleted && (
-                    <span className="text-xs text-green-500 mt-1">
-                      Complete
-                    </span>
-                  )}
                 </div>
               );
             })}
