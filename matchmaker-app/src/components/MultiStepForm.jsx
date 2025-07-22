@@ -13,6 +13,7 @@ const MultiStepForm = ({
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({});
   const [stepErrors, setStepErrors] = useState({});
+  const [stepCompletionStatus, setStepCompletionStatus] = useState({});
 
   const updateFormData = (newData) => {
     // Get current step data
@@ -58,22 +59,79 @@ const MultiStepForm = ({
         ...prev,
         [currentStep]: errors
       }));
-      return Object.keys(errors).length === 0;
+      
+      const isComplete = Object.keys(errors).length === 0;
+      
+      // Update completion status for this step
+      setStepCompletionStatus(prev => ({
+        ...prev,
+        [currentStep]: isComplete
+      }));
+      
+      return isComplete;
     }
+    
+    // If no validation function, consider it complete
+    setStepCompletionStatus(prev => ({
+      ...prev,
+      [currentStep]: true
+    }));
+    
     return true;
   };
 
-  const nextStep = () => {
-    if (validateCurrentStep()) {
-      if (currentStep < steps.length - 1) {
-        const newStep = currentStep + 1;
-        setCurrentStep(newStep);
-        if (onStepChange) onStepChange(newStep);
+  const validateStep = (stepIndex) => {
+    const stepComponent = steps[stepIndex];
+    if (stepComponent.validate) {
+      // Combine all data up to this step for validation context
+      const allPreviousData = {};
+      for (let i = 0; i <= stepIndex; i++) {
+        Object.assign(allPreviousData, formData[`step_${i}`] || {});
       }
+      
+      const errors = stepComponent.validate(allPreviousData);
+      const isComplete = Object.keys(errors).length === 0;
+      
+      setStepCompletionStatus(prev => ({
+        ...prev,
+        [stepIndex]: isComplete
+      }));
+      
+      return isComplete;
+    }
+    
+    setStepCompletionStatus(prev => ({
+      ...prev,
+      [stepIndex]: true
+    }));
+    
+    return true;
+  };
+
+  const validateAllSteps = () => {
+    let allValid = true;
+    for (let i = 0; i < steps.length; i++) {
+      const isValid = validateStep(i);
+      if (!isValid) allValid = false;
+    }
+    return allValid;
+  };
+
+  const nextStep = () => {
+    // Validate current step but don't block navigation
+    validateCurrentStep();
+    
+    if (currentStep < steps.length - 1) {
+      const newStep = currentStep + 1;
+      setCurrentStep(newStep);
+      if (onStepChange) onStepChange(newStep);
     }
   };
 
   const prevStep = () => {
+    // Validate current step before leaving
+    validateCurrentStep();
+    
     if (currentStep > 0) {
       const newStep = currentStep - 1;
       setCurrentStep(newStep);
@@ -83,20 +141,40 @@ const MultiStepForm = ({
 
   const goToStep = (stepIndex) => {
     if (stepIndex >= 0 && stepIndex < steps.length) {
+      // Validate current step before leaving
+      validateCurrentStep();
+      
       setCurrentStep(stepIndex);
       if (onStepChange) onStepChange(stepIndex);
     }
   };
 
   const handleSubmit = () => {
-    if (validateCurrentStep()) {
+    // Validate current step first
+    validateCurrentStep();
+    
+    // Then validate all steps
+    if (validateAllSteps()) {
       // Combine all step data
       const allData = {};
       Object.keys(formData).forEach(key => {
         Object.assign(allData, formData[key]);
       });
       onSubmit(allData);
+    } else {
+      // Show error message about incomplete steps
+      alert('Please complete all required fields before submitting. Check the steps marked with warning indicators.');
     }
+  };
+
+  const getIncompleteSteps = () => {
+    const incomplete = [];
+    for (let i = 0; i < steps.length; i++) {
+      if (stepCompletionStatus[i] === false) {
+        incomplete.push(i);
+      }
+    }
+    return incomplete;
   };
 
   const getCurrentStepComponent = () => {
@@ -168,37 +246,79 @@ const MultiStepForm = ({
           
           {/* Step Indicators */}
           <div className="flex justify-between">
-            {steps.map((step, index) => (
-              <div 
-                key={index}
-                className="flex flex-col items-center cursor-pointer"
-                onClick={() => goToStep(index)}
-              >
-                <div className={`
-                  w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
-                  ${index <= currentStep 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-gray-300 text-gray-600'
-                  }
-                  ${index === currentStep ? 'ring-2 ring-blue-300' : ''}
-                  transition-all duration-200
-                `}>
-                  {index < currentStep ? (
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  ) : (
-                    index + 1
+            {steps.map((step, index) => {
+              const isCompleted = stepCompletionStatus[index] === true;
+              const isIncomplete = stepCompletionStatus[index] === false;
+              const isCurrent = index === currentStep;
+              const isVisited = stepCompletionStatus.hasOwnProperty(index);
+              
+              return (
+                <div 
+                  key={index}
+                  className="flex flex-col items-center cursor-pointer relative"
+                  onClick={() => goToStep(index)}
+                >
+                  <div className={`
+                    w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium relative
+                    ${isCompleted 
+                      ? 'bg-green-600 text-white' 
+                      : isIncomplete 
+                        ? 'bg-red-500 text-white'
+                        : isCurrent
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-300 text-gray-600'
+                    }
+                    ${isCurrent ? 'ring-2 ring-blue-300' : ''}
+                    transition-all duration-200
+                  `}>
+                    {isCompleted ? (
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    ) : isIncomplete ? (
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      index + 1
+                    )}
+                  </div>
+                  
+                  {/* Badge indicator for incomplete steps */}
+                  {isIncomplete && (
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">!</span>
+                    </div>
+                  )}
+                  
+                  <span className={`
+                    mt-2 text-xs text-center max-w-16
+                    ${isCompleted 
+                      ? 'text-green-600 font-medium' 
+                      : isIncomplete 
+                        ? 'text-red-600 font-medium' 
+                        : isCurrent 
+                          ? 'text-blue-600 font-medium' 
+                          : 'text-gray-500'
+                    }
+                  `}>
+                    {step.title}
+                  </span>
+                  
+                  {/* Status indicator text */}
+                  {isIncomplete && (
+                    <span className="text-xs text-red-500 mt-1">
+                      Incomplete
+                    </span>
+                  )}
+                  {isCompleted && (
+                    <span className="text-xs text-green-500 mt-1">
+                      Complete
+                    </span>
                   )}
                 </div>
-                <span className={`
-                  mt-2 text-xs text-center max-w-16
-                  ${index <= currentStep ? 'text-blue-600 font-medium' : 'text-gray-500'}
-                `}>
-                  {step.title}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
@@ -207,6 +327,37 @@ const MultiStepForm = ({
       <div className="min-h-96">
         {getCurrentStepComponent()}
       </div>
+
+      {/* Incomplete Steps Warning (only show on last step) */}
+      {currentStep === steps.length - 1 && getIncompleteSteps().length > 0 && (
+        <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="flex items-start">
+            <svg className="h-5 w-5 text-yellow-400 mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            <div>
+              <h3 className="text-sm font-medium text-yellow-800">
+                Please complete all required fields
+              </h3>
+              <div className="mt-2 text-sm text-yellow-700">
+                <p>The following steps have incomplete required fields:</p>
+                <ul className="list-disc list-inside mt-1">
+                  {getIncompleteSteps().map(stepIndex => (
+                    <li key={stepIndex}>
+                      <button
+                        onClick={() => goToStep(stepIndex)}
+                        className="text-yellow-800 underline hover:text-yellow-900"
+                      >
+                        {steps[stepIndex].title}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Navigation Buttons */}
       <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
@@ -248,10 +399,17 @@ const MultiStepForm = ({
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={isLoading}
-              className="px-8 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
+              disabled={isLoading || getIncompleteSteps().length > 0}
+              className={`
+                px-8 py-2 rounded-lg font-medium transition-colors
+                ${getIncompleteSteps().length > 0
+                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                  : 'bg-green-600 text-white hover:bg-green-700'
+                }
+                ${isLoading ? 'opacity-50' : ''}
+              `}
             >
-              {isLoading ? 'Submitting...' : 'Complete Registration'}
+              {isLoading ? 'Submitting...' : getIncompleteSteps().length > 0 ? 'Complete Required Fields' : 'Complete Registration'}
             </button>
           )}
         </div>
