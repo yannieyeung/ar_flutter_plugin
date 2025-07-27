@@ -26,7 +26,9 @@ const STORAGE_BUCKETS = {
   'portfolio-photos': 'profile-images',
   'certificates': 'profile-images',  // Changed to profile-images for image uploads
   'experience-proof': 'profile-images',  // Changed to profile-images for image uploads
-  'identity-documents': 'profile-images'  // Changed to profile-images for image uploads
+  'identity-documents': 'profile-images',  // Changed to profile-images for image uploads
+  'agency-profile-photos': 'profile-images',
+  'agency-business-photos': 'profile-images'
 };
 
 export async function POST(request) {

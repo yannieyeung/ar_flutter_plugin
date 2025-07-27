@@ -6,6 +6,7 @@ import { AuthGuard } from '@/components/AuthGuard';
 import { useRouter, useParams } from 'next/navigation';
 import { ClientUserService } from '@/lib/db-client';
 import MultiStepHelperRegistration from '@/components/MultiStepHelperRegistration';
+import MultiStepAgencyRegistration from '@/components/MultiStepAgencyRegistration';
 
 export default function RegistrationPage() {
   const { user, refreshUser, signOut } = useAuth();
@@ -185,6 +186,83 @@ export default function RegistrationPage() {
 
     } catch (error) {
       console.error('Helper registration error:', error);
+      setError('Failed to complete registration. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAgencyRegistration = async (agencyData) => {
+    if (!user?.uid) {
+      setError('User not found. Please sign in again.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      // Prepare comprehensive agency data
+      const updateData = {
+        // Basic Business Information
+        fullName: agencyData.businessName, // Use business name as fullName for consistency
+        businessName: agencyData.businessName,
+        uenNumber: agencyData.uenNumber,
+        contactNumber: agencyData.contactNumber,
+        email: agencyData.email,
+        businessAddress: agencyData.businessAddress,
+        website: agencyData.website,
+        businessDescription: agencyData.businessDescription,
+        yearsInBusiness: agencyData.yearsInBusiness,
+        
+        // License Information
+        eaLicenseNumber: agencyData.eaLicenseNumber,
+        licenseExpiryDate: agencyData.licenseExpiryDate,
+        keyPersonnel: agencyData.keyPersonnel,
+        additionalCertifications: agencyData.additionalCertifications,
+        otherLicenses: agencyData.otherLicenses,
+        complianceDeclaration: agencyData.complianceDeclaration,
+        
+        // Services & Coverage
+        servicesProvided: agencyData.servicesProvided,
+        countriesOfHelpers: agencyData.countriesOfHelpers,
+        specializations: agencyData.specializations,
+        additionalServices: agencyData.additionalServices,
+        serviceDescription: agencyData.serviceDescription,
+        
+        // Fees & Policies
+        agencyFee: agencyData.agencyFee,
+        providesReplacement: agencyData.providesReplacement,
+        replacementCount: agencyData.replacementCount,
+        replacementPeriod: agencyData.replacementPeriod,
+        replacementConditions: agencyData.replacementConditions,
+        paymentTerms: agencyData.paymentTerms,
+        additionalPolicies: agencyData.additionalPolicies,
+        
+        // Photos
+        profilePhoto: agencyData.profilePhoto,
+        businessPhotos: agencyData.businessPhotos,
+        
+        // Enhanced data
+        agencyProfile: agencyData.agencyProfile,
+        profileCompleteness: agencyData.profileCompleteness,
+        
+        // Registration status
+        isRegistrationComplete: true,
+        registrationCompletedAt: agencyData.registrationCompletedAt
+      };
+
+      // Update user profile
+      await ClientUserService.updateUser(user.uid, updateData);
+
+      // Refresh user data in context
+      await refreshUser();
+
+      // Redirect to dashboard
+      router.push('/dashboard');
+
+    } catch (error) {
+      console.error('Agency registration error:', error);
       setError('Failed to complete registration. Please try again.');
     } finally {
       setIsLoading(false);
@@ -424,6 +502,21 @@ export default function RegistrationPage() {
           <div className="max-w-6xl mx-auto">
             <MultiStepHelperRegistration
               onSubmit={handleHelperRegistration}
+              isLoading={isLoading}
+            />
+            {error && (
+              <div className="mt-4 text-center">
+                <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                  <p className="text-red-600 text-sm">{error}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : userType === 'agency' ? (
+          // Multi-step form for agencies
+          <div className="max-w-6xl mx-auto">
+            <MultiStepAgencyRegistration
+              onSubmit={handleAgencyRegistration}
               isLoading={isLoading}
             />
             {error && (
