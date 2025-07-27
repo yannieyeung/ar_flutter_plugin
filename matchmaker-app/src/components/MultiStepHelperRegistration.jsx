@@ -159,7 +159,7 @@ const MedicalInfoStep = ({ data, onChange, errors }) => (
 
       {/* Required Off Days */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">How many off days do you require per week? <span className="text-sm text-gray-500">(This helps with job matching)</span></label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">How many off days do you require per week? <span className="text-red-500">*</span> <span className="text-sm text-gray-500">(This helps with job matching)</span></label>
         <select
           value={data.requiredOffDays || ''}
           onChange={(e) => onChange({ ...data, requiredOffDays: e.target.value })}
@@ -170,6 +170,7 @@ const MedicalInfoStep = ({ data, onChange, errors }) => (
             <option key={num} value={num}>{num} day{num !== 1 ? 's' : ''} per week</option>
           ))}
         </select>
+        {errors.requiredOffDays && <p className="text-red-500 text-sm mt-1">{errors.requiredOffDays}</p>}
       </div>
 
       {/* Other Remarks */}
@@ -252,8 +253,12 @@ const ExperienceStep = ({ data, onChange, errors }) => {
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Work Experience & Skills</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Work Experience & Skills <span className="text-red-500">*</span></h2>
         <p className="text-gray-600">Tell us about your experience and abilities - this helps us match you with the right employers</p>
+        {errors.experience && <p className="text-red-500 text-sm mt-2">{errors.experience}</p>}
+        {errors.languages && <p className="text-red-500 text-sm mt-1">{errors.languages}</p>}
+        {errors.languagesSpoken && <p className="text-red-500 text-sm mt-1">{errors.languagesSpoken}</p>}
+        {errors.relevantSkills && <p className="text-red-500 text-sm mt-1">{errors.relevantSkills}</p>}
       </div>
       
       {data.hasBeenHelperBefore === 'yes' ? (
@@ -500,7 +505,7 @@ const ExperienceStep = ({ data, onChange, errors }) => {
           
           {/* Languages for New Helpers */}
           <div className="mt-6 text-left">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Languages You Can Speak</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Languages You Can Speak <span className="text-red-500">*</span></label>
             <input
               type="text"
               value={data.languagesSpoken || ''}
@@ -511,7 +516,7 @@ const ExperienceStep = ({ data, onChange, errors }) => {
           </div>
           
           <div className="mt-6 text-left">
-            <label className="block text-sm font-medium text-gray-700 mb-2">What skills or experience do you have that might be relevant?</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">What skills or experience do you have that might be relevant? <span className="text-red-500">*</span></label>
             <textarea
               value={data.relevantSkills || ''}
               onChange={(e) => onChange({ ...data, relevantSkills: e.target.value })}
@@ -557,13 +562,19 @@ const PreferencesStep = ({ data, onChange, errors }) => {
   return (
     <div className="space-y-8">
       <div className="text-center mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Job Preferences & Requirements</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Job Preferences & Requirements <span className="text-red-500">*</span></h2>
         <p className="text-gray-600">Help us match you with the right families by sharing your preferences</p>
+        {errors.carePreferences && <p className="text-red-500 text-sm mt-2">{errors.carePreferences}</p>}
+        {errors.houseworkPreference && <p className="text-red-500 text-sm mt-1">{errors.houseworkPreference}</p>}
+        {errors.cookingPreference && <p className="text-red-500 text-sm mt-1">{errors.cookingPreference}</p>}
+        {errors.liveInPreference && <p className="text-red-500 text-sm mt-1">{errors.liveInPreference}</p>}
+        {errors.petPreference && <p className="text-red-500 text-sm mt-1">{errors.petPreference}</p>}
+        {errors.preferredCountries && <p className="text-red-500 text-sm mt-1">{errors.preferredCountries}</p>}
       </div>
       
       {/* Care Preferences with Importance */}
       <div className="space-y-6">
-        <h3 className="text-lg font-medium text-gray-900">Care Work Preferences</h3>
+        <h3 className="text-lg font-medium text-gray-900">Care Work Preferences <span className="text-red-500">*</span></h3>
         {[
           { 
             key: 'careOfInfant', 
@@ -710,7 +721,7 @@ const PreferencesStep = ({ data, onChange, errors }) => {
 
       {/* Housework & Cooking Preferences */}
       <div className="space-y-6">
-        <h3 className="text-lg font-medium text-gray-900">Housework & Cooking Preferences</h3>
+        <h3 className="text-lg font-medium text-gray-900">Housework & Cooking Preferences <span className="text-red-500">*</span></h3>
         
         {/* General Housework */}
         <div className="border rounded-lg p-6 bg-gray-50">
@@ -829,7 +840,7 @@ const PreferencesStep = ({ data, onChange, errors }) => {
 
       {/* Work Environment Preferences */}
       <div className="space-y-6">
-        <h3 className="text-lg font-medium text-gray-900">Work Environment Preferences</h3>
+        <h3 className="text-lg font-medium text-gray-900">Work Environment Preferences <span className="text-red-500">*</span></h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Live-in Preference */}
@@ -901,7 +912,7 @@ const PreferencesStep = ({ data, onChange, errors }) => {
 
         {/* Preferred Countries */}
         <div className="border rounded-lg p-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Countries to Work In</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Countries to Work In <span className="text-red-500">*</span></label>
           <div className="grid grid-cols-3 gap-2">
             {COUNTRIES.map(country => (
               <label key={country} className="flex items-center">
@@ -940,8 +951,15 @@ const PreferencesStep = ({ data, onChange, errors }) => {
 const AvailabilityStep = ({ data, onChange, errors }) => (
   <div className="space-y-8">
     <div className="text-center mb-8">
-      <h2 className="text-xl font-semibold text-gray-900 mb-2">Availability & Salary Expectations</h2>
+      <h2 className="text-xl font-semibold text-gray-900 mb-2">Availability & Salary Expectations <span className="text-red-500">*</span></h2>
       <p className="text-gray-600">Let us know when you can start and your salary expectations</p>
+      {errors.minimumSalary && <p className="text-red-500 text-sm mt-2">{errors.minimumSalary}</p>}
+      {errors.preferredSalary && <p className="text-red-500 text-sm mt-1">{errors.preferredSalary}</p>}
+      {errors.passportStatus && <p className="text-red-500 text-sm mt-1">{errors.passportStatus}</p>}
+      {errors.startWork && <p className="text-red-500 text-sm mt-1">{errors.startWork}</p>}
+      {errors.visaStatus && <p className="text-red-500 text-sm mt-1">{errors.visaStatus}</p>}
+      {errors.interviewAvailability && <p className="text-red-500 text-sm mt-1">{errors.interviewAvailability}</p>}
+      {errors.interviewMethod && <p className="text-red-500 text-sm mt-1">{errors.interviewMethod}</p>}
     </div>
     
     <div className="space-y-8">
@@ -952,7 +970,7 @@ const AvailabilityStep = ({ data, onChange, errors }) => (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Minimum Salary */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Monthly Salary Expected</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Monthly Salary Expected <span className="text-red-500">*</span></label>
             <div className="flex">
               <span className="inline-flex items-center px-3 py-2 border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm rounded-l-md">
                 SGD $
@@ -981,7 +999,7 @@ const AvailabilityStep = ({ data, onChange, errors }) => (
 
           {/* Preferred Salary */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Monthly Salary</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Monthly Salary <span className="text-red-500">*</span></label>
             <div className="flex">
               <span className="inline-flex items-center px-3 py-2 border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm rounded-l-md">
                 SGD $
@@ -1066,7 +1084,7 @@ const AvailabilityStep = ({ data, onChange, errors }) => (
         <div className="space-y-4">
           {/* Valid Passport */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Do you have a valid passport?</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Do you have a valid passport? <span className="text-red-500">*</span></label>
             <div className="flex space-x-4">
               <label className="flex items-center">
                 <input
@@ -1126,7 +1144,7 @@ const AvailabilityStep = ({ data, onChange, errors }) => (
 
           {/* Start Work */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">When can you start working?</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">When can you start working? <span className="text-red-500">*</span></label>
             <div className="space-y-2">
               <label className="flex items-center">
                 <input
@@ -1200,7 +1218,7 @@ const AvailabilityStep = ({ data, onChange, errors }) => (
 
           {/* Visa Status */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Current Visa/Work Permit Status</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Current Visa/Work Permit Status <span className="text-red-500">*</span></label>
             <select
               value={data.readiness?.visaStatus || ''}
               onChange={(e) => onChange({ 
@@ -1230,7 +1248,7 @@ const AvailabilityStep = ({ data, onChange, errors }) => (
         <div className="space-y-4">
           {/* Interview Availability */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">When are you available for interviews?</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">When are you available for interviews? <span className="text-red-500">*</span></label>
             <div className="space-y-2">
               <label className="flex items-center">
                 <input
@@ -1321,7 +1339,7 @@ const AvailabilityStep = ({ data, onChange, errors }) => (
 
           {/* Interview Method */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Interview Method</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Interview Method <span className="text-red-500">*</span></label>
             <select
               value={data.interview?.means || ''}
               onChange={(e) => onChange({ 
@@ -1378,22 +1396,129 @@ const MultiStepHelperRegistration = ({ onSubmit, isLoading }) => {
     {
       title: 'Medical',
       component: MedicalInfoStep,
-      validate: (data) => ({}) // No required fields in medical step
+      validate: (data) => {
+        const errors = {};
+        if (!data.requiredOffDays && data.requiredOffDays !== 0) {
+          errors.requiredOffDays = 'Please specify how many off days you require per week';
+        }
+        return errors;
+      }
     },
     {
       title: 'Experience',
       component: ExperienceStep,
-      validate: (data) => ({}) // No required fields in experience step
+      validate: (data) => {
+        const errors = {};
+        
+        if (data.hasBeenHelperBefore === 'yes') {
+          // For experienced helpers, require at least one experience area
+          const experiences = ['careOfInfant', 'careOfChildren', 'careOfDisabled', 'careOfOldAge', 'generalHousework', 'cooking'];
+          const hasAnyExperience = experiences.some(exp => data.experience?.[exp]?.hasExperience);
+          
+          if (!hasAnyExperience) {
+            errors.experience = 'Please select at least one area of experience';
+          }
+          
+          // Require at least one language
+          if (!data.experience?.languagesSpoken || data.experience.languagesSpoken.length === 0 || 
+              !data.experience.languagesSpoken[0]?.language) {
+            errors.languages = 'Please specify at least one language you can speak';
+          }
+        } else {
+          // For new helpers, require languages and relevant skills
+          if (!data.languagesSpoken || data.languagesSpoken.trim() === '') {
+            errors.languagesSpoken = 'Please specify the languages you can speak';
+          }
+          if (!data.relevantSkills || data.relevantSkills.trim() === '') {
+            errors.relevantSkills = 'Please describe any relevant skills or experience you have';
+          }
+        }
+        
+        return errors;
+      }
     },
     {
       title: 'Preferences',
       component: PreferencesStep,
-      validate: (data) => ({}) // No required fields in preferences step
+      validate: (data) => {
+        const errors = {};
+        
+        // Require at least one care preference to be specified
+        const careTypes = ['careOfInfant', 'careOfChildren', 'careOfDisabled', 'careOfOldAge'];
+        const hasAnyCarePreference = careTypes.some(care => 
+          data.preferences?.[care]?.willing && data.preferences[care].willing !== ''
+        );
+        
+        if (!hasAnyCarePreference) {
+          errors.carePreferences = 'Please specify your willingness for at least one type of care work';
+        }
+        
+        // Require housework and cooking preferences
+        if (!data.preferences?.generalHousework?.willing) {
+          errors.houseworkPreference = 'Please specify your willingness to do housework';
+        }
+        
+        if (!data.preferences?.cooking?.willing) {
+          errors.cookingPreference = 'Please specify your willingness to do cooking';
+        }
+        
+        // Require work environment preferences
+        if (!data.preferences?.workEnvironment?.liveInPreference) {
+          errors.liveInPreference = 'Please specify your live-in arrangement preference';
+        }
+        
+        if (!data.preferences?.workEnvironment?.petFriendly) {
+          errors.petPreference = 'Please specify your preference about working with pets';
+        }
+        
+        // Require at least one preferred country
+        if (!data.preferences?.location?.preferredCountries || 
+            data.preferences.location.preferredCountries.length === 0) {
+          errors.preferredCountries = 'Please select at least one country where you prefer to work';
+        }
+        
+        return errors;
+      }
     },
     {
       title: 'Availability',
       component: AvailabilityStep,
-      validate: (data) => ({}) // No required fields in availability step
+      validate: (data) => {
+        const errors = {};
+        
+        // Salary expectations are required
+        if (!data.expectations?.salary?.minimumAmount) {
+          errors.minimumSalary = 'Please specify your minimum salary expectation';
+        }
+        
+        if (!data.expectations?.salary?.preferredAmount) {
+          errors.preferredSalary = 'Please specify your preferred salary';
+        }
+        
+        // Work readiness requirements
+        if (!data.readiness?.hasValidPassport) {
+          errors.passportStatus = 'Please specify your passport status';
+        }
+        
+        if (!data.readiness?.canStartWork) {
+          errors.startWork = 'Please specify when you can start working';
+        }
+        
+        if (!data.readiness?.visaStatus) {
+          errors.visaStatus = 'Please specify your current visa/work permit status';
+        }
+        
+        // Interview preferences
+        if (!data.interview?.availability) {
+          errors.interviewAvailability = 'Please specify your interview availability';
+        }
+        
+        if (!data.interview?.means) {
+          errors.interviewMethod = 'Please specify your preferred interview method';
+        }
+        
+        return errors;
+      }
     },
     {
       title: 'Photos',

@@ -328,8 +328,9 @@ const CareRequirementsStep = ({ data, onChange, errors }) => {
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Care Requirements</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Care Requirements <span className="text-red-500">*</span></h2>
         <p className="text-gray-600">What type of care do you need for your family members?</p>
+        {errors.careRequirements && <p className="text-red-500 text-sm mt-2">{errors.careRequirements}</p>}
       </div>
       
       <div className="space-y-6">
@@ -639,152 +640,715 @@ const CareRequirementsStep = ({ data, onChange, errors }) => {
             </div>
           )}
         </div>
+
+        {/* General Housework */}
+        <div className="border rounded-lg p-6 bg-gray-50">
+          <label className="flex items-center mb-4">
+            <input
+              type="checkbox"
+              checked={data.requirements?.generalHousework?.required || false}
+              onChange={(e) => handleCareRequirementChange('generalHousework', 'required', e.target.checked)}
+              className="mr-3 scale-125"
+            />
+            <span className="text-lg font-medium text-gray-900">General Housework</span>
+          </label>
+          
+          {data.requirements?.generalHousework?.required && (
+            <div className="ml-6 space-y-4 bg-white p-4 rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">House/Apartment Size</label>
+                  <select
+                    value={data.requirements?.generalHousework?.householdSize || ''}
+                    onChange={(e) => handleCareRequirementChange('generalHousework', 'householdSize', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select size</option>
+                    <option value="small">Small (1-2 rooms)</option>
+                    <option value="medium">Medium (3-4 rooms)</option>
+                    <option value="large">Large (5+ rooms)</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Cleaning Frequency</label>
+                  <select
+                    value={data.requirements?.generalHousework?.cleaningFrequency || ''}
+                    onChange={(e) => handleCareRequirementChange('generalHousework', 'cleaningFrequency', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select frequency</option>
+                    <option value="daily">Daily cleaning</option>
+                    <option value="weekly">Weekly deep clean</option>
+                    <option value="flexible">Flexible schedule</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Specific Tasks</label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  {[
+                    'general_cleaning', 'deep_cleaning', 'laundry', 'ironing',
+                    'grocery_shopping', 'meal_planning', 'dishwashing', 'organizing',
+                    'pet_care', 'plant_care', 'car_washing'
+                  ].map(task => (
+                    <label key={task} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={(data.requirements?.generalHousework?.specificTasks || []).includes(task)}
+                        onChange={(e) => {
+                          const current = data.requirements?.generalHousework?.specificTasks || [];
+                          const newArray = e.target.checked
+                            ? [...current, task]
+                            : current.filter(item => item !== task);
+                          handleCareRequirementChange('generalHousework', 'specificTasks', newArray);
+                        }}
+                        className="mr-2"
+                      />
+                      {task.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Importance Level</label>
+                <select
+                  value={data.requirements?.generalHousework?.importance || 'medium'}
+                  onChange={(e) => handleCareRequirementChange('generalHousework', 'importance', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="low">Low Priority</option>
+                  <option value="medium">Medium Priority</option>
+                  <option value="high">High Priority</option>
+                  <option value="critical">Critical Requirement</option>
+                </select>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Cooking & Meal Preparation */}
+        <div className="border rounded-lg p-6 bg-gray-50">
+          <label className="flex items-center mb-4">
+            <input
+              type="checkbox"
+              checked={data.requirements?.cooking?.required || false}
+              onChange={(e) => handleCareRequirementChange('cooking', 'required', e.target.checked)}
+              className="mr-3 scale-125"
+            />
+            <span className="text-lg font-medium text-gray-900">Cooking & Meal Preparation</span>
+          </label>
+          
+          {data.requirements?.cooking?.required && (
+            <div className="ml-6 space-y-4 bg-white p-4 rounded-lg">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Cuisine Preferences</label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  {[
+                    'chinese', 'malay', 'indian', 'western', 'japanese', 'korean',
+                    'thai', 'vietnamese', 'indonesian', 'filipino', 'italian', 'mediterranean'
+                  ].map(cuisine => (
+                    <label key={cuisine} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={(data.requirements?.cooking?.cuisinePreferences || []).includes(cuisine)}
+                        onChange={(e) => {
+                          const current = data.requirements?.cooking?.cuisinePreferences || [];
+                          const newArray = e.target.checked
+                            ? [...current, cuisine]
+                            : current.filter(item => item !== cuisine);
+                          handleCareRequirementChange('cooking', 'cuisinePreferences', newArray);
+                        }}
+                        className="mr-2"
+                      />
+                      {cuisine.charAt(0).toUpperCase() + cuisine.slice(1)}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Meal Preparation</label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  {[
+                    'breakfast', 'lunch', 'dinner', 'snacks', 'packed_lunches',
+                    'special_diet_meals', 'baby_food', 'elderly_soft_food'
+                  ].map(mealType => (
+                    <label key={mealType} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={(data.requirements?.cooking?.mealPreparation || []).includes(mealType)}
+                        onChange={(e) => {
+                          const current = data.requirements?.cooking?.mealPreparation || [];
+                          const newArray = e.target.checked
+                            ? [...current, mealType]
+                            : current.filter(item => item !== mealType);
+                          handleCareRequirementChange('cooking', 'mealPreparation', newArray);
+                        }}
+                        className="mr-2"
+                      />
+                      {mealType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Dietary Restrictions</label>
+                <input
+                  type="text"
+                  value={(data.requirements?.cooking?.dietaryRestrictions || []).join(', ')}
+                  onChange={(e) => handleCareRequirementChange('cooking', 'dietaryRestrictions', e.target.value.split(', ').filter(item => item))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., vegetarian, halal, gluten-free (separate with commas)"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Importance Level</label>
+                <select
+                  value={data.requirements?.cooking?.importance || 'medium'}
+                  onChange={(e) => handleCareRequirementChange('cooking', 'importance', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="low">Low Priority</option>
+                  <option value="medium">Medium Priority</option>
+                  <option value="high">High Priority</option>
+                  <option value="critical">Critical Requirement</option>
+                </select>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
 // Step 4: Work Requirements  
-const WorkRequirementsStep = ({ data, onChange, errors }) => (
-  <div className="space-y-6">
-    <div className="text-center mb-8">
-      <h2 className="text-xl font-semibold text-gray-900 mb-2">Work Requirements</h2>
-      <p className="text-gray-600">What are your requirements for the helper?</p>
-    </div>
-    
-    <div className="bg-gray-50 p-6 rounded-lg space-y-6">
-      {/* Experience Requirements */}
-      <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Experience Requirements</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Experience Required</label>
-            <select
-              value={data.requirements?.minimumExperience || ''}
-              onChange={(e) => onChange({
-                ...data,
-                requirements: {
-                  ...data.requirements,
-                  minimumExperience: e.target.value
-                }
-              })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">No specific requirement</option>
-              <option value="0">No experience required</option>
-              <option value="1">1+ years</option>
-              <option value="2">2+ years</option>
-              <option value="3">3+ years</option>
-              <option value="5">5+ years</option>
-            </select>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Helper Experience Required</label>
-            <select
-              value={data.requirements?.helperExperienceRequired || ''}
-              onChange={(e) => onChange({
-                ...data,
-                requirements: {
-                  ...data.requirements,
-                  helperExperienceRequired: e.target.value
-                }
-              })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">No preference</option>
-              <option value="yes">Must have helper experience</option>
-              <option value="preferred">Preferred but not required</option>
-              <option value="no">Open to first-time helpers</option>
-            </select>
-          </div>
-        </div>
-      </div>
+const WorkRequirementsStep = ({ data, onChange, errors }) => {
+  const NATIONALITIES = [
+    'Filipino', 'Indonesian', 'Myanmar', 'Sri Lankan', 'Indian', 
+    'Bangladeshi', 'Nepalese', 'Thai', 'Vietnamese', 'Cambodian'
+  ];
 
-      {/* Schedule Requirements */}
-      <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Schedule Requirements</h3>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Working Hours</label>
-            <div className="flex items-center space-x-2">
-              <input
-                type="time"
-                value={data.requirements?.workingHours?.start || '08:00'}
+  const LANGUAGES = [
+    'English', 'Mandarin', 'Cantonese', 'Malay', 'Tamil', 'Hindi',
+    'Tagalog', 'Indonesian', 'Burmese', 'Sinhalese', 'Thai', 'Vietnamese',
+    'Arabic', 'French', 'German', 'Spanish', 'Japanese', 'Korean', 'Other'
+  ];
+
+  const WORKING_DAYS = [
+    'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'
+  ];
+
+  const handleArrayChange = (field, value, checked) => {
+    const current = data.requirements?.[field] || [];
+    const newArray = checked
+      ? [...current, value]
+      : current.filter(item => item !== value);
+    
+    onChange({
+      ...data,
+      requirements: {
+        ...data.requirements,
+        [field]: newArray
+      }
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="text-center mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Work Requirements</h2>
+        <p className="text-gray-600">What are your requirements for the helper?</p>
+      </div>
+      
+      <div className="bg-gray-50 p-6 rounded-lg space-y-6">
+        {/* Experience Requirements */}
+        <div>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Experience Requirements</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Experience Required</label>
+              <select
+                value={data.requirements?.minimumExperience || ''}
                 onChange={(e) => onChange({
                   ...data,
                   requirements: {
                     ...data.requirements,
-                    workingHours: {
-                      ...data.requirements?.workingHours,
-                      start: e.target.value
-                    }
+                    minimumExperience: e.target.value
                   }
                 })}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <span>to</span>
-              <input
-                type="time"
-                value={data.requirements?.workingHours?.end || '18:00'}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">No specific requirement</option>
+                <option value="0">No experience required</option>
+                <option value="1">1+ years</option>
+                <option value="2">2+ years</option>
+                <option value="3">3+ years</option>
+                <option value="4">4+ years</option>
+                <option value="5+">5+ years</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Helper Experience Required</label>
+              <select
+                value={data.requirements?.helperExperienceRequired || ''}
                 onChange={(e) => onChange({
                   ...data,
                   requirements: {
                     ...data.requirements,
-                    workingHours: {
-                      ...data.requirements?.workingHours,
-                      end: e.target.value
-                    }
+                    helperExperienceRequired: e.target.value
                   }
                 })}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">No preference</option>
+                <option value="yes">Must have helper experience</option>
+                <option value="preferred">Preferred but not required</option>
+                <option value="no">Open to first-time helpers</option>
+              </select>
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Live-in Arrangement</label>
-            <select
-              value={data.requirements?.liveIn || ''}
-              onChange={(e) => onChange({
-                ...data,
-                requirements: {
-                  ...data.requirements,
-                  liveIn: e.target.value
-                }
-              })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">No preference</option>
-              <option value="required">Live-in required</option>
-              <option value="preferred">Live-in preferred</option>
-              <option value="not_required">Live-out is fine</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Off Days Required per Week</label>
-            <select
-              value={data.requirements?.offDaysRequired || 1}
-              onChange={(e) => onChange({
-                ...data,
-                requirements: {
-                  ...data.requirements,
-                  offDaysRequired: parseInt(e.target.value)
-                }
-              })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {[0, 1, 2, 3, 4].map(num => (
-                <option key={num} value={num}>{num} day{num !== 1 ? 's' : ''}</option>
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Specific Experience Needed</label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {[
+                'infant_care', 'toddler_care', 'school_age_care', 'elderly_care',
+                'disabled_care', 'pet_care', 'cooking', 'cleaning', 'tutoring'
+              ].map(experience => (
+                <label key={experience} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={(data.requirements?.specificExperienceNeeded || []).includes(experience)}
+                    onChange={(e) => handleArrayChange('specificExperienceNeeded', experience, e.target.checked)}
+                    className="mr-2"
+                  />
+                  {experience.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </label>
               ))}
-            </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Personal Requirements */}
+        <div>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Personal Requirements</h3>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Age Range</label>
+                <div className="flex space-x-2">
+                  <input
+                    type="number"
+                    placeholder="Min"
+                    value={data.requirements?.ageRange?.min || ''}
+                    onChange={(e) => onChange({
+                      ...data,
+                      requirements: {
+                        ...data.requirements,
+                        ageRange: {
+                          ...data.requirements?.ageRange,
+                          min: e.target.value ? parseInt(e.target.value) : ''
+                        }
+                      }
+                    })}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    min="21"
+                    max="65"
+                  />
+                  <span className="py-2">-</span>
+                  <input
+                    type="number"
+                    placeholder="Max"
+                    value={data.requirements?.ageRange?.max || ''}
+                    onChange={(e) => onChange({
+                      ...data,
+                      requirements: {
+                        ...data.requirements,
+                        ageRange: {
+                          ...data.requirements?.ageRange,
+                          max: e.target.value ? parseInt(e.target.value) : ''
+                        }
+                      }
+                    })}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    min="21"
+                    max="65"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Education Level</label>
+                <select
+                  value={data.requirements?.educationLevel || ''}
+                  onChange={(e) => onChange({
+                    ...data,
+                    requirements: {
+                      ...data.requirements,
+                      educationLevel: e.target.value
+                    }
+                  })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">No preference</option>
+                  <option value="primary_school">Primary School</option>
+                  <option value="secondary_school">Secondary School</option>
+                  <option value="high_school">High School</option>
+                  <option value="university">University</option>
+                </select>
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Nationality Preferences <span className="text-red-500">*</span></label>
+              {errors.nationalityPreferences && <p className="text-red-500 text-sm mb-2">{errors.nationalityPreferences}</p>}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {NATIONALITIES.map(nationality => (
+                  <label key={nationality} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={(data.requirements?.nationalityPreferences || []).includes(nationality)}
+                      onChange={(e) => handleArrayChange('nationalityPreferences', nationality, e.target.checked)}
+                      className="mr-2"
+                    />
+                    {nationality}
+                  </label>
+                ))}
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Religion Preference</label>
+              <input
+                type="text"
+                value={data.requirements?.religionPreference || ''}
+                onChange={(e) => onChange({
+                  ...data,
+                  requirements: {
+                    ...data.requirements,
+                    religionPreference: e.target.value
+                  }
+                })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., Christian, Buddhist, Muslim, Hindu (optional)"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Languages Required</label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {LANGUAGES.map(language => (
+                  <label key={language} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={(data.requirements?.languagesRequired || []).includes(language)}
+                      onChange={(e) => handleArrayChange('languagesRequired', language, e.target.checked)}
+                      className="mr-2"
+                    />
+                    {language}
+                  </label>
+                ))}
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Communication Skills Required</label>
+              <select
+                value={data.requirements?.communicationSkills || 'basic'}
+                onChange={(e) => onChange({
+                  ...data,
+                  requirements: {
+                    ...data.requirements,
+                    communicationSkills: e.target.value
+                  }
+                })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="basic">Basic communication</option>
+                <option value="intermediate">Intermediate communication</option>
+                <option value="advanced">Advanced communication</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Health Requirements */}
+        <div>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Health Requirements</h3>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={data.requirements?.physicalRequirements?.noAllergies || false}
+                  onChange={(e) => onChange({
+                    ...data,
+                    requirements: {
+                      ...data.requirements,
+                      physicalRequirements: {
+                        ...data.requirements?.physicalRequirements,
+                        noAllergies: e.target.checked
+                      }
+                    }
+                  })}
+                  className="mr-2"
+                />
+                No allergies required
+              </label>
+              
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={data.requirements?.physicalRequirements?.noMedicalIssues || false}
+                  onChange={(e) => onChange({
+                    ...data,
+                    requirements: {
+                      ...data.requirements,
+                      physicalRequirements: {
+                        ...data.requirements?.physicalRequirements,
+                        noMedicalIssues: e.target.checked
+                      }
+                    }
+                  })}
+                  className="mr-2"
+                />
+                No medical issues required
+              </label>
+              
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={data.requirements?.physicalRequirements?.noPhysicalDisabilities || false}
+                  onChange={(e) => onChange({
+                    ...data,
+                    requirements: {
+                      ...data.requirements,
+                      physicalRequirements: {
+                        ...data.requirements?.physicalRequirements,
+                        noPhysicalDisabilities: e.target.checked
+                      }
+                    }
+                  })}
+                  className="mr-2"
+                />
+                No physical disabilities required
+              </label>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Specific Health Requirements</label>
+              <textarea
+                value={data.requirements?.physicalRequirements?.specificHealthRequirements || ''}
+                onChange={(e) => onChange({
+                  ...data,
+                  requirements: {
+                    ...data.requirements,
+                    physicalRequirements: {
+                      ...data.requirements?.physicalRequirements,
+                      specificHealthRequirements: e.target.value
+                    }
+                  }
+                })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                rows="2"
+                placeholder="Any specific health requirements or considerations..."
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Schedule Requirements */}
+        <div>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Schedule Requirements</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Working Days <span className="text-red-500">*</span></label>
+              {errors.workingDays && <p className="text-red-500 text-sm mb-2">{errors.workingDays}</p>}
+              <div className="grid grid-cols-4 gap-2">
+                {WORKING_DAYS.map(day => (
+                  <label key={day} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={(data.requirements?.workingDays || []).includes(day)}
+                      onChange={(e) => handleArrayChange('workingDays', day, e.target.checked)}
+                      className="mr-2"
+                    />
+                    {day.charAt(0).toUpperCase() + day.slice(1)}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Working Hours</label>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="time"
+                    value={data.requirements?.workingHours?.start || '08:00'}
+                    onChange={(e) => onChange({
+                      ...data,
+                      requirements: {
+                        ...data.requirements,
+                        workingHours: {
+                          ...data.requirements?.workingHours,
+                          start: e.target.value
+                        }
+                      }
+                    })}
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <span>to</span>
+                  <input
+                    type="time"
+                    value={data.requirements?.workingHours?.end || '18:00'}
+                    onChange={(e) => onChange({
+                      ...data,
+                      requirements: {
+                        ...data.requirements,
+                        workingHours: {
+                          ...data.requirements?.workingHours,
+                          end: e.target.value
+                        }
+                      }
+                    })}
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Live-in Arrangement</label>
+                <select
+                  value={data.requirements?.liveIn || ''}
+                  onChange={(e) => onChange({
+                    ...data,
+                    requirements: {
+                      ...data.requirements,
+                      liveIn: e.target.value
+                    }
+                  })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">No preference</option>
+                  <option value="required">Live-in required</option>
+                  <option value="preferred">Live-in preferred</option>
+                  <option value="not_required">Live-out is fine</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Off Days Required per Week</label>
+                <select
+                  value={data.requirements?.offDaysRequired || 1}
+                  onChange={(e) => onChange({
+                    ...data,
+                    requirements: {
+                      ...data.requirements,
+                      offDaysRequired: parseInt(e.target.value)
+                    }
+                  })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {[0, 1, 2, 3, 4].map(num => (
+                    <option key={num} value={num}>{num} day{num !== 1 ? 's' : ''}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={data.requirements?.workingHours?.flexible || false}
+                  onChange={(e) => onChange({
+                    ...data,
+                    requirements: {
+                      ...data.requirements,
+                      workingHours: {
+                        ...data.requirements?.workingHours,
+                        flexible: e.target.checked
+                      }
+                    }
+                  })}
+                  className="mr-2"
+                />
+                Flexible working hours
+              </label>
+              
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={data.requirements?.workingHours?.overtimeExpected || false}
+                  onChange={(e) => onChange({
+                    ...data,
+                    requirements: {
+                      ...data.requirements,
+                      workingHours: {
+                        ...data.requirements?.workingHours,
+                        overtimeExpected: e.target.checked
+                      }
+                    }
+                  })}
+                  className="mr-2"
+                />
+                Occasional overtime expected
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Food Handling Requirements */}
+        <div>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Food Handling Requirements</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Food Handling Restrictions</label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {['no_pork', 'no_beef', 'no_alcohol', 'halal_only', 'vegetarian_only', 'others'].map(restriction => (
+                  <label key={restriction} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={(data.requirements?.foodHandlingRequirements || []).includes(restriction)}
+                      onChange={(e) => handleArrayChange('foodHandlingRequirements', restriction, e.target.checked)}
+                      className="mr-2"
+                    />
+                    {restriction.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  </label>
+                ))}
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Dietary Accommodations</label>
+              <input
+                type="text"
+                value={(data.requirements?.dietaryAccommodations || []).join(', ')}
+                onChange={(e) => onChange({
+                  ...data,
+                  requirements: {
+                    ...data.requirements,
+                    dietaryAccommodations: e.target.value.split(', ').filter(item => item)
+                  }
+                })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., kosher, gluten-free, dairy-free (separate with commas)"
+              />
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Step 5: Compensation & Benefits
 const CompensationStep = ({ data, onChange, errors }) => (
@@ -824,10 +1388,23 @@ const CompensationStep = ({ data, onChange, errors }) => (
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="USD">USD - US Dollar</option>
-            <option value="SGD">SGD - Singapore Dollar</option>
-            <option value="HKD">HKD - Hong Kong Dollar</option>
             <option value="EUR">EUR - Euro</option>
             <option value="GBP">GBP - British Pound</option>
+            <option value="SGD">SGD - Singapore Dollar</option>
+            <option value="HKD">HKD - Hong Kong Dollar</option>
+            <option value="AUD">AUD - Australian Dollar</option>
+            <option value="CAD">CAD - Canadian Dollar</option>
+            <option value="MYR">MYR - Malaysian Ringgit</option>
+            <option value="THB">THB - Thai Baht</option>
+            <option value="PHP">PHP - Philippine Peso</option>
+            <option value="IDR">IDR - Indonesian Rupiah</option>
+            <option value="INR">INR - Indian Rupee</option>
+            <option value="AED">AED - UAE Dirham</option>
+            <option value="SAR">SAR - Saudi Riyal</option>
+            <option value="JPY">JPY - Japanese Yen</option>
+            <option value="KRW">KRW - South Korean Won</option>
+            <option value="CNY">CNY - Chinese Yuan</option>
+            <option value="OTHER">Other</option>
           </select>
         </div>
         
@@ -848,32 +1425,133 @@ const CompensationStep = ({ data, onChange, errors }) => (
         </div>
       </div>
 
-      <div className="space-y-3">
-        <label className="flex items-center">
-          <input
-            type="checkbox"
-            checked={data.salary?.negotiable || false}
-            onChange={(e) => onChange({
-              ...data,
-              salary: { ...data.salary, negotiable: e.target.checked }
-            })}
-            className="mr-2"
-          />
-          <span className="text-sm text-gray-700">Salary is negotiable</span>
-        </label>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Salary Range (if negotiable)</label>
+          <div className="flex space-x-2">
+            <input
+              type="number"
+              placeholder="Min"
+              value={data.salary?.salaryRange?.min || ''}
+              onChange={(e) => onChange({
+                ...data,
+                salary: { 
+                  ...data.salary, 
+                  salaryRange: {
+                    ...data.salary?.salaryRange,
+                    min: e.target.value
+                  }
+                }
+              })}
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <span className="py-2">-</span>
+            <input
+              type="number"
+              placeholder="Max"
+              value={data.salary?.salaryRange?.max || ''}
+              onChange={(e) => onChange({
+                ...data,
+                salary: { 
+                  ...data.salary, 
+                  salaryRange: {
+                    ...data.salary?.salaryRange,
+                    max: e.target.value
+                  }
+                }
+              })}
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
         
-        <label className="flex items-center">
-          <input
-            type="checkbox"
-            checked={data.salary?.performanceBonus || false}
-            onChange={(e) => onChange({
-              ...data,
-              salary: { ...data.salary, performanceBonus: e.target.checked }
-            })}
-            className="mr-2"
-          />
-          <span className="text-sm text-gray-700">Performance bonus available</span>
-        </label>
+        <div className="flex flex-col justify-center space-y-3">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={data.salary?.negotiable || false}
+              onChange={(e) => onChange({
+                ...data,
+                salary: { ...data.salary, negotiable: e.target.checked }
+              })}
+              className="mr-2"
+            />
+            <span className="text-sm text-gray-700">Salary is negotiable</span>
+          </label>
+          
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={data.salary?.performanceBonus || false}
+              onChange={(e) => onChange({
+                ...data,
+                salary: { ...data.salary, performanceBonus: e.target.checked }
+              })}
+              className="mr-2"
+            />
+            <span className="text-sm text-gray-700">Performance bonus available</span>
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="text-lg font-medium text-green-800 mb-3">🎁 Benefits & Accommodations</h3>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Benefits</label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {[
+                'medical_insurance', 'dental_care', 'annual_leave', 'sick_leave',
+                'public_holiday_pay', 'overtime_pay', 'performance_bonus',
+                'transportation_allowance', 'phone_allowance', 'training_provided',
+                'annual_ticket_home', 'loyalty_bonus'
+              ].map(benefit => (
+                <label key={benefit} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={(data.benefits || []).includes(benefit)}
+                    onChange={(e) => {
+                      const current = data.benefits || [];
+                      const newArray = e.target.checked
+                        ? [...current, benefit]
+                        : current.filter(item => item !== benefit);
+                      onChange({ ...data, benefits: newArray });
+                    }}
+                    className="mr-2"
+                  />
+                  {benefit.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </label>
+              ))}
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Accommodations (if live-in)</label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {[
+                'private_room', 'shared_room', 'private_bathroom', 'shared_bathroom',
+                'air_conditioning', 'wifi', 'television', 'personal_refrigerator',
+                'storage_space', 'laundry_facilities', 'cooking_facilities'
+              ].map(accommodation => (
+                <label key={accommodation} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={(data.accommodations || []).includes(accommodation)}
+                    onChange={(e) => {
+                      const current = data.accommodations || [];
+                      const newArray = e.target.checked
+                        ? [...current, accommodation]
+                        : current.filter(item => item !== accommodation);
+                      onChange({ ...data, accommodations: newArray });
+                    }}
+                    className="mr-2"
+                  />
+                  {accommodation.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -888,31 +1566,277 @@ const FinalDetailsStep = ({ data, onChange, errors }) => (
     </div>
     
     <div className="space-y-6">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Additional Requirements (Optional)</label>
-        <textarea
-          value={data.specialRequirements || ''}
-          onChange={(e) => onChange({ ...data, specialRequirements: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          rows="3"
-          placeholder="Any special requirements, preferences, or additional information..."
-        />
+      {/* Job Details */}
+      <div className="bg-gray-50 p-6 rounded-lg">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">Job Details</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Contract Duration</label>
+            <select
+              value={data.contractDuration || ''}
+              onChange={(e) => onChange({ ...data, contractDuration: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select Duration</option>
+              <option value="6_months">6 Months</option>
+              <option value="1_year">1 Year</option>
+              <option value="2_years">2 Years</option>
+              <option value="permanent">Permanent</option>
+              <option value="temporary">Temporary</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Probation Period</label>
+            <select
+              value={data.probationPeriod || ''}
+              onChange={(e) => onChange({ ...data, probationPeriod: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">No probation</option>
+              <option value="1_month">1 Month</option>
+              <option value="2_months">2 Months</option>
+              <option value="3_months">3 Months</option>
+              <option value="6_months">6 Months</option>
+            </select>
+          </div>
+        </div>
+        
+        <div className="mt-4 flex items-center space-x-6">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={data.trialPeriod || false}
+              onChange={(e) => onChange({ ...data, trialPeriod: e.target.checked })}
+              className="mr-2"
+            />
+            Trial period available
+          </label>
+          
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={data.trainingProvided || false}
+              onChange={(e) => onChange({ ...data, trainingProvided: e.target.checked })}
+              className="mr-2"
+            />
+            Training provided
+          </label>
+        </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Contract Duration</label>
-        <select
-          value={data.contractDuration || ''}
-          onChange={(e) => onChange({ ...data, contractDuration: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">No specific duration</option>
-          <option value="6_months">6 months</option>
-          <option value="1_year">1 year</option>
-          <option value="2_years">2 years</option>
-          <option value="long_term">Long-term (2+ years)</option>
-          <option value="permanent">Permanent</option>
-        </select>
+      {/* Matching Preferences */}
+      <div className="bg-green-50 p-6 rounded-lg">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">Matching Preferences</h3>
+        <p className="text-gray-600 mb-4">Help us prioritize what's most important to you in finding the right match</p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Experience Priority</label>
+            <select
+              value={data.matchingPreferences?.prioritizeExperience || 'medium'}
+              onChange={(e) => onChange({
+                ...data,
+                matchingPreferences: {
+                  ...data.matchingPreferences,
+                  prioritizeExperience: e.target.value
+                }
+              })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="low">Low Priority</option>
+              <option value="medium">Medium Priority</option>
+              <option value="high">High Priority</option>
+              <option value="critical">Critical</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Language Skills Priority</label>
+            <select
+              value={data.matchingPreferences?.prioritizeLanguages || 'medium'}
+              onChange={(e) => onChange({
+                ...data,
+                matchingPreferences: {
+                  ...data.matchingPreferences,
+                  prioritizeLanguages: e.target.value
+                }
+              })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="low">Low Priority</option>
+              <option value="medium">Medium Priority</option>
+              <option value="high">High Priority</option>
+              <option value="critical">Critical</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Nationality Priority</label>
+            <select
+              value={data.matchingPreferences?.prioritizeNationality || 'low'}
+              onChange={(e) => onChange({
+                ...data,
+                matchingPreferences: {
+                  ...data.matchingPreferences,
+                  prioritizeNationality: e.target.value
+                }
+              })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="low">Low Priority</option>
+              <option value="medium">Medium Priority</option>
+              <option value="high">High Priority</option>
+              <option value="critical">Critical</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Cultural Fit</label>
+            <select
+              value={data.matchingPreferences?.culturalFit || 'medium'}
+              onChange={(e) => onChange({
+                ...data,
+                matchingPreferences: {
+                  ...data.matchingPreferences,
+                  culturalFit: e.target.value
+                }
+              })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="low">Low Priority</option>
+              <option value="medium">Medium Priority</option>
+              <option value="high">High Priority</option>
+              <option value="critical">Critical</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Contact & Interview Preferences */}
+      <div className="bg-gray-50 p-6 rounded-lg">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">Contact & Interview Preferences</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Contact Method</label>
+            <select
+              value={data.contact?.preferredMethod || ''}
+              onChange={(e) => onChange({
+                ...data,
+                contact: {
+                  ...data.contact,
+                  preferredMethod: e.target.value
+                }
+              })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select Method</option>
+              <option value="phone">Phone</option>
+              <option value="email">Email</option>
+              <option value="whatsapp">WhatsApp</option>
+              <option value="app">Through App</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Interview Method</label>
+            <select
+              value={data.contact?.interviewMethod || ''}
+              onChange={(e) => onChange({
+                ...data,
+                contact: {
+                  ...data.contact,
+                  interviewMethod: e.target.value
+                }
+              })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select Method</option>
+              <option value="whatsapp_video_call">WhatsApp Video Call</option>
+              <option value="voice_call">Voice Call</option>
+              <option value="face_to_face">Face to Face</option>
+              <option value="video_conference">Video Conference</option>
+              <option value="others">Others</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Interview Availability</label>
+            <select
+              value={data.contact?.availableForInterview || ''}
+              onChange={(e) => onChange({
+                ...data,
+                contact: {
+                  ...data.contact,
+                  availableForInterview: e.target.value
+                }
+              })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select Availability</option>
+              <option value="immediate">Immediate</option>
+              <option value="weekdays">Weekdays</option>
+              <option value="weekends">Weekends</option>
+              <option value="specific_times">Specific Times</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Communication Language</label>
+            <select
+              value={data.contact?.contactLanguage || 'English'}
+              onChange={(e) => onChange({
+                ...data,
+                contact: {
+                  ...data.contact,
+                  contactLanguage: e.target.value
+                }
+              })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="English">English</option>
+              <option value="Mandarin">Mandarin</option>
+              <option value="Cantonese">Cantonese</option>
+              <option value="Malay">Malay</option>
+              <option value="Tamil">Tamil</option>
+              <option value="Hindi">Hindi</option>
+              <option value="Spanish">Spanish</option>
+              <option value="French">French</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Additional Information */}
+      <div className="bg-gray-50 p-6 rounded-lg">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">Additional Information</h3>
+        
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Special Requirements</label>
+            <textarea
+              value={data.specialRequirements || ''}
+              onChange={(e) => onChange({ ...data, specialRequirements: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              rows="3"
+              placeholder="Any special requirements, certifications needed, or unique aspects of the job..."
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Additional Notes</label>
+            <textarea
+              value={data.additionalNotes || ''}
+              onChange={(e) => onChange({ ...data, additionalNotes: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              rows="3"
+              placeholder="Tell potential helpers about your family, home environment, expectations, and what makes this a great opportunity..."
+            />
+          </div>
+        </div>
       </div>
 
       <div className="bg-blue-50 p-4 rounded-lg">
@@ -923,6 +1847,17 @@ const FinalDetailsStep = ({ data, onChange, errors }) => (
           <p><strong>Household Size:</strong> {data.employer?.householdSize || 'Not specified'}</p>
           <p><strong>Start Date:</strong> {data.startDate || 'Not specified'}</p>
           <p><strong>Salary:</strong> {data.salary?.currency || 'USD'} {data.salary?.amount || 'Not specified'} {data.salary?.period || 'monthly'}</p>
+          <p><strong>Contract:</strong> {data.contractDuration ? data.contractDuration.replace('_', ' ') : 'Not specified'}</p>
+          <p><strong>Care Requirements:</strong> {
+            [
+              data.requirements?.careOfInfant?.required && 'Infant Care',
+              data.requirements?.careOfChildren?.required && 'Child Care',
+              data.requirements?.careOfOldAge?.required && 'Elderly Care',
+              data.requirements?.careOfDisabled?.required && 'Disabled Care',
+              data.requirements?.generalHousework?.required && 'Housework',
+              data.requirements?.cooking?.required && 'Cooking'
+            ].filter(Boolean).join(', ') || 'None specified'
+          }</p>
         </div>
       </div>
     </div>
@@ -970,12 +1905,44 @@ const MultiStepJobPosting = ({ onSubmit, isLoading }) => {
     {
       title: 'Care Needs',
       component: CareRequirementsStep,
-      validate: (data) => ({}) // No required fields for care requirements
+      validate: (data) => {
+        const errors = {};
+        
+        // Check if at least one care requirement is selected
+        const careRequirements = data.requirements || {};
+        const hasAnyCareRequirement = 
+          careRequirements.careOfInfant?.required ||
+          careRequirements.careOfChildren?.required ||
+          careRequirements.careOfOldAge?.required ||
+          careRequirements.careOfDisabled?.required ||
+          careRequirements.generalHousework?.required ||
+          careRequirements.cooking?.required;
+        
+        if (!hasAnyCareRequirement) {
+          errors.careRequirements = 'Please select at least one care requirement';
+        }
+        
+        return errors;
+      }
     },
     {
       title: 'Work Details',
       component: WorkRequirementsStep,
-      validate: (data) => ({}) // No required fields for work requirements  
+      validate: (data) => {
+        const errors = {};
+        
+        // Nationality Preferences - require at least one selection
+        if (!data.requirements?.nationalityPreferences || data.requirements.nationalityPreferences.length === 0) {
+          errors.nationalityPreferences = 'Please select at least one nationality preference';
+        }
+        
+        // Schedule Requirements - require working days selection
+        if (!data.requirements?.workingDays || data.requirements.workingDays.length === 0) {
+          errors.workingDays = 'Please select at least one working day';
+        }
+        
+        return errors;
+      }
     },
     {
       title: 'Compensation',
