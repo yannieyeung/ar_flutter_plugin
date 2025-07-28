@@ -100,15 +100,15 @@ export const AgencyBusinessInfo = ({ user, isEditing, editData, setEditData }) =
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             >
               <option value="">Select years in business</option>
-              <option value="less_than_1">Less than 1 year</option>
-              <option value="1_to_3">1-3 years</option>
-              <option value="4_to_7">4-7 years</option>
-              <option value="8_to_15">8-15 years</option>
-              <option value="more_than_15">More than 15 years</option>
+              <option value="Less than 1 year">Less than 1 year</option>
+              <option value="1-3 years">1-3 years</option>
+              <option value="4-7 years">4-7 years</option>
+              <option value="8-15 years">8-15 years</option>
+              <option value="More than 15 years">More than 15 years</option>
             </select>
           ) : (
-            <p className="mt-1 text-sm text-gray-900 capitalize">
-              {user?.yearsInBusiness?.replace('_', ' ') || 'Not provided'}
+            <p className="mt-1 text-sm text-gray-900">
+              {user?.yearsInBusiness || 'Not provided'}
             </p>
           )}
         </div>

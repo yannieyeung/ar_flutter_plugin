@@ -133,11 +133,11 @@ const AgencyBasicInfoStep = ({ data, onChange, errors }) => {
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Select years in business</option>
-            <option value="less_than_1">Less than 1 year</option>
-            <option value="1_to_3">1-3 years</option>
-            <option value="4_to_7">4-7 years</option>
-            <option value="8_to_15">8-15 years</option>
-            <option value="more_than_15">More than 15 years</option>
+            <option value="Less than 1 year">Less than 1 year</option>
+            <option value="1-3 years">1-3 years</option>
+            <option value="4-7 years">4-7 years</option>
+            <option value="8-15 years">8-15 years</option>
+            <option value="More than 15 years">More than 15 years</option>
           </select>
         </div>
       </div>

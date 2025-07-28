@@ -13,6 +13,7 @@ import { HelperPersonalInfo, HelperMedicalInfo } from '@/components/profile-sect
 import { AgencyBusinessInfo, AgencyLicenseInfo, AgencyServicesInfo, AgencyFeesInfo } from '@/components/profile-sections/AgencyProfileSections';
 import { EmployerPersonalInfo, EmployerCompanyInfo } from '@/components/profile-sections/EmployerProfileSections';
 import { ProfilePhotosSection } from '@/components/profile-sections/SharedProfileSections';
+import { convertYearsInBusiness } from '@/utils/dataTransformations';
 
 export default function ProfilePage() {
   const { user, refreshUser } = useAuth();
@@ -81,7 +82,7 @@ export default function ProfilePage() {
         email: user.email || '',
         website: user.website || '',
         businessDescription: user.businessDescription || '',
-        yearsInBusiness: user.yearsInBusiness || '',
+        yearsInBusiness: convertYearsInBusiness(user.yearsInBusiness) || user.yearsInBusiness || '',
         businessAddress: user.businessAddress || '',
         eaLicenseNumber: user.eaLicenseNumber || '',
         licenseExpiryDate: user.licenseExpiryDate || '',
