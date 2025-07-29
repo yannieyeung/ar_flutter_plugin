@@ -11,7 +11,7 @@ import Link from 'next/link';
 // Import user-type-specific profile sections
 import { HelperPersonalInfo, HelperMedicalInfo } from '@/components/profile-sections/HelperProfileSections';
 import { AgencyBusinessInfo, AgencyLicenseInfo, AgencyServicesInfo, AgencyFeesInfo } from '@/components/profile-sections/AgencyProfileSections';
-import { EmployerPersonalInfo, EmployerCompanyInfo } from '@/components/profile-sections/EmployerProfileSections';
+import { EmployerPersonalInfo, EmployerHouseholdInfo, EmployerPreferences } from '@/components/profile-sections/EmployerProfileSections';
 import { ProfilePhotosSection } from '@/components/profile-sections/SharedProfileSections';
 import { convertYearsInBusiness } from '@/utils/dataTransformations';
 
@@ -30,9 +30,6 @@ export default function ProfilePage() {
     
     const baseData = {
       fullName: user.fullName || '',
-      contactNumber: user.contactNumber || '',
-      residentialAddress: user.residentialAddress || '',
-      description: user.description || '',
       location: user.location || ''
     };
 
@@ -102,9 +99,16 @@ export default function ProfilePage() {
     } else if (user.userType === 'employer') {
       return {
         ...baseData,
-        companyName: user.companyName || '',
-        companySize: user.companySize || '',
-        industry: user.industry || ''
+        email: user.email || '',
+        householdSize: user.householdSize || '',
+        hasKids: user.hasKids || false,
+        numberOfKids: user.numberOfKids || '',
+        kidsAges: user.kidsAges || '',
+        hasPets: user.hasPets || false,
+        petDetails: user.petDetails || '',
+        selfIntroduction: user.selfIntroduction || '',
+        preferredLanguages: user.preferredLanguages || [],
+        specificRequirements: user.specificRequirements || ''
       };
     } else {
       return baseData;
@@ -248,20 +252,7 @@ export default function ProfilePage() {
     return age;
   };
 
-  const getCompletionPercentage = () => {
-    if (!user) return 0;
-    
-    const fields = [
-      user.fullName, user.contactNumber, user.residentialAddress,
-      user.educationLevel, user.maritalStatus, user.nationality,
-      user.religion, user.relevantSkills, user.dateOfBirth
-    ];
-    
-    const filledFields = fields.filter(field => field && field.trim() !== '').length;
-    const photoBonus = allPhotos.length > 0 ? 1 : 0;
-    
-    return Math.round(((filledFields + photoBonus) / (fields.length + 1)) * 100);
-  };
+
 
   if (!user) {
     return (
@@ -324,10 +315,10 @@ export default function ProfilePage() {
                   <div className="flex items-center space-x-5">
                     <div className="flex-shrink-0">
                       <div className="relative">
-                        {allPhotos.filter(photo => photo.photoType === 'profile-pictures').length > 0 ? (
+                        {allPhotos.filter(photo => photo.photoType === 'employer-profiles' || photo.photoType === 'profile-pictures').length > 0 ? (
                           <img 
                             className="h-20 w-20 rounded-full object-cover" 
-                            src={allPhotos.filter(photo => photo.photoType === 'profile-pictures')[0].url} 
+                            src={allPhotos.filter(photo => photo.photoType === 'employer-profiles' || photo.photoType === 'profile-pictures')[0].url} 
                             alt={user.fullName} 
                           />
                         ) : (
@@ -344,17 +335,7 @@ export default function ProfilePage() {
                       <p className="text-sm font-medium text-gray-500 capitalize">
                         {user.userType?.replace('_', ' ')} • {user.email || user.phoneNumber}
                       </p>
-                      <div className="mt-2 flex items-center">
-                        <div className="flex-1">
-                          <div className="bg-gray-200 rounded-full h-2">
-                            <div 
-                              className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
-                              style={{ width: `${getCompletionPercentage()}%` }}
-                            ></div>
-                          </div>
-                          <p className="text-xs text-gray-500 mt-1">Profile {getCompletionPercentage()}% complete</p>
-                        </div>
-                      </div>
+
                     </div>
                   </div>
                 </div>
@@ -420,7 +401,13 @@ export default function ProfilePage() {
                     editData={editData}
                     setEditData={setEditData}
                   />
-                  <EmployerCompanyInfo 
+                  <EmployerHouseholdInfo 
+                    user={user}
+                    isEditing={isEditing}
+                    editData={editData}
+                    setEditData={setEditData}
+                  />
+                  <EmployerPreferences 
                     user={user}
                     isEditing={isEditing}
                     editData={editData}

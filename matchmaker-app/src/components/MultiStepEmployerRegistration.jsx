@@ -112,31 +112,13 @@ const MultiStepEmployerRegistration = ({ onSubmit, isLoading }) => {
 
   const handleSubmit = () => {
     if (validateStep(currentStep)) {
-      // Calculate profile completeness
-      const completenessData = {
+      const submissionData = {
         ...formData,
-        profileCompleteness: calculateProfileCompleteness(formData),
         registrationCompletedAt: new Date().toISOString()
       };
       
-      onSubmit(completenessData);
+      onSubmit(submissionData);
     }
-  };
-
-  const calculateProfileCompleteness = (data) => {
-    let completeness = 0;
-    const totalFields = 8;
-    
-    if (data.fullName) completeness += 1;
-    if (data.email) completeness += 1;
-    if (data.location) completeness += 1;
-    if (data.profilePicture && data.profilePicture.length > 0) completeness += 1;
-    if (data.householdSize) completeness += 1;
-    if (data.selfIntroduction) completeness += 1;
-    if (data.hasKids !== undefined) completeness += 1;
-    if (data.hasPets !== undefined) completeness += 1;
-    
-    return Math.round((completeness / totalFields) * 100);
   };
 
   const renderStep1 = () => (

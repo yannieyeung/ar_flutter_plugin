@@ -303,8 +303,7 @@ export default function RegistrationPage() {
         
         // Registration status
         isRegistrationComplete: true,
-        registrationCompletedAt: employerData.registrationCompletedAt,
-        profileCompleteness: employerData.profileCompleteness
+        registrationCompletedAt: employerData.registrationCompletedAt
       };
 
       // Update user profile
