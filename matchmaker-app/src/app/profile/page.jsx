@@ -157,10 +157,10 @@ export default function ProfilePage() {
     
     try {
       // For profile photos, delete existing ones first to maintain single profile photo
-      const isProfilePhoto = photoType === 'employer-profiles' || photoType === 'profile-pictures';
+      const isProfilePhoto = photoType === 'employer-profiles' || photoType === 'profile-pictures' || photoType === 'agency-profile-photos';
       if (isProfilePhoto) {
         const existingProfilePhotos = allPhotos.filter(photo => 
-          photo.photoType === 'employer-profiles' || photo.photoType === 'profile-pictures'
+          photo.photoType === 'employer-profiles' || photo.photoType === 'profile-pictures' || photo.photoType === 'agency-profile-photos'
         );
         
         console.log('🗑️ Existing profile photos to delete:', existingProfilePhotos.length);
@@ -379,11 +379,20 @@ export default function ProfilePage() {
                 <div className="flex flex-col sm:flex-row sm:items-end sm:space-x-6 -mt-16">
                   {/* Profile Picture */}
                   <div className="relative">
-                    {(() => {
-                      const profilePhotoType = user?.userType === 'employer' ? 'employer-profiles' : 'profile-pictures';
-                      const profilePhoto = allPhotos.find(photo => photo.photoType === profilePhotoType);
-                      console.log('🖼️ Current profile photo:', profilePhoto?.id, profilePhoto?.url?.substring(0, 50));
-                      return profilePhoto ? (
+                                                                                        {(() => {
+                          // Get the correct profile photo type based on user type
+                          let profilePhotoType;
+                          if (user?.userType === 'employer') {
+                            profilePhotoType = 'employer-profiles';
+                          } else if (user?.userType === 'agency') {
+                            profilePhotoType = 'agency-profile-photos';
+                          } else {
+                            profilePhotoType = 'profile-pictures';
+                          }
+                          
+                          const profilePhoto = allPhotos.find(photo => photo.photoType === profilePhotoType);
+                          console.log('🖼️ Current profile photo:', profilePhoto?.id, profilePhoto?.url?.substring(0, 50));
+                          return profilePhoto ? (
                         <img 
                           key={profilePhoto.id} // Force re-render when photo changes
                           className="w-32 h-32 rounded-2xl object-cover border-4 border-white shadow-lg" 

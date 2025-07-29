@@ -17,6 +17,8 @@ export const ProfilePhotosSection = ({
   const getProfilePhotoType = () => {
     if (user?.userType === 'employer') {
       return 'employer-profiles';
+    } else if (user?.userType === 'agency') {
+      return 'agency-profile-photos';
     }
     return 'profile-pictures';
   };
