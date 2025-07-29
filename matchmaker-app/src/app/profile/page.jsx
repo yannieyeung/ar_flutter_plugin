@@ -163,14 +163,26 @@ export default function ProfilePage() {
           photo.photoType === 'employer-profiles' || photo.photoType === 'profile-pictures'
         );
         
+        console.log('🗑️ Existing profile photos to delete:', existingProfilePhotos.length);
+        
         // Delete existing profile photos
         for (const photo of existingProfilePhotos) {
           try {
+            console.log('🗑️ Deleting photo:', photo.id, photo.photoType);
             await ClientPhotoService.deletePhoto(photo.id, photo.supabasePath, photo.bucket);
           } catch (error) {
             console.warn('Failed to delete old profile photo:', error);
             // Continue with upload even if deletion fails
           }
+        }
+        
+        // Force refresh after cleanup and wait for it to complete
+        if (existingProfilePhotos.length > 0) {
+          console.log('🔄 Refreshing photos after cleanup...');
+          await refetchPhotos();
+          // Add a small delay to ensure the UI state is updated
+          await new Promise(resolve => setTimeout(resolve, 200));
+          console.log('✅ Photos refreshed after cleanup');
         }
       }
 
@@ -197,8 +209,17 @@ export default function ProfilePage() {
         return result;
       });
 
-      await Promise.all(uploadPromises);
+      const uploadedPhotos = await Promise.all(uploadPromises);
+      console.log('📸 Uploaded photos:', uploadedPhotos.length);
+      
+      // Force multiple refreshes to ensure the new photo is loaded
+      console.log('🔄 First refresh after upload...');
       await refetchPhotos();
+      await new Promise(resolve => setTimeout(resolve, 100));
+      console.log('🔄 Second refresh after upload...');
+      await refetchPhotos(); // Second refresh to be extra sure
+      console.log('✅ Photo upload and refresh complete');
+      
     } catch (error) {
       console.error('Error uploading photos:', error);
       alert('Failed to upload photos. Please try again.');
@@ -336,8 +357,10 @@ export default function ProfilePage() {
                         {(() => {
                           const profilePhotoType = user?.userType === 'employer' ? 'employer-profiles' : 'profile-pictures';
                           const profilePhoto = allPhotos.find(photo => photo.photoType === profilePhotoType);
+                          console.log('🖼️ Current profile photo:', profilePhoto?.id, profilePhoto?.url?.substring(0, 50));
                           return profilePhoto ? (
                             <img 
+                              key={profilePhoto.id} // Force re-render when photo changes
                               className="h-20 w-20 rounded-full object-cover" 
                               src={profilePhoto.url} 
                               alt={user.fullName} 
