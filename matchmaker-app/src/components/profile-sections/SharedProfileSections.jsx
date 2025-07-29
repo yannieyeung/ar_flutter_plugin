@@ -13,7 +13,15 @@ export const ProfilePhotosSection = ({
   // Filter photos by type based on user type
   const getPhotosByType = (photoType) => allPhotos.filter(photo => photo.photoType === photoType);
 
-  const profilePhotos = getPhotosByType('profile-pictures');
+  // Get the correct profile photo type based on user type
+  const getProfilePhotoType = () => {
+    if (user?.userType === 'employer') {
+      return 'employer-profiles';
+    }
+    return 'profile-pictures';
+  };
+
+  const profilePhotos = getPhotosByType(getProfilePhotoType());
   const portfolioPhotos = getPhotosByType('portfolio-photos');
   const certificates = getPhotosByType('certificates');
   const experienceProof = getPhotosByType('experience-proof');
@@ -64,7 +72,7 @@ export const ProfilePhotosSection = ({
           type="file"
           multiple
           accept="image/*"
-          onChange={(e) => handlePhotoUpload(e.target.files, 'profile-pictures')}
+          onChange={(e) => handlePhotoUpload(e.target.files, getProfilePhotoType())}
           className="hidden"
         />
         Profile Photo

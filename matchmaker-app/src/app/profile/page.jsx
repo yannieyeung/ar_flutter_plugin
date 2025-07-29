@@ -156,6 +156,24 @@ export default function ProfilePage() {
     setUploadingPhotos(true);
     
     try {
+      // For profile photos, delete existing ones first to maintain single profile photo
+      const isProfilePhoto = photoType === 'employer-profiles' || photoType === 'profile-pictures';
+      if (isProfilePhoto) {
+        const existingProfilePhotos = allPhotos.filter(photo => 
+          photo.photoType === 'employer-profiles' || photo.photoType === 'profile-pictures'
+        );
+        
+        // Delete existing profile photos
+        for (const photo of existingProfilePhotos) {
+          try {
+            await ClientPhotoService.deletePhoto(photo.id, photo.supabasePath, photo.bucket);
+          } catch (error) {
+            console.warn('Failed to delete old profile photo:', error);
+            // Continue with upload even if deletion fails
+          }
+        }
+      }
+
       const uploadPromises = Array.from(files).map(async (file, index) => {
         const progressKey = `${photoType}-${index}`;
         setUploadProgress(prev => ({ ...prev, [progressKey]: 0 }));
@@ -309,25 +327,29 @@ export default function ProfilePage() {
           <div className="px-4 py-6 sm:px-0">
             <div className="space-y-6">
               
-              {/* Profile Summary Card */}
+                                                        {/* Profile Summary Card */}
               <div className="bg-white overflow-hidden shadow rounded-lg">
                 <div className="px-4 py-5 sm:p-6">
                   <div className="flex items-center space-x-5">
                     <div className="flex-shrink-0">
                       <div className="relative">
-                        {allPhotos.filter(photo => photo.photoType === 'employer-profiles' || photo.photoType === 'profile-pictures').length > 0 ? (
-                          <img 
-                            className="h-20 w-20 rounded-full object-cover" 
-                            src={allPhotos.filter(photo => photo.photoType === 'employer-profiles' || photo.photoType === 'profile-pictures')[0].url} 
-                            alt={user.fullName} 
-                          />
-                        ) : (
-                          <div className="h-20 w-20 rounded-full bg-gray-300 flex items-center justify-center">
-                            <svg className="h-10 w-10 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
-                            </svg>
-                          </div>
-                        )}
+                        {(() => {
+                          const profilePhotoType = user?.userType === 'employer' ? 'employer-profiles' : 'profile-pictures';
+                          const profilePhoto = allPhotos.find(photo => photo.photoType === profilePhotoType);
+                          return profilePhoto ? (
+                            <img 
+                              className="h-20 w-20 rounded-full object-cover" 
+                              src={profilePhoto.url} 
+                              alt={user.fullName} 
+                            />
+                          ) : (
+                            <div className="h-20 w-20 rounded-full bg-gray-300 flex items-center justify-center">
+                              <svg className="h-10 w-10 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                              </svg>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
