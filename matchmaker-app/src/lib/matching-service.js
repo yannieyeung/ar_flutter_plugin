@@ -294,6 +294,13 @@ export class MatchingService {
   // Helper methods for feature extraction and matching
 
   normalizeText(text) {
+    if (!text) return '';
+    if (typeof text !== 'string') {
+      if (Array.isArray(text)) {
+        return text.join(' ').toLowerCase().trim().replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ');
+      }
+      return String(text).toLowerCase().trim().replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ');
+    }
     return text.toLowerCase().trim().replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ');
   }
 

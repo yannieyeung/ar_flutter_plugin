@@ -12,7 +12,7 @@ export async function GET() {
       const { adminDb: db } = await import('@/lib/firebase-admin');
       console.log('✅ Firebase admin imported successfully');
       
-      const snapshot = await db.collection('jobs').get();
+      const snapshot = await db.collection('job_postings').get();
       console.log(`📊 Found ${snapshot.size} job documents`);
 
       const jobs = [];

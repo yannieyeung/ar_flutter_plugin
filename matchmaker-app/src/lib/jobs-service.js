@@ -16,7 +16,7 @@ export class JobService {
         expiryDate: jobData.expiryDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
       };
 
-      const jobRef = await db.collection('jobs').add(job);
+      const jobRef = await db.collection('job_postings').add(job);
       return {
         id: jobRef.id,
         ...job
@@ -31,7 +31,7 @@ export class JobService {
     try {
       const { adminDb: db } = await import('@/lib/firebase-admin');
       
-      const jobDoc = await db.collection('jobs').doc(jobId).get();
+      const jobDoc = await db.collection('job_postings').doc(jobId).get();
       
       if (!jobDoc.exists) {
         return null;
@@ -51,7 +51,7 @@ export class JobService {
     try {
       const { adminDb: db } = await import('@/lib/firebase-admin');
       
-      const snapshot = await db.collection('jobs')
+      const snapshot = await db.collection('job_postings')
         .where('employerId', '==', employerId)
         .orderBy('datePosted', 'desc')
         .get();
@@ -75,7 +75,7 @@ export class JobService {
     try {
       const { adminDb: db } = await import('@/lib/firebase-admin');
       
-      const snapshot = await db.collection('jobs')
+      const snapshot = await db.collection('job_postings')
         .where('status', '==', 'active')
         .orderBy('datePosted', 'desc')
         .get();
@@ -124,7 +124,7 @@ export class JobService {
         lastUpdated: new Date().toISOString()
       };
 
-      await db.collection('jobs').doc(jobId).update(updatePayload);
+      await db.collection('job_postings').doc(jobId).update(updatePayload);
       
       return await this.getJobById(jobId);
     } catch (error) {
@@ -137,7 +137,7 @@ export class JobService {
     try {
       const { adminDb: db } = await import('@/lib/firebase-admin');
       
-      await db.collection('jobs').doc(jobId).delete();
+      await db.collection('job_postings').doc(jobId).delete();
       return true;
     } catch (error) {
       console.error('❌ JobService: Error deleting job:', error);
@@ -149,7 +149,7 @@ export class JobService {
     try {
       const { adminDb: db } = await import('@/lib/firebase-admin');
       
-      await db.collection('jobs').doc(jobId).update({
+      await db.collection('job_postings').doc(jobId).update({
         views: db.FieldValue.increment(1)
       });
     } catch (error) {
@@ -162,7 +162,7 @@ export class JobService {
     try {
       const { adminDb: db } = await import('@/lib/firebase-admin');
       
-      let query = db.collection('jobs').where('status', '==', 'active');
+      let query = db.collection('job_postings').where('status', '==', 'active');
 
       // Add filters
       if (filters.category) {
