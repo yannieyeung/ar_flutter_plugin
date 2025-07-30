@@ -48,7 +48,9 @@ export async function GET(request, { params }) {
     }
 
     // Find matches using the matching service
+    console.log(`🎯 Starting matching process for job ${jobId}`);
     const result = await matchingService.findMatches(jobId, helpers, limit, offset);
+    console.log(`✅ Matching completed: ${result.matches.length} matches found`);
     
     // Calculate pagination info
     const totalPages = Math.ceil(result.totalMatches / limit);
@@ -86,7 +88,11 @@ export async function GET(request, { params }) {
     // Return appropriate error response
     if (error.message === 'Job not found') {
       return NextResponse.json(
-        { error: 'Job not found' },
+        { 
+          error: 'Job not found',
+          message: `No job found with ID: ${jobId}. The job may have been deleted or the ID is incorrect.`,
+          suggestion: 'Please check the job ID or visit /api/debug/jobs to see available jobs.'
+        },
         { status: 404 }
       );
     }
