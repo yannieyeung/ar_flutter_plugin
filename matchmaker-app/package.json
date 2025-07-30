@@ -8,18 +8,20 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "setup-supabase": "node create-supabase-buckets.js"
+    "setup-supabase": "node create-supabase-buckets.js",
+    "seed:helpers": "node scripts/seedHelpers.js"
   },
   "dependencies": {
     "@firebase/auth": "^1.8.1",
     "@supabase/supabase-js": "^2.51.0",
     "cookie": "^1.0.2",
-    "dotenv": "^17.2.0",
+    "dotenv": "^17.2.1",
     "firebase": "^11.1.0",
     "firebase-admin": "^13.0.1",
     "next": "15.3.5",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
