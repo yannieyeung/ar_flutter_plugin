@@ -48,8 +48,9 @@ npm run seed:helpers
 
 ### Prerequisites
 1. Firebase Admin SDK configured with proper credentials
-2. Firestore database with write permissions
-3. All dependencies installed (uuid package added automatically)
+2. `.env.local` file with Firebase credentials (FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY)
+3. Firestore database with write permissions
+4. All dependencies installed (uuid and dotenv packages added automatically)
 
 ### Expected Output
 ```
@@ -108,10 +109,10 @@ The script can be easily modified to:
 
 ## Firebase Setup Notes
 
-The script uses `admin.credential.applicationDefault()`. Ensure you have:
-- Service account key file with Firestore write permissions
-- `GOOGLE_APPLICATION_CREDENTIALS` environment variable set
-- Or modify the script to use direct credentials
+The script now automatically loads credentials from your `.env.local` file. Ensure you have:
+- `.env.local` file in your project root with Firebase credentials
+- Service account with Firestore write permissions
+- Required environment variables: FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY
 
 ## Testing
 

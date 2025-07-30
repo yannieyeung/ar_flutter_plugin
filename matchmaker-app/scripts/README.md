@@ -17,8 +17,8 @@ The `seedHelpers.js` script generates 10 realistic helper profiles with comprehe
 ### Prerequisites
 
 1. **Firebase Setup**: Ensure your Firebase Admin SDK is properly configured
-2. **Environment Variables**: Set up your Firebase credentials (see Firebase Admin setup)
-3. **Dependencies**: The script requires the `uuid` package (already installed)
+2. **Environment Variables**: Set up your Firebase credentials in `.env.local` (see Firebase Admin setup)
+3. **Dependencies**: The script requires the `uuid` and `dotenv` packages (already installed)
 
 ### Usage
 
@@ -45,31 +45,22 @@ npm run seed:helpers
 
 ### Firebase Admin Configuration
 
-The script uses Firebase Admin SDK with default application credentials. You have several options:
+The script automatically loads Firebase credentials from your `.env.local` file. You need these environment variables:
 
-#### Option 1: Environment Variables
-Set these environment variables:
+#### Required Environment Variables in `.env.local`
 ```bash
-export GOOGLE_APPLICATION_CREDENTIALS="/path/to/your/service-account-key.json"
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_CLIENT_EMAIL=your-service-account-email@your-project.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYour private key here\n-----END PRIVATE KEY-----\n"
 ```
 
-#### Option 2: Service Account Key (Direct)
-Modify the script to use a service account key directly:
-```javascript
-admin.initializeApp({
-  credential: admin.credential.cert({
-    projectId: "your-project-id",
-    clientEmail: "your-client-email",
-    privateKey: "your-private-key"
-  })
-});
-```
+#### Getting Firebase Credentials
+1. Go to Firebase Console → Project Settings → Service Accounts
+2. Click "Generate new private key"
+3. Download the JSON file
+4. Extract the values and add them to your `.env.local` file
 
-#### Option 3: Default Credentials (Current)
-The script currently uses `admin.credential.applicationDefault()` which works if:
-- You're running on Google Cloud Platform
-- You have gcloud CLI configured with application default credentials
-- You've set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable
+**Note**: The private key should include the `\n` characters for line breaks, and the entire key should be wrapped in quotes.
 
 ### Generated Data
 
