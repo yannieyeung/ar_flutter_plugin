@@ -7,6 +7,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { ClientUserService } from '@/lib/db-client';
 import MultiStepHelperRegistration from '@/components/MultiStepHelperRegistration';
 import MultiStepAgencyRegistration from '@/components/MultiStepAgencyRegistration';
+import MultiStepEmployerRegistration from '@/components/MultiStepEmployerRegistration';
 
 export default function RegistrationPage() {
   const { user, refreshUser, signOut } = useAuth();
@@ -263,6 +264,59 @@ export default function RegistrationPage() {
 
     } catch (error) {
       console.error('Agency registration error:', error);
+      setError('Failed to complete registration. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEmployerRegistration = async (employerData) => {
+    if (!user?.uid) {
+      setError('User not found. Please sign in again.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      // Prepare comprehensive employer data
+      const updateData = {
+        // Personal Information
+        fullName: employerData.fullName,
+        email: employerData.email,
+        location: employerData.location,
+        profilePicture: employerData.profilePicture,
+        
+        // Household Information
+        householdSize: employerData.householdSize,
+        hasKids: employerData.hasKids,
+        numberOfKids: employerData.numberOfKids,
+        kidsAges: employerData.kidsAges,
+        hasPets: employerData.hasPets,
+        petDetails: employerData.petDetails,
+        
+        // Introduction and Preferences
+        selfIntroduction: employerData.selfIntroduction,
+        preferredLanguages: employerData.preferredLanguages,
+        specificRequirements: employerData.specificRequirements,
+        
+        // Registration status
+        isRegistrationComplete: true,
+        registrationCompletedAt: employerData.registrationCompletedAt
+      };
+
+      // Update user profile
+      await ClientUserService.updateUser(user.uid, updateData);
+
+      // Refresh user data in context
+      await refreshUser();
+
+      // Redirect to dashboard
+      router.push('/dashboard');
+
+    } catch (error) {
+      console.error('Employer registration error:', error);
       setError('Failed to complete registration. Please try again.');
     } finally {
       setIsLoading(false);
@@ -527,8 +581,23 @@ export default function RegistrationPage() {
               </div>
             )}
           </div>
+        ) : userType === 'employer' ? (
+          // Multi-step form for employers
+          <div className="max-w-6xl mx-auto">
+            <MultiStepEmployerRegistration
+              onSubmit={handleEmployerRegistration}
+              isLoading={isLoading}
+            />
+            {error && (
+              <div className="mt-4 text-center">
+                <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                  <p className="text-red-600 text-sm">{error}</p>
+                </div>
+              </div>
+            )}
+          </div>
         ) : (
-          // Original form for employers and agencies
+          // Fallback form for other user types
           <div className="max-w-md mx-auto">
             <div className="text-center mb-8">
               <div className="flex justify-between items-start mb-4">
