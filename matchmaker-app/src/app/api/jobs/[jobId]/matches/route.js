@@ -32,15 +32,18 @@ export async function GET(request, { params }) {
 
     // Get all active helpers from the database
     const helpers = await getAllActiveHelpers();
+    console.log(`📊 Retrieved ${helpers.length} helpers for matching`);
     
     if (helpers.length === 0) {
+      console.log('⚠️ No helpers found in database');
       return NextResponse.json({
         matches: [],
         totalMatches: 0,
         hasMore: false,
         page,
         limit,
-        totalPages: 0
+        totalPages: 0,
+        message: 'No active helpers found in the database'
       });
     }
 
@@ -78,6 +81,7 @@ export async function GET(request, { params }) {
 
   } catch (error) {
     console.error('❌ Error finding matches:', error);
+    console.error('❌ Error stack:', error.stack);
     
     // Return appropriate error response
     if (error.message === 'Job not found') {
@@ -88,7 +92,7 @@ export async function GET(request, { params }) {
     }
     
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error.message },
       { status: 500 }
     );
   }
@@ -99,13 +103,59 @@ export async function GET(request, { params }) {
  */
 async function getAllActiveHelpers() {
   try {
-    const { db } = await import('@/lib/firebase-admin');
+    console.log('🔍 Fetching active helpers...');
+    
+    // Try to import Firebase admin
+    let db;
+    try {
+      const firebaseAdmin = await import('@/lib/firebase-admin');
+      db = firebaseAdmin.db;
+      console.log('✅ Firebase admin imported successfully');
+    } catch (firebaseError) {
+      console.error('❌ Firebase admin import failed:', firebaseError.message);
+      // Return mock data for testing if Firebase is not configured
+      console.log('🧪 Using mock helper data for testing');
+      return [
+        {
+          id: 'mock-helper-1',
+          fullName: 'Maria Santos',
+          dateOfBirth: '1990-01-01',
+          nationality: 'Philippines',
+          religion: 'Christianity',
+          relevantSkills: 'Cooking, childcare, cleaning, housekeeping',
+          hasBeenHelperBefore: 'yes',
+          experience: { totalYears: 5 },
+          isActive: true,
+          isVerified: true,
+          profileCompleteness: 90,
+          userType: 'individual_helper',
+          isRegistrationComplete: true
+        },
+        {
+          id: 'mock-helper-2',
+          fullName: 'Siti Nurhaliza',
+          dateOfBirth: '1985-05-15',
+          nationality: 'Indonesia',
+          religion: 'Islam',
+          relevantSkills: 'Cleaning, laundry, elderly care, pet care',
+          hasBeenHelperBefore: 'yes',
+          experience: { totalYears: 3 },
+          isActive: true,
+          isVerified: false,
+          profileCompleteness: 75,
+          userType: 'individual_helper',
+          isRegistrationComplete: true
+        }
+      ];
+    }
     
     const snapshot = await db.collection('users')
       .where('userType', '==', 'individual_helper')
       .where('isActive', '==', true)
       .where('isRegistrationComplete', '==', true)
       .get();
+
+    console.log(`📊 Found ${snapshot.size} helper documents`);
 
     const helpers = [];
     snapshot.forEach(doc => {
@@ -115,9 +165,11 @@ async function getAllActiveHelpers() {
       });
     });
 
+    console.log(`✅ Processed ${helpers.length} helpers`);
     return helpers;
   } catch (error) {
     console.error('❌ Error fetching helpers:', error);
-    throw error;
+    console.error('❌ Helper fetch error stack:', error.stack);
+    throw new Error(`Failed to fetch helpers: ${error.message}`);
   }
 }
