@@ -7,7 +7,7 @@ import { matchingService } from '@/lib/matching-service';
  */
 export async function GET(request, { params }) {
   try {
-    const { jobId } = params;
+    const { jobId } = await params;
     const { searchParams } = new URL(request.url);
     
     // Get pagination parameters

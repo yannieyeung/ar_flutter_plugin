@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { AuthGuard } from '@/components/AuthGuard';
 import Link from 'next/link';
@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 export default function MatchesPage({ params }) {
   const { user } = useAuth();
   const router = useRouter();
-  const { jobId } = params;
+  const { jobId } = use(params);
   
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
