@@ -105,12 +105,12 @@ async function getAllActiveHelpers() {
   try {
     console.log('🔍 Fetching active helpers...');
     
-    // Try to import Firebase admin
-    let db;
-    try {
-      const firebaseAdmin = await import('@/lib/firebase-admin');
-      db = firebaseAdmin.db;
-      console.log('✅ Firebase admin imported successfully');
+         // Try to import Firebase admin
+     let db;
+     try {
+       const { adminDb } = await import('@/lib/firebase-admin');
+       db = adminDb;
+       console.log('✅ Firebase admin imported successfully');
     } catch (firebaseError) {
       console.error('❌ Firebase admin import failed:', firebaseError.message);
       // Return mock data for testing if Firebase is not configured

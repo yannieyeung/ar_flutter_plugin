@@ -3,7 +3,7 @@
 export class JobService {
   static async createJob(jobData) {
     try {
-      const { db } = await import('@/lib/firebase-admin');
+      const { adminDb: db } = await import('@/lib/firebase-admin');
       
       const job = {
         ...jobData,
@@ -29,7 +29,7 @@ export class JobService {
 
   static async getJobById(jobId) {
     try {
-      const { db } = await import('@/lib/firebase-admin');
+      const { adminDb: db } = await import('@/lib/firebase-admin');
       
       const jobDoc = await db.collection('jobs').doc(jobId).get();
       
@@ -49,7 +49,7 @@ export class JobService {
 
   static async getJobsByEmployer(employerId) {
     try {
-      const { db } = await import('@/lib/firebase-admin');
+      const { adminDb: db } = await import('@/lib/firebase-admin');
       
       const snapshot = await db.collection('jobs')
         .where('employerId', '==', employerId)
@@ -73,7 +73,7 @@ export class JobService {
 
   static async getAllActiveJobs() {
     try {
-      const { db } = await import('@/lib/firebase-admin');
+      const { adminDb: db } = await import('@/lib/firebase-admin');
       
       const snapshot = await db.collection('jobs')
         .where('status', '==', 'active')
@@ -117,7 +117,7 @@ export class JobService {
 
   static async updateJob(jobId, updateData) {
     try {
-      const { db } = await import('@/lib/firebase-admin');
+      const { adminDb: db } = await import('@/lib/firebase-admin');
       
       const updatePayload = {
         ...updateData,
@@ -135,7 +135,7 @@ export class JobService {
 
   static async deleteJob(jobId) {
     try {
-      const { db } = await import('@/lib/firebase-admin');
+      const { adminDb: db } = await import('@/lib/firebase-admin');
       
       await db.collection('jobs').doc(jobId).delete();
       return true;
@@ -147,7 +147,7 @@ export class JobService {
 
   static async incrementJobViews(jobId) {
     try {
-      const { db } = await import('@/lib/firebase-admin');
+      const { adminDb: db } = await import('@/lib/firebase-admin');
       
       await db.collection('jobs').doc(jobId).update({
         views: db.FieldValue.increment(1)
@@ -160,7 +160,7 @@ export class JobService {
 
   static async searchJobs(filters = {}) {
     try {
-      const { db } = await import('@/lib/firebase-admin');
+      const { adminDb: db } = await import('@/lib/firebase-admin');
       
       let query = db.collection('jobs').where('status', '==', 'active');
 

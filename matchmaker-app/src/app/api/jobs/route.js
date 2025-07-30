@@ -10,7 +10,7 @@ export async function GET(request) {
 
     // Check if Firebase Admin is available
     try {
-      const { db } = await import('@/lib/firebase-admin');
+      const { adminDb: db } = await import('@/lib/firebase-admin');
 
       let jobsQuery;
       
@@ -119,7 +119,7 @@ export async function POST(request) {
 
     // Check if Firebase Admin is available
     try {
-      const { db } = await import('@/lib/firebase-admin');
+      const { adminDb: db } = await import('@/lib/firebase-admin');
 
       // Verify user is an employer
       const userDoc = await db.collection('users').doc(employerId).get();
