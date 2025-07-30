@@ -72,7 +72,39 @@ export async function GET(request, { params }) {
         },
         similarity: Math.round(match.similarity * 100), // Convert to percentage
         matchReasons: match.matchReasons,
-        matchScore: match.similarity
+        matchScore: match.similarity,
+        scoreBreakdown: match.scoreBreakdown ? {
+          skills: {
+            score: Math.round(match.scoreBreakdown.skills.score * 100),
+            weight: Math.round(match.scoreBreakdown.skills.weight * 100),
+            details: match.scoreBreakdown.skills.details
+          },
+          experience: {
+            score: Math.round(match.scoreBreakdown.experience.score * 100),
+            weight: Math.round(match.scoreBreakdown.experience.weight * 100),
+            details: match.scoreBreakdown.experience.details
+          },
+          location: {
+            score: Math.round(match.scoreBreakdown.location.score * 100),
+            weight: Math.round(match.scoreBreakdown.location.weight * 100),
+            details: match.scoreBreakdown.location.details
+          },
+          nationality: {
+            score: Math.round(match.scoreBreakdown.nationality.score * 100),
+            weight: Math.round(match.scoreBreakdown.nationality.weight * 100),
+            details: match.scoreBreakdown.nationality.details
+          },
+          age: {
+            score: Math.round(match.scoreBreakdown.age.score * 100),
+            weight: Math.round(match.scoreBreakdown.age.weight * 100),
+            details: match.scoreBreakdown.age.details
+          },
+          religion: {
+            score: Math.round(match.scoreBreakdown.religion.score * 100),
+            weight: Math.round(match.scoreBreakdown.religion.weight * 100),
+            details: match.scoreBreakdown.religion.details
+          }
+        } : null
       })),
       totalMatches: result.totalMatches,
       hasMore: result.hasMore,

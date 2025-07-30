@@ -265,6 +265,54 @@ export default function MatchesPage({ params }) {
                               </div>
                             </div>
                           )}
+
+                          {/* Detailed Score Breakdown */}
+                          {match.scoreBreakdown && (
+                            <div className="mt-4">
+                              <details className="group">
+                                <summary className="cursor-pointer text-sm font-medium text-gray-900 hover:text-indigo-600">
+                                  📊 View Detailed Scoring Breakdown
+                                </summary>
+                                <div className="mt-3 p-3 bg-gray-50 rounded-lg text-xs space-y-2">
+                                  {Object.entries(match.scoreBreakdown).map(([factor, data]) => (
+                                    <div key={factor} className="flex justify-between items-start">
+                                      <div className="flex-1">
+                                        <div className="flex items-center space-x-2">
+                                          <span className="font-medium capitalize text-gray-800">{factor}:</span>
+                                          <span className="text-gray-600">{data.score}% (weight: {data.weight}%)</span>
+                                        </div>
+                                        <div className="text-gray-500 mt-1">{data.details}</div>
+                                      </div>
+                                      <div className="ml-2">
+                                        <div className="w-16 bg-gray-200 rounded-full h-2">
+                                          <div 
+                                            className={`h-2 rounded-full ${
+                                              data.score >= 80 ? 'bg-green-500' : 
+                                              data.score >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                                            }`}
+                                            style={{ width: `${data.score}%` }}
+                                          ></div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                  <div className="pt-2 mt-3 border-t border-gray-300">
+                                    <div className="text-sm font-medium text-gray-800">
+                                      Final Score Calculation:
+                                    </div>
+                                    <div className="text-xs text-gray-600 mt-1">
+                                      Skills ({match.scoreBreakdown.skills.score}% × 30%) + 
+                                      Experience ({match.scoreBreakdown.experience.score}% × 25%) + 
+                                      Location ({match.scoreBreakdown.location.score}% × 20%) + 
+                                      Nationality ({match.scoreBreakdown.nationality.score}% × 10%) + 
+                                      Age ({match.scoreBreakdown.age.score}% × 10%) + 
+                                      Religion ({match.scoreBreakdown.religion.score}% × 5%) = {match.similarity}%
+                                    </div>
+                                  </div>
+                                </div>
+                              </details>
+                            </div>
+                          )}
                         </div>
 
                         {/* Match Score */}

@@ -157,43 +157,67 @@ export class MatchingService {
    * Calculate similarity score between job and helper
    */
   calculateSimilarity(jobFeatures, helperFeatures) {
+    const scoreBreakdown = {
+      skills: { score: 0, weight: 0.3, details: '' },
+      experience: { score: 0, weight: 0.25, details: '' },
+      location: { score: 0, weight: 0.2, details: '' },
+      nationality: { score: 0, weight: 0.1, details: '' },
+      age: { score: 0, weight: 0.1, details: '' },
+      religion: { score: 0, weight: 0.05, details: '' }
+    };
+
     let totalScore = 0;
     let maxScore = 0;
 
     // Skills matching (high weight)
     const skillsScore = this.calculateSkillsMatch(jobFeatures.requiredSkills, helperFeatures.skills);
+    scoreBreakdown.skills.score = skillsScore;
+    scoreBreakdown.skills.details = this.getSkillsMatchDetails(jobFeatures.requiredSkills, helperFeatures.skills);
     totalScore += skillsScore * 0.3;
     maxScore += 0.3;
 
-    // Location preference (medium weight)
-    const locationScore = this.calculateLocationMatch(jobFeatures.location, helperFeatures.location);
-    totalScore += locationScore * 0.2;
-    maxScore += 0.2;
-
     // Experience matching (high weight)
     const experienceScore = this.calculateExperienceMatch(jobFeatures.experienceRequired, helperFeatures);
+    scoreBreakdown.experience.score = experienceScore;
+    scoreBreakdown.experience.details = this.getExperienceMatchDetails(jobFeatures.experienceRequired, helperFeatures);
     totalScore += experienceScore * 0.25;
     maxScore += 0.25;
 
+    // Location preference (medium weight)
+    const locationScore = this.calculateLocationMatch(jobFeatures.location, helperFeatures.location);
+    scoreBreakdown.location.score = locationScore;
+    scoreBreakdown.location.details = this.getLocationMatchDetails(jobFeatures.location, helperFeatures.location);
+    totalScore += locationScore * 0.2;
+    maxScore += 0.2;
+
+    // Nationality preference matching (if specified)
+    const nationalityScore = this.calculateNationalityMatch(jobFeatures.nationalityPreference, helperFeatures.nationality);
+    scoreBreakdown.nationality.score = nationalityScore;
+    scoreBreakdown.nationality.details = this.getNationalityMatchDetails(jobFeatures.nationalityPreference, helperFeatures.nationality);
+    totalScore += nationalityScore * 0.1;
+    maxScore += 0.1;
+
     // Age preference matching
     const ageScore = this.calculateAgeMatch(jobFeatures.agePreference, helperFeatures.age);
+    scoreBreakdown.age.score = ageScore;
+    scoreBreakdown.age.details = this.getAgeMatchDetails(jobFeatures.agePreference, helperFeatures.age);
     totalScore += ageScore * 0.1;
     maxScore += 0.1;
 
     // Religion preference matching (if specified)
     const religionScore = this.calculateReligionMatch(jobFeatures.religionPreference, helperFeatures.religion);
+    scoreBreakdown.religion.score = religionScore;
+    scoreBreakdown.religion.details = this.getReligionMatchDetails(jobFeatures.religionPreference, helperFeatures.religion);
     totalScore += religionScore * 0.05;
     maxScore += 0.05;
-
-    // Nationality preference matching (if specified)
-    const nationalityScore = this.calculateNationalityMatch(jobFeatures.nationalityPreference, helperFeatures.nationality);
-    totalScore += nationalityScore * 0.1;
-    maxScore += 0.1;
 
     // Normalize score to 0-1 range
     const normalizedScore = maxScore > 0 ? totalScore / maxScore : 0;
     
-    return Math.min(Math.max(normalizedScore, 0), 1);
+    return {
+      score: Math.min(Math.max(normalizedScore, 0), 1),
+      breakdown: scoreBreakdown
+    };
   }
 
   /**
@@ -258,12 +282,13 @@ export class MatchingService {
         try {
           const helper = helpers[i];
           const helperFeatures = this.extractHelperFeatures(helper);
-          const similarity = this.calculateSimilarity(jobFeatures, helperFeatures);
+          const similarityResult = this.calculateSimilarity(jobFeatures, helperFeatures);
           
           matches.push({
             helper,
-            similarity,
-            matchReasons: this.generateMatchReasons(jobFeatures, helperFeatures, similarity)
+            similarity: similarityResult.score,
+            scoreBreakdown: similarityResult.breakdown,
+            matchReasons: this.generateMatchReasons(jobFeatures, helperFeatures, similarityResult.score)
           });
         } catch (helperError) {
           console.error(`❌ Error processing helper ${i}:`, helperError);
@@ -435,6 +460,45 @@ export class MatchingService {
     if (!nationalityPreferences || nationalityPreferences.length === 0) return 1; // No preference
     
     return nationalityPreferences.includes(helperNationality) ? 1 : 0.3;
+  }
+
+  // Detail methods for score breakdown
+  getSkillsMatchDetails(requiredSkills, helperSkills) {
+    if (requiredSkills.length === 0) return 'No specific skills required';
+    const matchingSkills = requiredSkills.filter(skill => 
+      helperSkills.some(helperSkill => helperSkill.includes(skill) || skill.includes(helperSkill))
+    );
+    return `${matchingSkills.length}/${requiredSkills.length} required skills matched: ${matchingSkills.join(', ') || 'none'}`;
+  }
+
+  getExperienceMatchDetails(requiredLevel, helperFeatures) {
+    const helperYears = helperFeatures.hasExperience ? helperFeatures.experienceYears : 0;
+    if (requiredLevel === 0) return 'No experience required';
+    return `Helper has ${helperYears} years, required: ${requiredLevel} years`;
+  }
+
+  getLocationMatchDetails(jobLocation, helperLocation) {
+    if (jobLocation.city === helperLocation.city) return 'Same city match';
+    if (jobLocation.country === helperLocation.country) return 'Same country match';
+    return `Job: ${jobLocation.city || jobLocation.country}, Helper: ${helperLocation.city || helperLocation.country}`;
+  }
+
+  getNationalityMatchDetails(nationalityPreferences, helperNationality) {
+    if (!nationalityPreferences || nationalityPreferences.length === 0) return 'No nationality preference';
+    const isMatch = nationalityPreferences.includes(helperNationality);
+    return `${isMatch ? '✓' : '✗'} Helper is ${helperNationality}, preferences: ${nationalityPreferences.join(', ')}`;
+  }
+
+  getAgeMatchDetails(agePreference, helperAge) {
+    if (!agePreference.min && !agePreference.max) return 'No age preference';
+    const isInRange = helperAge >= agePreference.min && helperAge <= agePreference.max;
+    return `${isInRange ? '✓' : '✗'} Helper is ${helperAge}, range: ${agePreference.min}-${agePreference.max}`;
+  }
+
+  getReligionMatchDetails(religionPreference, helperReligion) {
+    if (!religionPreference) return 'No religion preference';
+    const isMatch = religionPreference === helperReligion;
+    return `${isMatch ? '✓' : '✗'} Helper is ${helperReligion}, preference: ${religionPreference}`;
   }
 
   generateMatchReasons(jobFeatures, helperFeatures, similarity) {
