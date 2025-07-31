@@ -390,7 +390,7 @@ export default function ViewJobPage({ params }) {
                 <h3 className="text-lg font-medium text-gray-900 mb-3">Job Description</h3>
                 <div className="prose prose-sm max-w-none">
                   <SafeRenderer>
-                    <p className="text-gray-700 whitespace-pre-wrap">{formatObjectValue(job.jobDescription)}</p>
+                    <div className="text-gray-700 whitespace-pre-wrap">{formatObjectValue(job.jobDescription)}</div>
                   </SafeRenderer>
                 </div>
               </div>
@@ -430,28 +430,28 @@ export default function ViewJobPage({ params }) {
                       {job.householdInfo.adultsCount !== undefined && (
                         <div>
                           <label className="block text-sm font-medium text-gray-700">Adults</label>
-                          <p className="mt-1 text-sm text-gray-900">{formatObjectValue(job.householdInfo.adultsCount)}</p>
+                          <div className="mt-1 text-sm text-gray-900">{formatObjectValue(job.householdInfo.adultsCount)}</div>
                         </div>
                       )}
                       
                       {job.householdInfo.childrenCount !== undefined && (
                         <div>
                           <label className="block text-sm font-medium text-gray-700">Children</label>
-                          <p className="mt-1 text-sm text-gray-900">{formatObjectValue(job.householdInfo.childrenCount)}</p>
+                          <div className="mt-1 text-sm text-gray-900">{formatObjectValue(job.householdInfo.childrenCount)}</div>
                         </div>
                       )}
                       
                       {job.householdInfo.petsCount !== undefined && (
                         <div>
                           <label className="block text-sm font-medium text-gray-700">Pets</label>
-                          <p className="mt-1 text-sm text-gray-900">{formatObjectValue(job.householdInfo.petsCount)}</p>
+                          <div className="mt-1 text-sm text-gray-900">{formatObjectValue(job.householdInfo.petsCount)}</div>
                         </div>
                       )}
                       
                       {job.householdInfo.houseType && (
                         <div>
                           <label className="block text-sm font-medium text-gray-700">House Type</label>
-                          <p className="mt-1 text-sm text-gray-900">{formatObjectValue(job.householdInfo.houseType)}</p>
+                          <div className="mt-1 text-sm text-gray-900">{formatObjectValue(job.householdInfo.houseType)}</div>
                         </div>
                       )}
                     </div>
@@ -467,14 +467,14 @@ export default function ViewJobPage({ params }) {
                     {job.workingConditions.workingDays !== undefined && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700">Working Days per Week</label>
-                        <p className="mt-1 text-sm text-gray-900">{formatObjectValue(job.workingConditions.workingDays)}</p>
+                        <div className="mt-1 text-sm text-gray-900">{formatObjectValue(job.workingConditions.workingDays)}</div>
                       </div>
                     )}
                     
                     {job.workingConditions.restDays !== undefined && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700">Rest Days per Week</label>
-                        <p className="mt-1 text-sm text-gray-900">{formatObjectValue(job.workingConditions.restDays)}</p>
+                        <div className="mt-1 text-sm text-gray-900">{formatObjectValue(job.workingConditions.restDays)}</div>
                       </div>
                     )}
                   </div>
@@ -486,7 +486,7 @@ export default function ViewJobPage({ params }) {
                 <div>
                   <h3 className="text-lg font-medium text-gray-900 mb-3">Requirements</h3>
                   <div className="prose prose-sm max-w-none">
-                    <p className="text-gray-700 whitespace-pre-wrap">{formatObjectValue(job.requirements)}</p>
+                    <div className="text-gray-700 whitespace-pre-wrap">{formatObjectValue(job.requirements)}</div>
                   </div>
                 </div>
               )}
