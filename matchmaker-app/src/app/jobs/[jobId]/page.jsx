@@ -72,34 +72,193 @@ export default function ViewJobPage({ params }) {
     return `${salary.currency?.toUpperCase() || 'USD'} ${salary.amount || 0}`;
   };
 
+  // Component to render care requirements with special formatting
+  const CareRequirementRenderer = ({ obj, title }) => {
+    if (!obj || typeof obj !== 'object') return null;
+    
+    const isRequired = obj.required;
+    const importance = obj.importance || 'medium';
+    const importanceColors = {
+      low: 'bg-gray-100 text-gray-700',
+      medium: 'bg-yellow-100 text-yellow-800',
+      high: 'bg-red-100 text-red-800'
+    };
+
+    return (
+      <div className={`p-4 rounded-lg border-2 ${isRequired ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'}`}>
+        <div className="flex justify-between items-start mb-3">
+          <h4 className="font-semibold text-gray-900">{title}</h4>
+          <div className="flex gap-2">
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${isRequired ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
+              {isRequired ? 'Required' : 'Optional'}
+            </span>
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${importanceColors[importance]}`}>
+              {importance.charAt(0).toUpperCase() + importance.slice(1)} Priority
+            </span>
+          </div>
+        </div>
+        
+        <div className="space-y-2">
+          {obj.ageRangeMonths && obj.ageRangeMonths.length > 0 && (
+            <div className="text-sm">
+              <span className="font-medium text-gray-700">Age Range:</span> {obj.ageRangeMonths.join('-')} months
+            </div>
+          )}
+          {obj.ageRangeYears && obj.ageRangeYears.length > 0 && (
+            <div className="text-sm">
+              <span className="font-medium text-gray-700">Age Range:</span> {obj.ageRangeYears.join('-')} years
+            </div>
+          )}
+          {obj.numberOfInfants > 0 && (
+            <div className="text-sm">
+              <span className="font-medium text-gray-700">Number of Infants:</span> {obj.numberOfInfants}
+            </div>
+          )}
+          {obj.numberOfChildren > 0 && (
+            <div className="text-sm">
+              <span className="font-medium text-gray-700">Number of Children:</span> {obj.numberOfChildren}
+            </div>
+          )}
+          {obj.numberOfElderly > 0 && (
+            <div className="text-sm">
+              <span className="font-medium text-gray-700">Number of Elderly:</span> {obj.numberOfElderly}
+            </div>
+          )}
+          {obj.schoolSupport && (
+            <div className="text-sm">
+              <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                📚 School Support Required
+              </span>
+            </div>
+          )}
+          {obj.mobilityAssistance && (
+            <div className="text-sm">
+              <span className="inline-flex items-center px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
+                🦽 Mobility Assistance
+              </span>
+            </div>
+          )}
+          {obj.medicationManagement && (
+            <div className="text-sm">
+              <span className="inline-flex items-center px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
+                💊 Medication Management
+              </span>
+            </div>
+          )}
+          {obj.disabilityType && (
+            <div className="text-sm">
+              <span className="font-medium text-gray-700">Disability Type:</span> {obj.disabilityType}
+            </div>
+          )}
+          {obj.specificNeeds && (
+            <div className="text-sm">
+              <span className="font-medium text-gray-700">Specific Needs:</span> {obj.specificNeeds}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Component to render complex objects in a user-friendly way
+  const ObjectRenderer = ({ obj }) => {
+    if (!obj || typeof obj !== 'object') return <span className="text-gray-500 italic">Not specified</span>;
+
+    const renderValue = (key, val) => {
+      if (val === null || val === undefined || val === '') return null;
+      
+      const readableKey = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+      
+      if (typeof val === 'boolean') {
+        return (
+          <div key={key} className="flex justify-between items-center py-1.5 px-3 bg-white rounded border-l-4 border-blue-200">
+            <span className="text-gray-700 font-medium">{readableKey}</span>
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${val ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+              {val ? 'Required' : 'Not Required'}
+            </span>
+          </div>
+        );
+      }
+      
+      if (Array.isArray(val)) {
+        if (val.length === 0) return null;
+        return (
+          <div key={key} className="py-1.5 px-3 bg-white rounded border-l-4 border-green-200">
+            <div className="text-gray-700 font-medium mb-1">{readableKey}</div>
+            <div className="flex flex-wrap gap-1">
+              {val.map((item, idx) => (
+                <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                  {String(item)}
+                </span>
+              ))}
+            </div>
+          </div>
+        );
+      }
+      
+      if (typeof val === 'object') {
+        return (
+          <div key={key} className="py-2 px-3 bg-gray-50 rounded border-l-4 border-purple-200">
+            <div className="text-gray-800 font-semibold mb-2 text-sm">{readableKey}</div>
+            <div className="ml-2">
+              <ObjectRenderer obj={val} />
+            </div>
+          </div>
+        );
+      }
+      
+      return (
+        <div key={key} className="flex justify-between items-center py-1.5 px-3 bg-white rounded border-l-4 border-gray-200">
+          <span className="text-gray-700 font-medium">{readableKey}</span>
+          <span className="text-gray-900 font-semibold text-right max-w-xs break-words">
+            {String(val)}
+          </span>
+        </div>
+      );
+    };
+
+    const entries = Object.entries(obj)
+      .map(([key, val]) => renderValue(key, val))
+      .filter(Boolean);
+
+    if (entries.length === 0) return <span className="text-gray-500 italic">No details specified</span>;
+
+    return (
+      <div className="space-y-2">
+        {entries}
+      </div>
+    );
+  };
+
   const formatObjectValue = (value) => {
     try {
-      if (!value) return 'Not specified';
-      if (typeof value === 'string') return value;
+      if (!value) return <span className="text-gray-500 italic">Not specified</span>;
+      if (typeof value === 'string') return value || <span className="text-gray-500 italic">Not specified</span>;
       if (typeof value === 'number') return value.toString();
-      if (typeof value === 'boolean') return value ? 'Yes' : 'No';
-      if (Array.isArray(value)) return value.length > 0 ? value.join(', ') : 'None specified';
+      if (typeof value === 'boolean') return (
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${value ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+          {value ? 'Yes' : 'No'}
+        </span>
+      );
+      if (Array.isArray(value)) {
+        if (value.length === 0) return <span className="text-gray-500 italic">None specified</span>;
+        return (
+          <div className="flex flex-wrap gap-1">
+            {value.map((item, idx) => (
+              <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                {String(item)}
+              </span>
+            ))}
+          </div>
+        );
+      }
       if (typeof value === 'object') {
-        // Handle object values by converting to readable format
-        const entries = Object.entries(value)
-          .filter(([key, val]) => val !== null && val !== undefined && val !== '')
-          .map(([key, val]) => {
-            const readableKey = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-            try {
-              if (typeof val === 'boolean') return `${readableKey}: ${val ? 'Yes' : 'No'}`;
-              if (Array.isArray(val)) return `${readableKey}: ${val.join(', ')}`;
-              if (typeof val === 'object') return `${readableKey}: ${JSON.stringify(val)}`;
-              return `${readableKey}: ${val}`;
-            } catch (e) {
-              return `${readableKey}: [Complex Value]`;
-            }
-          });
-        return entries.length > 0 ? entries.join(' | ') : 'Not specified';
+        return <ObjectRenderer obj={value} />;
       }
       return String(value);
     } catch (error) {
       console.error('Error formatting value:', value, error);
-      return 'Unable to display value';
+      return <span className="text-red-500 text-sm">Unable to display value</span>;
     }
   };
 
@@ -338,21 +497,29 @@ export default function ViewJobPage({ params }) {
                 job[key] && typeof job[key] === 'object'
               ) && (
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-3">Additional Details</h3>
-                  <div className="space-y-3">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Job Requirements & Details</h3>
+                  <div className="space-y-4">
                     {Object.entries(job)
                       .filter(([key, value]) => 
                         !['id', 'jobTitle', 'jobDescription', 'location', 'salary', 'startDate', 'urgency', 'category', 'requirements', 'householdInfo', 'workingConditions', 'status', 'datePosted', 'lastUpdated', 'views', 'applicationsCount', 'employerId'].includes(key) &&
                         value && typeof value === 'object'
                       )
-                      .map(([key, value]) => (
-                        <div key={key}>
-                          <label className="block text-sm font-medium text-gray-700">
-                            {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                          </label>
-                          <p className="mt-1 text-sm text-gray-900">{formatObjectValue(value)}</p>
-                        </div>
-                      ))
+                      .map(([key, value]) => {
+                        const title = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                        
+                        // Use specialized renderer for care requirements
+                        if (key.toLowerCase().includes('care') || key.toLowerCase().includes('of')) {
+                          return <CareRequirementRenderer key={key} obj={value} title={title} />;
+                        }
+                        
+                        // Default renderer for other complex objects
+                        return (
+                          <div key={key} className="bg-white p-4 rounded-lg border border-gray-200">
+                            <h4 className="font-semibold text-gray-900 mb-3">{title}</h4>
+                            {formatObjectValue(value)}
+                          </div>
+                        );
+                      })
                     }
                   </div>
                 </div>
