@@ -42,6 +42,14 @@ export default function ViewJobPage({ params }) {
       }
       
       setJob(jobData);
+      
+      // Debug: Log job data structure to help identify problematic fields
+      console.log('Job data structure:', jobData);
+      Object.entries(jobData).forEach(([key, value]) => {
+        if (typeof value === 'object' && value !== null) {
+          console.log(`${key}:`, value);
+        }
+      });
     } catch (error) {
       console.error('Error fetching job:', error);
       setError(error.message);
@@ -62,6 +70,46 @@ export default function ViewJobPage({ params }) {
   const formatSalary = (salary) => {
     if (!salary) return 'Not specified';
     return `${salary.currency?.toUpperCase() || 'USD'} ${salary.amount || 0}`;
+  };
+
+  const formatObjectValue = (value) => {
+    try {
+      if (!value) return 'Not specified';
+      if (typeof value === 'string') return value;
+      if (typeof value === 'number') return value.toString();
+      if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+      if (Array.isArray(value)) return value.length > 0 ? value.join(', ') : 'None specified';
+      if (typeof value === 'object') {
+        // Handle object values by converting to readable format
+        const entries = Object.entries(value)
+          .filter(([key, val]) => val !== null && val !== undefined && val !== '')
+          .map(([key, val]) => {
+            const readableKey = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+            try {
+              if (typeof val === 'boolean') return `${readableKey}: ${val ? 'Yes' : 'No'}`;
+              if (Array.isArray(val)) return `${readableKey}: ${val.join(', ')}`;
+              if (typeof val === 'object') return `${readableKey}: ${JSON.stringify(val)}`;
+              return `${readableKey}: ${val}`;
+            } catch (e) {
+              return `${readableKey}: [Complex Value]`;
+            }
+          });
+        return entries.length > 0 ? entries.join(' | ') : 'Not specified';
+      }
+      return String(value);
+    } catch (error) {
+      console.error('Error formatting value:', value, error);
+      return 'Unable to display value';
+    }
+  };
+
+  const SafeRenderer = ({ children }) => {
+    try {
+      return <>{children}</>;
+    } catch (error) {
+      console.error('Safe renderer error:', error);
+      return <span className="text-red-500 text-sm">Error displaying content</span>;
+    }
   };
 
   if (loading) {
@@ -178,11 +226,14 @@ export default function ViewJobPage({ params }) {
 
             {/* Job Content */}
             <div className="px-6 py-6 space-y-6">
+              <SafeRenderer>
               {/* Job Description */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-3">Job Description</h3>
                 <div className="prose prose-sm max-w-none">
-                  <p className="text-gray-700 whitespace-pre-wrap">{job.jobDescription}</p>
+                  <SafeRenderer>
+                    <p className="text-gray-700 whitespace-pre-wrap">{formatObjectValue(job.jobDescription)}</p>
+                  </SafeRenderer>
                 </div>
               </div>
 
@@ -221,28 +272,28 @@ export default function ViewJobPage({ params }) {
                       {job.householdInfo.adultsCount !== undefined && (
                         <div>
                           <label className="block text-sm font-medium text-gray-700">Adults</label>
-                          <p className="mt-1 text-sm text-gray-900">{job.householdInfo.adultsCount}</p>
+                          <p className="mt-1 text-sm text-gray-900">{formatObjectValue(job.householdInfo.adultsCount)}</p>
                         </div>
                       )}
                       
                       {job.householdInfo.childrenCount !== undefined && (
                         <div>
                           <label className="block text-sm font-medium text-gray-700">Children</label>
-                          <p className="mt-1 text-sm text-gray-900">{job.householdInfo.childrenCount}</p>
+                          <p className="mt-1 text-sm text-gray-900">{formatObjectValue(job.householdInfo.childrenCount)}</p>
                         </div>
                       )}
                       
                       {job.householdInfo.petsCount !== undefined && (
                         <div>
                           <label className="block text-sm font-medium text-gray-700">Pets</label>
-                          <p className="mt-1 text-sm text-gray-900">{job.householdInfo.petsCount}</p>
+                          <p className="mt-1 text-sm text-gray-900">{formatObjectValue(job.householdInfo.petsCount)}</p>
                         </div>
                       )}
                       
                       {job.householdInfo.houseType && (
                         <div>
                           <label className="block text-sm font-medium text-gray-700">House Type</label>
-                          <p className="mt-1 text-sm text-gray-900">{job.householdInfo.houseType}</p>
+                          <p className="mt-1 text-sm text-gray-900">{formatObjectValue(job.householdInfo.houseType)}</p>
                         </div>
                       )}
                     </div>
@@ -258,14 +309,14 @@ export default function ViewJobPage({ params }) {
                     {job.workingConditions.workingDays !== undefined && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700">Working Days per Week</label>
-                        <p className="mt-1 text-sm text-gray-900">{job.workingConditions.workingDays}</p>
+                        <p className="mt-1 text-sm text-gray-900">{formatObjectValue(job.workingConditions.workingDays)}</p>
                       </div>
                     )}
                     
                     {job.workingConditions.restDays !== undefined && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700">Rest Days per Week</label>
-                        <p className="mt-1 text-sm text-gray-900">{job.workingConditions.restDays}</p>
+                        <p className="mt-1 text-sm text-gray-900">{formatObjectValue(job.workingConditions.restDays)}</p>
                       </div>
                     )}
                   </div>
@@ -277,7 +328,33 @@ export default function ViewJobPage({ params }) {
                 <div>
                   <h3 className="text-lg font-medium text-gray-900 mb-3">Requirements</h3>
                   <div className="prose prose-sm max-w-none">
-                    <p className="text-gray-700 whitespace-pre-wrap">{job.requirements}</p>
+                    <p className="text-gray-700 whitespace-pre-wrap">{formatObjectValue(job.requirements)}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Additional Job Details */}
+              {Object.keys(job).some(key => 
+                !['id', 'jobTitle', 'jobDescription', 'location', 'salary', 'startDate', 'urgency', 'category', 'requirements', 'householdInfo', 'workingConditions', 'status', 'datePosted', 'lastUpdated', 'views', 'applicationsCount', 'employerId'].includes(key) &&
+                job[key] && typeof job[key] === 'object'
+              ) && (
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-3">Additional Details</h3>
+                  <div className="space-y-3">
+                    {Object.entries(job)
+                      .filter(([key, value]) => 
+                        !['id', 'jobTitle', 'jobDescription', 'location', 'salary', 'startDate', 'urgency', 'category', 'requirements', 'householdInfo', 'workingConditions', 'status', 'datePosted', 'lastUpdated', 'views', 'applicationsCount', 'employerId'].includes(key) &&
+                        value && typeof value === 'object'
+                      )
+                      .map(([key, value]) => (
+                        <div key={key}>
+                          <label className="block text-sm font-medium text-gray-700">
+                            {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                          </label>
+                          <p className="mt-1 text-sm text-gray-900">{formatObjectValue(value)}</p>
+                        </div>
+                      ))
+                    }
                   </div>
                 </div>
               )}
@@ -303,7 +380,7 @@ export default function ViewJobPage({ params }) {
                     <p className="text-sm text-gray-600">Last Updated</p>
                   </div>
                 </div>
-              </div>
+              </SafeRenderer>
             </div>
 
             {/* Actions */}
