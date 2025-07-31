@@ -19,6 +19,23 @@ export default function EditJobPage({ params }) {
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
 
+  // Constants for dropdowns
+  const HOUSE_TYPES = [
+    'Studio Apartment', 'One Bedroom Apartment', 'Two Bedroom Apartment', 'Three Bedroom Apartment',
+    'Four Bedroom Apartment', 'Five Bedroom Apartment', '2-Storey House', '3-Storey House', '4-Storey House', 'Others'
+  ];
+
+  const LANGUAGES = [
+    'English', 'Mandarin', 'Cantonese', 'Malay', 'Tamil', 'Hindi',
+    'Tagalog', 'Indonesian', 'Burmese', 'Sinhalese', 'Thai', 'Vietnamese',
+    'Arabic', 'French', 'German', 'Spanish', 'Japanese', 'Korean', 'Other'
+  ];
+
+  const NATIONALITIES = [
+    'Philippines', 'Indonesia', 'Myanmar', 'Sri Lanka', 'India', 'Bangladesh',
+    'Thailand', 'Vietnam', 'Cambodia', 'Malaysia', 'China', 'Nepal', 'Other'
+  ];
+
   useEffect(() => {
     if (jobId) {
       fetchJob();
@@ -47,32 +64,76 @@ export default function EditJobPage({ params }) {
       
       setJob(jobData);
       
-      // Initialize form data
+      // Initialize comprehensive form data
       setFormData({
+        // Basic Information
         jobTitle: jobData.jobTitle || '',
         jobDescription: jobData.jobDescription || '',
         location: {
           city: jobData.location?.city || '',
           country: jobData.location?.country || ''
         },
-        salary: {
-          amount: jobData.salary?.amount || '',
-          currency: jobData.salary?.currency || 'SGD'
-        },
         startDate: jobData.startDate ? jobData.startDate.split('T')[0] : '',
         urgency: jobData.urgency || 'flexible',
         category: jobData.category || '',
-        requirements: jobData.requirements || '',
-        householdInfo: {
-          adultsCount: jobData.householdInfo?.adultsCount || 0,
-          childrenCount: jobData.householdInfo?.childrenCount || 0,
-          petsCount: jobData.householdInfo?.petsCount || 0,
-          houseType: jobData.householdInfo?.houseType || ''
+        
+        // Employer Information
+        employer: {
+          householdSize: jobData.employer?.householdSize || '',
+          houseType: jobData.employer?.houseType || '',
+          culturalBackground: jobData.employer?.culturalBackground || '',
+          householdLanguages: jobData.employer?.householdLanguages || [],
+          hasInfants: jobData.employer?.hasInfants || false,
+          hasChildren: jobData.employer?.hasChildren || false,
+          hasElderly: jobData.employer?.hasElderly || false,
+          hasDisabled: jobData.employer?.hasDisabled || false,
+          hasPets: jobData.employer?.hasPets || false,
+          workingParents: jobData.employer?.workingParents || false
         },
-        workingConditions: {
-          workingDays: jobData.workingConditions?.workingDays || 6,
-          restDays: jobData.workingConditions?.restDays || 1
-        }
+        
+        // Care Requirements
+        careOfInfant: jobData.careOfInfant || { required: false, numberOfInfants: 0, ageRangeMonths: [], importance: 'medium', specificNeeds: '' },
+        careOfChildren: jobData.careOfChildren || { required: false, numberOfChildren: 0, ageRangeYears: [], importance: 'medium', specificNeeds: '', schoolSupport: false },
+        careOfOldAge: jobData.careOfOldAge || { required: false, numberOfElderly: 0, mobilityAssistance: false, medicationManagement: false, importance: 'medium', specificNeeds: '' },
+        careOfDisabled: jobData.careOfDisabled || { required: false, disabilityType: '', importance: 'medium', specificNeeds: '' },
+        generalHousework: jobData.generalHousework || { required: false, householdSize: '', cleaningFrequency: '', importance: 'medium', specificTasks: [] },
+        cooking: jobData.cooking || { required: false, cuisinePreferences: [], dietaryRestrictions: [], mealPreparation: [], importance: 'medium', specificNeeds: '' },
+        
+        // Work Requirements
+        minimumExperience: jobData.minimumExperience || 1,
+        helperExperienceRequired: jobData.helperExperienceRequired || false,
+        specificExperienceNeeded: jobData.specificExperienceNeeded || '',
+        educationLevel: jobData.educationLevel || 'primary',
+        ageRange: jobData.ageRange || { min: 21, max: 50 },
+        nationalityPreferences: jobData.nationalityPreferences || [],
+        religionPreference: jobData.religionPreference || '',
+        languagesRequired: jobData.languagesRequired || [],
+        communicationSkills: jobData.communicationSkills || 'basic',
+        physicalRequirements: jobData.physicalRequirements || { noAllergies: false, noMedicalIssues: false, noPhysicalDisabilities: false, specificHealthRequirements: '' },
+        
+        // Schedule & Working Conditions
+        workingDays: jobData.workingDays || [],
+        workingHours: jobData.workingHours || { start: '08:00', end: '18:00', flexible: false, overtimeExpected: false },
+        liveIn: jobData.liveIn || 'required',
+        offDaysRequired: jobData.offDaysRequired || 1,
+        foodHandlingRequirements: jobData.foodHandlingRequirements || '',
+        dietaryAccommodations: jobData.dietaryAccommodations || '',
+        
+        // Salary Information
+        salary: {
+          amount: jobData.salary?.amount || '',
+          currency: jobData.salary?.currency || 'SGD',
+          paymentFrequency: jobData.salary?.paymentFrequency || 'monthly',
+          includesFood: jobData.salary?.includesFood || false,
+          includesAccommodation: jobData.salary?.includesAccommodation || false,
+          overtimePay: jobData.salary?.overtimePay || false
+        },
+        
+        // Additional Information
+        requirements: jobData.requirements || '',
+        additionalBenefits: jobData.additionalBenefits || '',
+        workEnvironment: jobData.workEnvironment || '',
+        familyValues: jobData.familyValues || ''
       });
     } catch (error) {
       console.error('Error fetching job:', error);
@@ -85,36 +146,80 @@ export default function EditJobPage({ params }) {
   const validateForm = () => {
     const newErrors = {};
 
+    // Basic Information Validation
     if (!formData.jobTitle?.trim()) {
       newErrors.jobTitle = 'Job title is required';
     }
-
     if (!formData.jobDescription?.trim()) {
       newErrors.jobDescription = 'Job description is required';
     }
-
     if (!formData.location?.city?.trim()) {
       newErrors.city = 'City is required';
     }
-
     if (!formData.location?.country?.trim()) {
       newErrors.country = 'Country is required';
     }
-
     if (!formData.startDate) {
       newErrors.startDate = 'Start date is required';
     }
 
+    // Salary Validation
     if (!formData.salary?.amount || formData.salary.amount <= 0) {
       newErrors.salaryAmount = 'Valid salary amount is required';
+    }
+
+    // Employer Information Validation
+    if (!formData.employer?.householdSize) {
+      newErrors.householdSize = 'Household size is required';
+    }
+    if (!formData.employer?.houseType) {
+      newErrors.houseType = 'House type is required';
+    }
+    if (!formData.employer?.culturalBackground?.trim()) {
+      newErrors.culturalBackground = 'Cultural background is required';
+    }
+    if (!formData.employer?.householdLanguages || formData.employer.householdLanguages.length === 0) {
+      newErrors.householdLanguages = 'At least one household language is required';
+    }
+
+    // Care Requirements Validation
+    const hasAnyCareRequirement = 
+      formData.careOfInfant?.required ||
+      formData.careOfChildren?.required ||
+      formData.careOfOldAge?.required ||
+      formData.careOfDisabled?.required ||
+      formData.generalHousework?.required ||
+      formData.cooking?.required;
+    
+    if (!hasAnyCareRequirement) {
+      newErrors.careRequirements = 'Please select at least one care requirement';
+    }
+
+    // Work Requirements Validation
+    if (!formData.nationalityPreferences || formData.nationalityPreferences.length === 0) {
+      newErrors.nationalityPreferences = 'Please select at least one nationality preference';
+    }
+    if (!formData.workingDays || formData.workingDays.length === 0) {
+      newErrors.workingDays = 'Please select at least one working day';
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange = (field, value, nested = null) => {
-    if (nested) {
+  const handleInputChange = (field, value, nested = null, subNested = null) => {
+    if (subNested) {
+      setFormData(prev => ({
+        ...prev,
+        [nested]: {
+          ...prev[nested],
+          [subNested]: {
+            ...prev[nested]?.[subNested],
+            [field]: value
+          }
+        }
+      }));
+    } else if (nested) {
       setFormData(prev => ({
         ...prev,
         [nested]: {
@@ -138,6 +243,19 @@ export default function EditJobPage({ params }) {
     }
   };
 
+  const handleArrayChange = (field, value, checked, nested = null) => {
+    const currentArray = nested ? (formData[nested]?.[field] || []) : (formData[field] || []);
+    const newArray = checked
+      ? [...currentArray, value]
+      : currentArray.filter(item => item !== value);
+    
+    if (nested) {
+      handleInputChange(field, newArray, nested);
+    } else {
+      handleInputChange(field, newArray);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -157,7 +275,8 @@ export default function EditJobPage({ params }) {
         },
         body: JSON.stringify({
           ...formData,
-          employerId: user.uid
+          employerId: user.uid,
+          lastUpdated: new Date().toISOString()
         }),
       });
 
@@ -226,7 +345,7 @@ export default function EditJobPage({ params }) {
             <div className="flex justify-between items-center py-6">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">Edit Job</h1>
-                <p className="text-gray-600">Update your job posting details</p>
+                <p className="text-gray-600">Update your comprehensive job posting details</p>
               </div>
               <div className="flex space-x-3">
                 <Link
@@ -240,7 +359,7 @@ export default function EditJobPage({ params }) {
           </div>
         </header>
 
-        <main className="max-w-4xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <main className="max-w-6xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           {/* Success Message */}
           {successMessage && (
             <div className="mb-6 bg-green-50 border border-green-200 rounded-md p-4">
@@ -258,10 +377,13 @@ export default function EditJobPage({ params }) {
           )}
 
           <div className="bg-white shadow rounded-lg">
-            <form onSubmit={handleSubmit} className="px-6 py-6 space-y-6">
-              {/* Basic Information */}
+            <form onSubmit={handleSubmit} className="px-6 py-6 space-y-8">
+              
+              {/* 1. Basic Information */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-6 pb-2 border-b border-gray-200">
+                  📝 Basic Information
+                </h3>
                 
                 <div className="grid grid-cols-1 gap-6">
                   <div>
@@ -370,11 +492,764 @@ export default function EditJobPage({ params }) {
                 </div>
               </div>
 
-              {/* Salary Information */}
+              {/* 2. Household Information */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Salary Information</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-6 pb-2 border-b border-gray-200">
+                  🏠 Household Information
+                </h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-blue-50 p-6 rounded-lg border border-blue-200 space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Household Size <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={formData.employer?.householdSize || ''}
+                        onChange={(e) => handleInputChange('householdSize', e.target.value, 'employer')}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        <option value="">Select Size</option>
+                        <option value="1">1 person</option>
+                        <option value="2">2 people</option>
+                        <option value="3">3 people</option>
+                        <option value="4">4 people</option>
+                        <option value="5">5 people</option>
+                        <option value="6+">6+ people</option>
+                      </select>
+                      {errors.householdSize && <p className="text-red-500 text-sm mt-1">{errors.householdSize}</p>}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        House Type <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={formData.employer?.houseType || ''}
+                        onChange={(e) => handleInputChange('houseType', e.target.value, 'employer')}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        <option value="">Select House Type</option>
+                        {HOUSE_TYPES.map(houseType => (
+                          <option key={houseType} value={houseType}>{houseType}</option>
+                        ))}
+                      </select>
+                      {errors.houseType && <p className="text-red-500 text-sm mt-1">{errors.houseType}</p>}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Cultural Background <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.employer?.culturalBackground || ''}
+                      onChange={(e) => handleInputChange('culturalBackground', e.target.value, 'employer')}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      placeholder="e.g., Chinese, Indian, Malay, Western"
+                    />
+                    {errors.culturalBackground && <p className="text-red-500 text-sm mt-1">{errors.culturalBackground}</p>}
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Household Languages <span className="text-red-500">*</span>
+                    </label>
+                    <p className="text-sm text-gray-500 mb-2">Select languages spoken in your household</p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {LANGUAGES.map(language => (
+                        <label key={language} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={(formData.employer?.householdLanguages || []).includes(language)}
+                            onChange={(e) => handleArrayChange('householdLanguages', language, e.target.checked, 'employer')}
+                            className="mr-2"
+                          />
+                          {language}
+                        </label>
+                      ))}
+                    </div>
+                    {errors.householdLanguages && <p className="text-red-500 text-sm mt-1">{errors.householdLanguages}</p>}
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Household Composition <span className="text-red-500">*</span>
+                    </label>
+                    <p className="text-sm text-gray-500 mb-2">Select all that apply to your household</p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.employer?.hasInfants || false}
+                          onChange={(e) => handleInputChange('hasInfants', e.target.checked, 'employer')}
+                          className="mr-2"
+                        />
+                        Has Infants (0-12 months)
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.employer?.hasChildren || false}
+                          onChange={(e) => handleInputChange('hasChildren', e.target.checked, 'employer')}
+                          className="mr-2"
+                        />
+                        Has Children (1-12 years)
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.employer?.hasElderly || false}
+                          onChange={(e) => handleInputChange('hasElderly', e.target.checked, 'employer')}
+                          className="mr-2"
+                        />
+                        Has Elderly (65+ years)
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.employer?.hasDisabled || false}
+                          onChange={(e) => handleInputChange('hasDisabled', e.target.checked, 'employer')}
+                          className="mr-2"
+                        />
+                        Has Disabled Person
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.employer?.hasPets || false}
+                          onChange={(e) => handleInputChange('hasPets', e.target.checked, 'employer')}
+                          className="mr-2"
+                        />
+                        Has Pets
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.employer?.workingParents || false}
+                          onChange={(e) => handleInputChange('workingParents', e.target.checked, 'employer')}
+                          className="mr-2"
+                        />
+                        Working Parents
+                      </label>
+                    </div>
+                    {errors.householdComposition && <p className="text-red-500 text-sm mt-1">{errors.householdComposition}</p>}
+                  </div>
+                </div>
+              </div>
+
+              {/* 3. Care Requirements */}
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-6 pb-2 border-b border-gray-200">
+                  👶 Care Requirements
+                </h3>
+                {errors.careRequirements && <p className="text-red-500 text-sm mb-4">{errors.careRequirements}</p>}
+                
+                <div className="space-y-6">
+                  {/* Care of Infants */}
+                  <div className="border rounded-lg p-6 bg-gray-50">
+                    <label className="flex items-center mb-4">
+                      <input
+                        type="checkbox"
+                        checked={formData.careOfInfant?.required || false}
+                        onChange={(e) => handleInputChange('required', e.target.checked, 'careOfInfant')}
+                        className="mr-3 scale-125"
+                      />
+                      <span className="text-lg font-medium text-gray-900">Care of Infants (0-12 months)</span>
+                    </label>
+                    
+                    {formData.careOfInfant?.required && (
+                      <div className="ml-6 space-y-4 bg-white p-4 rounded-lg">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Number of Infants</label>
+                            <select
+                              value={formData.careOfInfant?.numberOfInfants || 0}
+                              onChange={(e) => handleInputChange('numberOfInfants', parseInt(e.target.value), 'careOfInfant')}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            >
+                              <option value={0}>Select number</option>
+                              {[1, 2, 3, 4].map(num => (
+                                <option key={num} value={num}>{num}</option>
+                              ))}
+                            </select>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Importance Level</label>
+                            <select
+                              value={formData.careOfInfant?.importance || 'medium'}
+                              onChange={(e) => handleInputChange('importance', e.target.value, 'careOfInfant')}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            >
+                              <option value="low">Low Priority</option>
+                              <option value="medium">Medium Priority</option>
+                              <option value="high">High Priority</option>
+                              <option value="critical">Critical Requirement</option>
+                            </select>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Specific Needs</label>
+                          <textarea
+                            value={formData.careOfInfant?.specificNeeds || ''}
+                            onChange={(e) => handleInputChange('specificNeeds', e.target.value, 'careOfInfant')}
+                            rows="2"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            placeholder="Any specific care requirements for infants..."
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Care of Children */}
+                  <div className="border rounded-lg p-6 bg-gray-50">
+                    <label className="flex items-center mb-4">
+                      <input
+                        type="checkbox"
+                        checked={formData.careOfChildren?.required || false}
+                        onChange={(e) => handleInputChange('required', e.target.checked, 'careOfChildren')}
+                        className="mr-3 scale-125"
+                      />
+                      <span className="text-lg font-medium text-gray-900">Care of Children (1-12 years)</span>
+                    </label>
+                    
+                    {formData.careOfChildren?.required && (
+                      <div className="ml-6 space-y-4 bg-white p-4 rounded-lg">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Number of Children</label>
+                            <select
+                              value={formData.careOfChildren?.numberOfChildren || 0}
+                              onChange={(e) => handleInputChange('numberOfChildren', parseInt(e.target.value), 'careOfChildren')}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            >
+                              <option value={0}>Select number</option>
+                              {[1, 2, 3, 4, 5].map(num => (
+                                <option key={num} value={num}>{num}</option>
+                              ))}
+                            </select>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Importance Level</label>
+                            <select
+                              value={formData.careOfChildren?.importance || 'medium'}
+                              onChange={(e) => handleInputChange('importance', e.target.value, 'careOfChildren')}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            >
+                              <option value="low">Low Priority</option>
+                              <option value="medium">Medium Priority</option>
+                              <option value="high">High Priority</option>
+                              <option value="critical">Critical Requirement</option>
+                            </select>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <label className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={formData.careOfChildren?.schoolSupport || false}
+                              onChange={(e) => handleInputChange('schoolSupport', e.target.checked, 'careOfChildren')}
+                              className="mr-2"
+                            />
+                            <span className="text-sm text-gray-700">Requires school pickup/dropoff and homework help</span>
+                          </label>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Specific Needs</label>
+                          <textarea
+                            value={formData.careOfChildren?.specificNeeds || ''}
+                            onChange={(e) => handleInputChange('specificNeeds', e.target.value, 'careOfChildren')}
+                            rows="2"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            placeholder="Any specific care requirements for children..."
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Care of Elderly */}
+                  <div className="border rounded-lg p-6 bg-gray-50">
+                    <label className="flex items-center mb-4">
+                      <input
+                        type="checkbox"
+                        checked={formData.careOfOldAge?.required || false}
+                        onChange={(e) => handleInputChange('required', e.target.checked, 'careOfOldAge')}
+                        className="mr-3 scale-125"
+                      />
+                      <span className="text-lg font-medium text-gray-900">Care of Elderly (65+ years)</span>
+                    </label>
+                    
+                    {formData.careOfOldAge?.required && (
+                      <div className="ml-6 space-y-4 bg-white p-4 rounded-lg">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Number of Elderly</label>
+                            <select
+                              value={formData.careOfOldAge?.numberOfElderly || 0}
+                              onChange={(e) => handleInputChange('numberOfElderly', parseInt(e.target.value), 'careOfOldAge')}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            >
+                              <option value={0}>Select number</option>
+                              {[1, 2, 3, 4].map(num => (
+                                <option key={num} value={num}>{num}</option>
+                              ))}
+                            </select>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Importance Level</label>
+                            <select
+                              value={formData.careOfOldAge?.importance || 'medium'}
+                              onChange={(e) => handleInputChange('importance', e.target.value, 'careOfOldAge')}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            >
+                              <option value="low">Low Priority</option>
+                              <option value="medium">Medium Priority</option>
+                              <option value="high">High Priority</option>
+                              <option value="critical">Critical Requirement</option>
+                            </select>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <label className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={formData.careOfOldAge?.mobilityAssistance || false}
+                              onChange={(e) => handleInputChange('mobilityAssistance', e.target.checked, 'careOfOldAge')}
+                              className="mr-2"
+                            />
+                            <span className="text-sm text-gray-700">Requires mobility assistance</span>
+                          </label>
+                          <label className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={formData.careOfOldAge?.medicationManagement || false}
+                              onChange={(e) => handleInputChange('medicationManagement', e.target.checked, 'careOfOldAge')}
+                              className="mr-2"
+                            />
+                            <span className="text-sm text-gray-700">Requires medication management</span>
+                          </label>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Specific Needs</label>
+                          <textarea
+                            value={formData.careOfOldAge?.specificNeeds || ''}
+                            onChange={(e) => handleInputChange('specificNeeds', e.target.value, 'careOfOldAge')}
+                            rows="2"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            placeholder="Any specific care requirements for elderly..."
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Care of Disabled */}
+                  <div className="border rounded-lg p-6 bg-gray-50">
+                    <label className="flex items-center mb-4">
+                      <input
+                        type="checkbox"
+                        checked={formData.careOfDisabled?.required || false}
+                        onChange={(e) => handleInputChange('required', e.target.checked, 'careOfDisabled')}
+                        className="mr-3 scale-125"
+                      />
+                      <span className="text-lg font-medium text-gray-900">Care of Disabled Person</span>
+                    </label>
+                    
+                    {formData.careOfDisabled?.required && (
+                      <div className="ml-6 space-y-4 bg-white p-4 rounded-lg">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Disability Type</label>
+                            <input
+                              type="text"
+                              value={formData.careOfDisabled?.disabilityType || ''}
+                              onChange={(e) => handleInputChange('disabilityType', e.target.value, 'careOfDisabled')}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                              placeholder="e.g., Physical, Intellectual, Sensory"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Importance Level</label>
+                            <select
+                              value={formData.careOfDisabled?.importance || 'medium'}
+                              onChange={(e) => handleInputChange('importance', e.target.value, 'careOfDisabled')}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            >
+                              <option value="low">Low Priority</option>
+                              <option value="medium">Medium Priority</option>
+                              <option value="high">High Priority</option>
+                              <option value="critical">Critical Requirement</option>
+                            </select>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Specific Needs</label>
+                          <textarea
+                            value={formData.careOfDisabled?.specificNeeds || ''}
+                            onChange={(e) => handleInputChange('specificNeeds', e.target.value, 'careOfDisabled')}
+                            rows="2"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            placeholder="Any specific care requirements for disabled person..."
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* General Housework */}
+                  <div className="border rounded-lg p-6 bg-gray-50">
+                    <label className="flex items-center mb-4">
+                      <input
+                        type="checkbox"
+                        checked={formData.generalHousework?.required || false}
+                        onChange={(e) => handleInputChange('required', e.target.checked, 'generalHousework')}
+                        className="mr-3 scale-125"
+                      />
+                      <span className="text-lg font-medium text-gray-900">General Housework</span>
+                    </label>
+                    
+                    {formData.generalHousework?.required && (
+                      <div className="ml-6 space-y-4 bg-white p-4 rounded-lg">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Cleaning Frequency</label>
+                            <select
+                              value={formData.generalHousework?.cleaningFrequency || ''}
+                              onChange={(e) => handleInputChange('cleaningFrequency', e.target.value, 'generalHousework')}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            >
+                              <option value="">Select frequency</option>
+                              <option value="daily">Daily</option>
+                              <option value="weekly">Weekly</option>
+                              <option value="bi-weekly">Bi-weekly</option>
+                              <option value="monthly">Monthly</option>
+                            </select>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Importance Level</label>
+                            <select
+                              value={formData.generalHousework?.importance || 'medium'}
+                              onChange={(e) => handleInputChange('importance', e.target.value, 'generalHousework')}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            >
+                              <option value="low">Low Priority</option>
+                              <option value="medium">Medium Priority</option>
+                              <option value="high">High Priority</option>
+                              <option value="critical">Critical Requirement</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Cooking */}
+                  <div className="border rounded-lg p-6 bg-gray-50">
+                    <label className="flex items-center mb-4">
+                      <input
+                        type="checkbox"
+                        checked={formData.cooking?.required || false}
+                        onChange={(e) => handleInputChange('required', e.target.checked, 'cooking')}
+                        className="mr-3 scale-125"
+                      />
+                      <span className="text-lg font-medium text-gray-900">Cooking</span>
+                    </label>
+                    
+                    {formData.cooking?.required && (
+                      <div className="ml-6 space-y-4 bg-white p-4 rounded-lg">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Importance Level</label>
+                            <select
+                              value={formData.cooking?.importance || 'medium'}
+                              onChange={(e) => handleInputChange('importance', e.target.value, 'cooking')}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            >
+                              <option value="low">Low Priority</option>
+                              <option value="medium">Medium Priority</option>
+                              <option value="high">High Priority</option>
+                              <option value="critical">Critical Requirement</option>
+                            </select>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Specific Needs</label>
+                          <textarea
+                            value={formData.cooking?.specificNeeds || ''}
+                            onChange={(e) => handleInputChange('specificNeeds', e.target.value, 'cooking')}
+                            rows="2"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            placeholder="Any specific cooking requirements, cuisines, dietary restrictions..."
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. Work Requirements */}
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-6 pb-2 border-b border-gray-200">
+                  💼 Work Requirements
+                </h3>
+                
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Experience (years)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="20"
+                        value={formData.minimumExperience || 1}
+                        onChange={(e) => handleInputChange('minimumExperience', parseInt(e.target.value) || 1)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Education Level</label>
+                      <select
+                        value={formData.educationLevel || 'primary'}
+                        onChange={(e) => handleInputChange('educationLevel', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        <option value="primary">Primary Education</option>
+                        <option value="secondary">Secondary Education</option>
+                        <option value="tertiary">Tertiary Education</option>
+                        <option value="any">Any Level</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Age Range</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="number"
+                          min="18"
+                          max="65"
+                          value={formData.ageRange?.min || 21}
+                          onChange={(e) => handleInputChange('min', parseInt(e.target.value) || 21, 'ageRange')}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          placeholder="Min age"
+                        />
+                        <input
+                          type="number"
+                          min="18"
+                          max="65"
+                          value={formData.ageRange?.max || 50}
+                          onChange={(e) => handleInputChange('max', parseInt(e.target.value) || 50, 'ageRange')}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          placeholder="Max age"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Communication Skills</label>
+                      <select
+                        value={formData.communicationSkills || 'basic'}
+                        onChange={(e) => handleInputChange('communicationSkills', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        <option value="basic">Basic</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                        <option value="fluent">Fluent</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Nationality Preferences <span className="text-red-500">*</span>
+                    </label>
+                    <p className="text-sm text-gray-500 mb-2">Select preferred nationalities</p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {NATIONALITIES.map(nationality => (
+                        <label key={nationality} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={(formData.nationalityPreferences || []).includes(nationality)}
+                            onChange={(e) => handleArrayChange('nationalityPreferences', nationality, e.target.checked)}
+                            className="mr-2"
+                          />
+                          {nationality}
+                        </label>
+                      ))}
+                    </div>
+                    {errors.nationalityPreferences && <p className="text-red-500 text-sm mt-1">{errors.nationalityPreferences}</p>}
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Languages Required</label>
+                    <p className="text-sm text-gray-500 mb-2">Select languages the helper should speak</p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {LANGUAGES.map(language => (
+                        <label key={language} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={(formData.languagesRequired || []).includes(language)}
+                            onChange={(e) => handleArrayChange('languagesRequired', language, e.target.checked)}
+                            className="mr-2"
+                          />
+                          {language}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Religion Preference</label>
+                    <select
+                      value={formData.religionPreference || ''}
+                      onChange={(e) => handleInputChange('religionPreference', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="">No preference</option>
+                      <option value="Christianity">Christianity</option>
+                      <option value="Islam">Islam</option>
+                      <option value="Buddhism">Buddhism</option>
+                      <option value="Hinduism">Hinduism</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Specific Experience Needed</label>
+                    <textarea
+                      value={formData.specificExperienceNeeded || ''}
+                      onChange={(e) => handleInputChange('specificExperienceNeeded', e.target.value)}
+                      rows="2"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      placeholder="Any specific experience or skills required..."
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 5. Schedule & Working Conditions */}
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-6 pb-2 border-b border-gray-200">
+                  📅 Schedule & Working Conditions
+                </h3>
+                
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Working Days <span className="text-red-500">*</span>
+                    </label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
+                        <label key={day} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={(formData.workingDays || []).includes(day)}
+                            onChange={(e) => handleArrayChange('workingDays', day, e.target.checked)}
+                            className="mr-2"
+                          />
+                          {day}
+                        </label>
+                      ))}
+                    </div>
+                    {errors.workingDays && <p className="text-red-500 text-sm mt-1">{errors.workingDays}</p>}
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Working Hours</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="time"
+                          value={formData.workingHours?.start || '08:00'}
+                          onChange={(e) => handleInputChange('start', e.target.value, 'workingHours')}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                        <input
+                          type="time"
+                          value={formData.workingHours?.end || '18:00'}
+                          onChange={(e) => handleInputChange('end', e.target.value, 'workingHours')}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Off Days Required</label>
+                      <select
+                        value={formData.offDaysRequired || 1}
+                        onChange={(e) => handleInputChange('offDaysRequired', parseInt(e.target.value))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        <option value={0}>No off days</option>
+                        <option value={1}>1 day per week</option>
+                        <option value={2}>2 days per week</option>
+                        <option value={3}>3 days per week</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Live-in Requirement</label>
+                    <select
+                      value={formData.liveIn || 'required'}
+                      onChange={(e) => handleInputChange('liveIn', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="required">Live-in Required</option>
+                      <option value="preferred">Live-in Preferred</option>
+                      <option value="not_required">Live-in Not Required</option>
+                    </select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={formData.workingHours?.flexible || false}
+                        onChange={(e) => handleInputChange('flexible', e.target.checked, 'workingHours')}
+                        className="mr-2"
+                      />
+                      <span className="text-sm text-gray-700">Flexible working hours</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={formData.workingHours?.overtimeExpected || false}
+                        onChange={(e) => handleInputChange('overtimeExpected', e.target.checked, 'workingHours')}
+                        className="mr-2"
+                      />
+                      <span className="text-sm text-gray-700">Overtime may be expected</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* 6. Salary Information */}
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-6 pb-2 border-b border-gray-200">
+                  💰 Salary Information
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Amount <span className="text-red-500">*</span>
@@ -403,108 +1278,126 @@ export default function EditJobPage({ params }) {
                       <option value="HKD">HKD</option>
                     </select>
                   </div>
-                </div>
-              </div>
-
-              {/* Household Information */}
-              <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Household Information</h3>
-                
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Adults</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={formData.householdInfo?.adultsCount || 0}
-                      onChange={(e) => handleInputChange('adultsCount', parseInt(e.target.value) || 0, 'householdInfo')}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Children</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={formData.householdInfo?.childrenCount || 0}
-                      onChange={(e) => handleInputChange('childrenCount', parseInt(e.target.value) || 0, 'householdInfo')}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Pets</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={formData.householdInfo?.petsCount || 0}
-                      onChange={(e) => handleInputChange('petsCount', parseInt(e.target.value) || 0, 'householdInfo')}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">House Type</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Payment Frequency</label>
                     <select
-                      value={formData.householdInfo?.houseType || ''}
-                      onChange={(e) => handleInputChange('houseType', e.target.value, 'householdInfo')}
+                      value={formData.salary?.paymentFrequency || 'monthly'}
+                      onChange={(e) => handleInputChange('paymentFrequency', e.target.value, 'salary')}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
-                      <option value="">Select type</option>
-                      <option value="apartment">Apartment</option>
-                      <option value="house">House</option>
-                      <option value="condo">Condominium</option>
-                      <option value="hdb">HDB</option>
+                      <option value="weekly">Weekly</option>
+                      <option value="bi-weekly">Bi-weekly</option>
+                      <option value="monthly">Monthly</option>
                     </select>
                   </div>
                 </div>
-              </div>
-
-              {/* Working Conditions */}
-              <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Working Conditions</h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Working Days per Week</label>
+                <div className="mt-4 space-y-2">
+                  <label className="flex items-center">
                     <input
-                      type="number"
-                      min="1"
-                      max="7"
-                      value={formData.workingConditions?.workingDays || 6}
-                      onChange={(e) => handleInputChange('workingDays', parseInt(e.target.value) || 6, 'workingConditions')}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      type="checkbox"
+                      checked={formData.salary?.includesFood || false}
+                      onChange={(e) => handleInputChange('includesFood', e.target.checked, 'salary')}
+                      className="mr-2"
                     />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Rest Days per Week</label>
+                    <span className="text-sm text-gray-700">Includes food allowance</span>
+                  </label>
+                  <label className="flex items-center">
                     <input
-                      type="number"
-                      min="0"
-                      max="6"
-                      value={formData.workingConditions?.restDays || 1}
-                      onChange={(e) => handleInputChange('restDays', parseInt(e.target.value) || 1, 'workingConditions')}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      type="checkbox"
+                      checked={formData.salary?.includesAccommodation || false}
+                      onChange={(e) => handleInputChange('includesAccommodation', e.target.checked, 'salary')}
+                      className="mr-2"
                     />
-                  </div>
+                    <span className="text-sm text-gray-700">Includes accommodation</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.salary?.overtimePay || false}
+                      onChange={(e) => handleInputChange('overtimePay', e.target.checked, 'salary')}
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-gray-700">Overtime pay available</span>
+                  </label>
                 </div>
               </div>
 
-              {/* Requirements */}
+              {/* 7. Additional Information */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Requirements</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-6 pb-2 border-b border-gray-200">
+                  📋 Additional Information
+                </h3>
                 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Additional Requirements</label>
-                  <textarea
-                    value={formData.requirements || ''}
-                    onChange={(e) => handleInputChange('requirements', e.target.value)}
-                    rows="3"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Any specific requirements, preferences, or things helpers should know..."
-                  />
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Requirements</label>
+                    <textarea
+                      value={formData.requirements || ''}
+                      onChange={(e) => handleInputChange('requirements', e.target.value)}
+                      rows="3"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      placeholder="Any specific requirements, preferences, or things helpers should know..."
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Additional Benefits</label>
+                    <textarea
+                      value={formData.additionalBenefits || ''}
+                      onChange={(e) => handleInputChange('additionalBenefits', e.target.value)}
+                      rows="2"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      placeholder="Health insurance, annual bonus, paid leave, etc..."
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Work Environment</label>
+                    <textarea
+                      value={formData.workEnvironment || ''}
+                      onChange={(e) => handleInputChange('workEnvironment', e.target.value)}
+                      rows="2"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      placeholder="Describe the work environment, household atmosphere..."
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Family Values</label>
+                    <textarea
+                      value={formData.familyValues || ''}
+                      onChange={(e) => handleInputChange('familyValues', e.target.value)}
+                      rows="2"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      placeholder="Important family values, traditions, or cultural considerations..."
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Food Handling Requirements</label>
+                      <textarea
+                        value={formData.foodHandlingRequirements || ''}
+                        onChange={(e) => handleInputChange('foodHandlingRequirements', e.target.value)}
+                        rows="2"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder="Any food safety, hygiene, or handling requirements..."
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Dietary Accommodations</label>
+                      <textarea
+                        value={formData.dietaryAccommodations || ''}
+                        onChange={(e) => handleInputChange('dietaryAccommodations', e.target.value)}
+                        rows="2"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder="Allergies, dietary restrictions, special diets..."
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
