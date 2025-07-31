@@ -226,7 +226,6 @@ export default function ViewJobPage({ params }) {
 
             {/* Job Content */}
             <div className="px-6 py-6 space-y-6">
-              <SafeRenderer>
               {/* Job Description */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-3">Job Description</h3>
@@ -380,7 +379,6 @@ export default function ViewJobPage({ params }) {
                     <p className="text-sm text-gray-600">Last Updated</p>
                   </div>
                 </div>
-              </SafeRenderer>
             </div>
 
             {/* Actions */}
