@@ -90,109 +90,121 @@ export default function ViewJobPage({ params }) {
     const hasElderly = obj.numberOfElderly > 0;
     const hasAnyPeople = hasInfants || hasChildren || hasElderly;
     
-    // Determine the status based on actual household composition
-    let status = '';
-    let statusColor = '';
-    
+    // If no people in this category, show simplified "Not Applicable" card
     if (!hasAnyPeople) {
-      status = 'Not Applicable';
-      statusColor = 'bg-gray-100 text-gray-600';
-    } else if (isRequired) {
-      status = 'Care Required';
-      statusColor = 'bg-green-100 text-green-800';
-    } else {
-      status = 'Care Optional';
-      statusColor = 'bg-blue-100 text-blue-800';
+      return (
+        <div className="p-3 rounded-lg border border-gray-300 bg-gray-50">
+          <div className="flex justify-between items-center">
+            <h4 className="font-medium text-gray-700">{title}</h4>
+            <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-600">
+              Not Applicable
+            </span>
+          </div>
+          <div className="text-sm text-gray-500 mt-1 italic">
+            No {title.toLowerCase().replace('care of ', '')} in this household
+          </div>
+        </div>
+      );
     }
 
-    // Don't show the card if there are no people and it's not required, 
-    // unless there are specific needs mentioned
-    if (!hasAnyPeople && !isRequired && !obj.specificNeeds) {
-      return null;
-    }
-
+    // For households with people in this category, show full details
     return (
-      <div className={`p-4 rounded-lg border-2 ${isRequired && hasAnyPeople ? 'border-green-200 bg-green-50' : hasAnyPeople ? 'border-blue-200 bg-blue-50' : 'border-gray-200 bg-gray-50'}`}>
+      <div className={`p-4 rounded-lg border-2 ${isRequired ? 'border-green-200 bg-green-50' : 'border-blue-200 bg-blue-50'}`}>
         <div className="flex justify-between items-start mb-3">
           <h4 className="font-semibold text-gray-900">{title}</h4>
           <div className="flex gap-2">
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColor}`}>
-              {status}
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${isRequired ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
+              {isRequired ? 'Care Required' : 'Care Optional'}
             </span>
-            {hasAnyPeople && (
-              <span className={`px-2 py-1 rounded-full text-xs font-medium ${importanceColors[importance]}`}>
-                {importance.charAt(0).toUpperCase() + importance.slice(1)} Priority
-              </span>
-            )}
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${importanceColors[importance]}`}>
+              {importance.charAt(0).toUpperCase() + importance.slice(1)} Priority
+            </span>
           </div>
         </div>
         
-        <div className="space-y-2">
-          {!hasAnyPeople ? (
-            <div className="text-sm text-gray-600 italic">
-              No {title.toLowerCase().replace('care of ', '')} in this household
-            </div>
-          ) : (
-            <>
-              {obj.ageRangeMonths && obj.ageRangeMonths.length > 0 && (
-                <div className="text-sm">
-                  <span className="font-medium text-gray-700">Age Range:</span> {obj.ageRangeMonths.join('-')} months
-                </div>
-              )}
-              {obj.ageRangeYears && obj.ageRangeYears.length > 0 && (
-                <div className="text-sm">
-                  <span className="font-medium text-gray-700">Age Range:</span> {obj.ageRangeYears.join('-')} years
-                </div>
-              )}
-              {obj.numberOfInfants > 0 && (
-                <div className="text-sm">
-                  <span className="font-medium text-gray-700">Number of Infants:</span> {obj.numberOfInfants}
-                </div>
-              )}
-              {obj.numberOfChildren > 0 && (
-                <div className="text-sm">
-                  <span className="font-medium text-gray-700">Number of Children:</span> {obj.numberOfChildren}
-                </div>
-              )}
-              {obj.numberOfElderly > 0 && (
-                <div className="text-sm">
-                  <span className="font-medium text-gray-700">Number of Elderly:</span> {obj.numberOfElderly}
-                </div>
-              )}
-            </>
-          )}
-          {obj.schoolSupport && (
-            <div className="text-sm">
-              <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                📚 School Support Required
-              </span>
-            </div>
-          )}
-          {obj.mobilityAssistance && (
-            <div className="text-sm">
-              <span className="inline-flex items-center px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
-                🦽 Mobility Assistance
-              </span>
-            </div>
-          )}
-          {obj.medicationManagement && (
-            <div className="text-sm">
-              <span className="inline-flex items-center px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
-                💊 Medication Management
-              </span>
-            </div>
-          )}
-          {obj.disabilityType && (
-            <div className="text-sm">
-              <span className="font-medium text-gray-700">Disability Type:</span> {obj.disabilityType}
-            </div>
-          )}
-          {obj.specificNeeds && (
-            <div className="text-sm">
-              <span className="font-medium text-gray-700">Specific Needs:</span> {obj.specificNeeds}
-            </div>
-          )}
+        {/* Household Composition */}
+        <div className="mb-3 p-3 bg-white rounded border">
+          <h5 className="text-sm font-medium text-gray-800 mb-2">👥 Household Composition</h5>
+          <div className="space-y-1">
+            {obj.numberOfInfants > 0 && (
+              <div className="text-sm flex justify-between">
+                <span className="text-gray-600">Number of Infants:</span>
+                <span className="font-medium">{obj.numberOfInfants}</span>
+              </div>
+            )}
+            {obj.numberOfChildren > 0 && (
+              <div className="text-sm flex justify-between">
+                <span className="text-gray-600">Number of Children:</span>
+                <span className="font-medium">{obj.numberOfChildren}</span>
+              </div>
+            )}
+            {obj.numberOfElderly > 0 && (
+              <div className="text-sm flex justify-between">
+                <span className="text-gray-600">Number of Elderly:</span>
+                <span className="font-medium">{obj.numberOfElderly}</span>
+              </div>
+            )}
+            {obj.ageRangeMonths && obj.ageRangeMonths.length > 0 && (
+              <div className="text-sm flex justify-between">
+                <span className="text-gray-600">Age Range:</span>
+                <span className="font-medium">{obj.ageRangeMonths.join('-')} months</span>
+              </div>
+            )}
+            {obj.ageRangeYears && obj.ageRangeYears.length > 0 && (
+              <div className="text-sm flex justify-between">
+                <span className="text-gray-600">Age Range:</span>
+                <span className="font-medium">{obj.ageRangeYears.join('-')} years</span>
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* Care Requirements (only show if care is required or has specific needs) */}
+        {(isRequired || obj.schoolSupport || obj.mobilityAssistance || obj.medicationManagement || obj.disabilityType || obj.specificNeeds) && (
+          <div className="p-3 bg-white rounded border">
+            <h5 className="text-sm font-medium text-gray-800 mb-2">📋 Care Requirements</h5>
+            <div className="space-y-2">
+              {obj.schoolSupport && (
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                    📚 School Support Required
+                  </span>
+                </div>
+              )}
+              {obj.mobilityAssistance && (
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
+                    🦽 Mobility Assistance
+                  </span>
+                </div>
+              )}
+              {obj.medicationManagement && (
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
+                    💊 Medication Management
+                  </span>
+                </div>
+              )}
+              {obj.disabilityType && (
+                <div className="text-sm">
+                  <span className="font-medium text-gray-700">Disability Type:</span> 
+                  <span className="ml-2 px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs">{obj.disabilityType}</span>
+                </div>
+              )}
+              {obj.specificNeeds && (
+                <div className="text-sm p-2 bg-yellow-50 rounded border-l-4 border-yellow-200">
+                  <span className="font-medium text-gray-700">Specific Requirements:</span>
+                  <p className="mt-1 text-gray-600">{obj.specificNeeds}</p>
+                </div>
+              )}
+              {isRequired && !obj.schoolSupport && !obj.mobilityAssistance && !obj.medicationManagement && !obj.disabilityType && !obj.specificNeeds && (
+                <div className="text-sm text-gray-600 italic">
+                  General care required (no specific requirements listed)
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     );
   };
@@ -534,7 +546,7 @@ export default function ViewJobPage({ params }) {
                 job[key] && typeof job[key] === 'object'
               ) && (
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Job Requirements & Details</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Care Requirements & Household Details</h3>
                   <div className="space-y-4">
                     {Object.entries(job)
                       .filter(([key, value]) => 
