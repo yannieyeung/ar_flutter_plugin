@@ -152,6 +152,8 @@ export default function EditJobPage({ params }) {
         },
         
         // Additional Information
+        specialRequirements: jobData.specialRequirements || '',
+        additionalNotes: jobData.additionalNotes || '',
         requirements: jobData.requirements || '',
         additionalBenefits: jobData.additionalBenefits || '',
         workEnvironment: jobData.workEnvironment || '',
@@ -1561,17 +1563,39 @@ export default function EditJobPage({ params }) {
                   📋 Additional Information
                 </h3>
                 
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Requirements</label>
-                    <textarea
-                      value={formData.requirements || ''}
-                      onChange={(e) => handleInputChange('requirements', e.target.value)}
-                      rows="3"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      placeholder="Any specific requirements, preferences, or things helpers should know..."
-                    />
-                  </div>
+                                 <div className="space-y-6">
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-2">Special Requirements</label>
+                     <textarea
+                       value={formData.specialRequirements || ''}
+                       onChange={(e) => handleInputChange('specialRequirements', e.target.value)}
+                       rows="3"
+                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                       placeholder="Any special requirements, certifications needed, or unique aspects of the job..."
+                     />
+                   </div>
+                   
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-2">Additional Notes</label>
+                     <textarea
+                       value={formData.additionalNotes || ''}
+                       onChange={(e) => handleInputChange('additionalNotes', e.target.value)}
+                       rows="3"
+                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                       placeholder="Tell potential helpers about your family, home environment, expectations, and what makes this a great opportunity..."
+                     />
+                   </div>
+                   
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-2">Requirements</label>
+                     <textarea
+                       value={formData.requirements || ''}
+                       onChange={(e) => handleInputChange('requirements', e.target.value)}
+                       rows="3"
+                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                       placeholder="Any specific requirements, preferences, or things helpers should know..."
+                     />
+                   </div>
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Additional Benefits</label>

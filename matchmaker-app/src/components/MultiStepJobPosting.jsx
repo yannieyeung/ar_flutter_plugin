@@ -1991,79 +1991,81 @@ const MultiStepJobPosting = ({ onSubmit, isLoading }) => {
         cookingStyle: formData.employer?.cookingStyle || []
       },
       
-      // Requirements with safe defaults
-      requirements: {
-        careOfInfant: {
-          required: formData.requirements?.careOfInfant?.required || false,
-          ageRangeMonths: formData.requirements?.careOfInfant?.ageRangeMonths || [],
-          numberOfInfants: formData.requirements?.careOfInfant?.numberOfInfants || 0,
-          importance: formData.requirements?.careOfInfant?.importance || 'medium',
-          specificNeeds: formData.requirements?.careOfInfant?.specificNeeds || ''
-        },
-        careOfChildren: {
-          required: formData.requirements?.careOfChildren?.required || false,
-          ageRangeYears: formData.requirements?.careOfChildren?.ageRangeYears || [],
-          numberOfChildren: formData.requirements?.careOfChildren?.numberOfChildren || 0,
-          importance: formData.requirements?.careOfChildren?.importance || 'medium',
-          specificNeeds: formData.requirements?.careOfChildren?.specificNeeds || '',
-          schoolSupport: formData.requirements?.careOfChildren?.schoolSupport || false
-        },
-        careOfDisabled: {
-          required: formData.requirements?.careOfDisabled?.required || false,
-          disabilityType: formData.requirements?.careOfDisabled?.disabilityType || '',
-          importance: formData.requirements?.careOfDisabled?.importance || 'medium',
-          specificNeeds: formData.requirements?.careOfDisabled?.specificNeeds || ''
-        },
-        careOfOldAge: {
-          required: formData.requirements?.careOfOldAge?.required || false,
-          numberOfElderly: formData.requirements?.careOfOldAge?.numberOfElderly || 0,
-          mobilityAssistance: formData.requirements?.careOfOldAge?.mobilityAssistance || false,
-          medicationManagement: formData.requirements?.careOfOldAge?.medicationManagement || false,
-          importance: formData.requirements?.careOfOldAge?.importance || 'medium',
-          specificNeeds: formData.requirements?.careOfOldAge?.specificNeeds || ''
-        },
-        generalHousework: {
-          required: false,
-          householdSize: '',
-          cleaningFrequency: '',
-          importance: 'medium',
-          specificTasks: []
-        },
-        cooking: {
-          required: false,
-          cuisinePreferences: [],
-          dietaryRestrictions: [],
-          mealPreparation: [],
-          importance: 'medium',
-          specificNeeds: ''
-        },
-        minimumExperience: formData.requirements?.minimumExperience || '',
-        helperExperienceRequired: formData.requirements?.helperExperienceRequired || '',
-        specificExperienceNeeded: [],
-        educationLevel: '',
-        ageRange: { min: 21, max: 50 },
-        nationalityPreferences: [],
-        religionPreference: '',
-        languagesRequired: [],
-        communicationSkills: 'basic',
-        physicalRequirements: {
-          noAllergies: false,
-          noMedicalIssues: false,
-          noPhysicalDisabilities: false,
-          specificHealthRequirements: ''
-        },
-        workingDays: [],
-        workingHours: { 
-          start: formData.requirements?.workingHours?.start || '08:00', 
-          end: formData.requirements?.workingHours?.end || '18:00',
-          flexible: false,
-          overtimeExpected: false
-        },
-        liveIn: formData.requirements?.liveIn || '',
-        offDaysRequired: formData.requirements?.offDaysRequired || 1,
-        foodHandlingRequirements: [],
-        dietaryAccommodations: []
+      // Care Requirements (stored at top level to match form structure)
+      careOfInfant: formData.requirements?.careOfInfant || {
+        required: false,
+        ageRangeMonths: [],
+        numberOfInfants: 0,
+        importance: 'medium',
+        specificNeeds: ''
       },
+      careOfChildren: formData.requirements?.careOfChildren || {
+        required: false,
+        ageRangeYears: [],
+        numberOfChildren: 0,
+        importance: 'medium',
+        specificNeeds: '',
+        schoolSupport: false
+      },
+      careOfDisabled: formData.requirements?.careOfDisabled || {
+        required: false,
+        disabilityType: '',
+        importance: 'medium',
+        specificNeeds: ''
+      },
+      careOfOldAge: formData.requirements?.careOfOldAge || {
+        required: false,
+        numberOfElderly: 0,
+        mobilityAssistance: false,
+        medicationManagement: false,
+        importance: 'medium',
+        specificNeeds: ''
+      },
+      generalHousework: formData.requirements?.generalHousework || {
+        required: false,
+        householdSize: '',
+        cleaningFrequency: '',
+        importance: 'medium',
+        specificTasks: []
+      },
+      cooking: formData.requirements?.cooking || {
+        required: false,
+        cuisinePreferences: [],
+        dietaryRestrictions: [],
+        mealPreparation: [],
+        importance: 'medium',
+        specificNeeds: ''
+      },
+      
+      // Work Requirements (stored at top level)
+      minimumExperience: formData.requirements?.minimumExperience || 1,
+      helperExperienceRequired: formData.requirements?.helperExperienceRequired || false,
+      specificExperienceNeeded: formData.requirements?.specificExperienceNeeded || '',
+      educationLevel: formData.requirements?.educationLevel || 'primary',
+      ageRange: formData.requirements?.ageRange || { min: 21, max: 50 },
+      nationalityPreferences: formData.requirements?.nationalityPreferences || [],
+      religionPreference: formData.requirements?.religionPreference || '',
+      languagesRequired: formData.requirements?.languagesRequired || [],
+      communicationSkills: formData.requirements?.communicationSkills || 'basic',
+      physicalRequirements: formData.requirements?.physicalRequirements || {
+        noAllergies: false,
+        noMedicalIssues: false,
+        noPhysicalDisabilities: false,
+        specificHealthRequirements: ''
+      },
+      
+      // Schedule & Working Conditions (stored at top level)
+      workingDays: formData.requirements?.workingDays || [],
+      workingHours: formData.requirements?.workingHours || { 
+        start: '08:00', 
+        end: '18:00',
+        flexible: false,
+        overtimeExpected: false
+      },
+      liveIn: formData.requirements?.liveIn || 'required',
+      offDaysRequired: formData.requirements?.offDaysRequired || 1,
+      foodHandlingRequirements: formData.requirements?.foodHandlingRequirements || '',
+      dietaryAccommodations: formData.requirements?.dietaryAccommodations || '',
       
       // Salary information
       salary: {
@@ -2079,35 +2081,33 @@ const MultiStepJobPosting = ({ onSubmit, isLoading }) => {
       startDate: formData.startDate || '',
       contractDuration: formData.contractDuration || '',
       urgency: formData.urgency || 'flexible',
-      probationPeriod: '',
+      probationPeriod: formData.probationPeriod || '',
       
       // Matching preferences
-      matchingPreferences: {
+      matchingPreferences: formData.matchingPreferences || {
         prioritizeExperience: 'medium',
         prioritizeLanguages: 'medium',
         prioritizeNationality: 'low',
-        prioritizeAge: 'low',
-        prioritizeEducation: 'low',
-        flexibilityImportance: 'medium',
-        personalityMatch: 'medium',
         culturalFit: 'medium'
       },
       
       // Contact and additional info
-      contact: {
+      contact: formData.contact || {
         preferredMethod: '',
         interviewMethod: '',
         availableForInterview: '',
-        timeZone: '',
         contactLanguage: 'English'
       },
       
-      benefits: [],
-      accommodations: [],
+      // Additional Information
       specialRequirements: formData.specialRequirements || '',
-      additionalNotes: '',
-      trialPeriod: false,
-      trainingProvided: false
+      additionalNotes: formData.additionalNotes || '',
+      requirements: formData.requirements || '',
+      additionalBenefits: formData.additionalBenefits || '',
+      workEnvironment: formData.workEnvironment || '',
+      familyValues: formData.familyValues || '',
+      trialPeriod: formData.trialPeriod || false,
+      trainingProvided: formData.trainingProvided || false
     };
     
     onSubmit(processedData);
