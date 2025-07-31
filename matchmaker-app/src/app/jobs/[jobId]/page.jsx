@@ -379,6 +379,7 @@ export default function ViewJobPage({ params }) {
                     <p className="text-sm text-gray-600">Last Updated</p>
                   </div>
                 </div>
+              </div>
             </div>
 
             {/* Actions */}
