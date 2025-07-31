@@ -129,6 +129,28 @@ export default function EditJobPage({ params }) {
           overtimePay: jobData.salary?.overtimePay || false
         },
         
+        // Contract Terms
+        contractDuration: jobData.contractDuration || '',
+        probationPeriod: jobData.probationPeriod || '',
+        trialPeriod: jobData.trialPeriod || false,
+        trainingProvided: jobData.trainingProvided || false,
+        
+        // Matching Preferences
+        matchingPreferences: {
+          prioritizeExperience: jobData.matchingPreferences?.prioritizeExperience || 'medium',
+          prioritizeLanguages: jobData.matchingPreferences?.prioritizeLanguages || 'medium',
+          prioritizeNationality: jobData.matchingPreferences?.prioritizeNationality || 'low',
+          culturalFit: jobData.matchingPreferences?.culturalFit || 'medium'
+        },
+        
+        // Contact & Interview Preferences
+        contact: {
+          preferredMethod: jobData.contact?.preferredMethod || '',
+          interviewMethod: jobData.contact?.interviewMethod || '',
+          availableForInterview: jobData.contact?.availableForInterview || '',
+          contactLanguage: jobData.contact?.contactLanguage || 'English'
+        },
+        
         // Additional Information
         requirements: jobData.requirements || '',
         additionalBenefits: jobData.additionalBenefits || '',
@@ -1322,9 +1344,218 @@ export default function EditJobPage({ params }) {
                     <span className="text-sm text-gray-700">Overtime pay available</span>
                   </label>
                 </div>
-              </div>
+                             </div>
 
-              {/* 7. Additional Information */}
+               {/* 7. Contract Terms */}
+               <div>
+                 <h3 className="text-xl font-semibold text-gray-900 mb-6 pb-2 border-b border-gray-200">
+                   📄 Contract Terms
+                 </h3>
+                 
+                 <div className="space-y-6">
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <div>
+                       <label className="block text-sm font-medium text-gray-700 mb-2">Contract Duration</label>
+                       <select
+                         value={formData.contractDuration || ''}
+                         onChange={(e) => handleInputChange('contractDuration', e.target.value)}
+                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                       >
+                         <option value="">Select Duration</option>
+                         <option value="6_months">6 Months</option>
+                         <option value="1_year">1 Year</option>
+                         <option value="2_years">2 Years</option>
+                         <option value="permanent">Permanent</option>
+                         <option value="temporary">Temporary</option>
+                       </select>
+                     </div>
+                     
+                     <div>
+                       <label className="block text-sm font-medium text-gray-700 mb-2">Probation Period</label>
+                       <select
+                         value={formData.probationPeriod || ''}
+                         onChange={(e) => handleInputChange('probationPeriod', e.target.value)}
+                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                       >
+                         <option value="">No probation</option>
+                         <option value="1_month">1 Month</option>
+                         <option value="2_months">2 Months</option>
+                         <option value="3_months">3 Months</option>
+                         <option value="6_months">6 Months</option>
+                       </select>
+                     </div>
+                   </div>
+                   
+                   <div className="flex items-center space-x-6">
+                     <label className="flex items-center">
+                       <input
+                         type="checkbox"
+                         checked={formData.trialPeriod || false}
+                         onChange={(e) => handleInputChange('trialPeriod', e.target.checked)}
+                         className="mr-2"
+                       />
+                       <span className="text-sm text-gray-700">Trial period available</span>
+                     </label>
+                     
+                     <label className="flex items-center">
+                       <input
+                         type="checkbox"
+                         checked={formData.trainingProvided || false}
+                         onChange={(e) => handleInputChange('trainingProvided', e.target.checked)}
+                         className="mr-2"
+                       />
+                       <span className="text-sm text-gray-700">Training provided</span>
+                     </label>
+                   </div>
+                 </div>
+               </div>
+
+               {/* 8. Matching Preferences */}
+               <div>
+                 <h3 className="text-xl font-semibold text-gray-900 mb-6 pb-2 border-b border-gray-200">
+                   🎯 Matching Preferences
+                 </h3>
+                 
+                 <div className="bg-green-50 p-6 rounded-lg border border-green-200">
+                   <p className="text-gray-600 mb-4">Help us prioritize what's most important to you in finding the right match</p>
+                   
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <div>
+                       <label className="block text-sm font-medium text-gray-700 mb-2">Experience Priority</label>
+                       <select
+                         value={formData.matchingPreferences?.prioritizeExperience || 'medium'}
+                         onChange={(e) => handleInputChange('prioritizeExperience', e.target.value, 'matchingPreferences')}
+                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                       >
+                         <option value="low">Low Priority</option>
+                         <option value="medium">Medium Priority</option>
+                         <option value="high">High Priority</option>
+                         <option value="critical">Critical</option>
+                       </select>
+                     </div>
+                     
+                     <div>
+                       <label className="block text-sm font-medium text-gray-700 mb-2">Language Skills Priority</label>
+                       <select
+                         value={formData.matchingPreferences?.prioritizeLanguages || 'medium'}
+                         onChange={(e) => handleInputChange('prioritizeLanguages', e.target.value, 'matchingPreferences')}
+                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                       >
+                         <option value="low">Low Priority</option>
+                         <option value="medium">Medium Priority</option>
+                         <option value="high">High Priority</option>
+                         <option value="critical">Critical</option>
+                       </select>
+                     </div>
+                     
+                     <div>
+                       <label className="block text-sm font-medium text-gray-700 mb-2">Nationality Priority</label>
+                       <select
+                         value={formData.matchingPreferences?.prioritizeNationality || 'low'}
+                         onChange={(e) => handleInputChange('prioritizeNationality', e.target.value, 'matchingPreferences')}
+                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                       >
+                         <option value="low">Low Priority</option>
+                         <option value="medium">Medium Priority</option>
+                         <option value="high">High Priority</option>
+                         <option value="critical">Critical</option>
+                       </select>
+                     </div>
+                     
+                     <div>
+                       <label className="block text-sm font-medium text-gray-700 mb-2">Cultural Fit</label>
+                       <select
+                         value={formData.matchingPreferences?.culturalFit || 'medium'}
+                         onChange={(e) => handleInputChange('culturalFit', e.target.value, 'matchingPreferences')}
+                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                       >
+                         <option value="low">Low Priority</option>
+                         <option value="medium">Medium Priority</option>
+                         <option value="high">High Priority</option>
+                         <option value="critical">Critical</option>
+                       </select>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+
+               {/* 9. Contact & Interview Preferences */}
+               <div>
+                 <h3 className="text-xl font-semibold text-gray-900 mb-6 pb-2 border-b border-gray-200">
+                   📞 Contact & Interview Preferences
+                 </h3>
+                 
+                 <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 space-y-6">
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <div>
+                       <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Contact Method</label>
+                       <select
+                         value={formData.contact?.preferredMethod || ''}
+                         onChange={(e) => handleInputChange('preferredMethod', e.target.value, 'contact')}
+                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                       >
+                         <option value="">Select Method</option>
+                         <option value="phone">Phone</option>
+                         <option value="email">Email</option>
+                         <option value="whatsapp">WhatsApp</option>
+                         <option value="app">Through App</option>
+                       </select>
+                     </div>
+                     
+                     <div>
+                       <label className="block text-sm font-medium text-gray-700 mb-2">Interview Method</label>
+                       <select
+                         value={formData.contact?.interviewMethod || ''}
+                         onChange={(e) => handleInputChange('interviewMethod', e.target.value, 'contact')}
+                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                       >
+                         <option value="">Select Method</option>
+                         <option value="whatsapp_video_call">WhatsApp Video Call</option>
+                         <option value="voice_call">Voice Call</option>
+                         <option value="face_to_face">Face to Face</option>
+                         <option value="video_conference">Video Conference</option>
+                         <option value="others">Others</option>
+                       </select>
+                     </div>
+                     
+                     <div>
+                       <label className="block text-sm font-medium text-gray-700 mb-2">Interview Availability</label>
+                       <select
+                         value={formData.contact?.availableForInterview || ''}
+                         onChange={(e) => handleInputChange('availableForInterview', e.target.value, 'contact')}
+                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                       >
+                         <option value="">Select Availability</option>
+                         <option value="immediate">Immediate</option>
+                         <option value="weekdays">Weekdays</option>
+                         <option value="weekends">Weekends</option>
+                         <option value="specific_times">Specific Times</option>
+                       </select>
+                     </div>
+                     
+                     <div>
+                       <label className="block text-sm font-medium text-gray-700 mb-2">Communication Language</label>
+                       <select
+                         value={formData.contact?.contactLanguage || 'English'}
+                         onChange={(e) => handleInputChange('contactLanguage', e.target.value, 'contact')}
+                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                       >
+                         <option value="English">English</option>
+                         <option value="Mandarin">Mandarin</option>
+                         <option value="Cantonese">Cantonese</option>
+                         <option value="Malay">Malay</option>
+                         <option value="Tamil">Tamil</option>
+                         <option value="Hindi">Hindi</option>
+                         <option value="Tagalog">Tagalog</option>
+                         <option value="Indonesian">Indonesian</option>
+                         <option value="Other">Other</option>
+                       </select>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+
+               {/* 10. Additional Information */}
               <div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-6 pb-2 border-b border-gray-200">
                   📋 Additional Information
