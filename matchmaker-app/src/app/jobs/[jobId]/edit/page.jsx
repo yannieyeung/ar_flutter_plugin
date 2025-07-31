@@ -123,7 +123,10 @@ export default function EditJobPage({ params }) {
         salary: {
           amount: jobData.salary?.amount || '',
           currency: jobData.salary?.currency || 'SGD',
-          paymentFrequency: jobData.salary?.paymentFrequency || 'monthly',
+          period: jobData.salary?.period || 'monthly',
+          negotiable: jobData.salary?.negotiable || false,
+          performanceBonus: jobData.salary?.performanceBonus || false,
+          salaryRange: jobData.salary?.salaryRange || { min: '', max: '' },
           includesFood: jobData.salary?.includesFood || false,
           includesAccommodation: jobData.salary?.includesAccommodation || false,
           overtimePay: jobData.salary?.overtimePay || false
@@ -1303,49 +1306,88 @@ export default function EditJobPage({ params }) {
                     </select>
                   </div>
                   
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Payment Frequency</label>
-                    <select
-                      value={formData.salary?.paymentFrequency || 'monthly'}
-                      onChange={(e) => handleInputChange('paymentFrequency', e.target.value, 'salary')}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    >
-                      <option value="weekly">Weekly</option>
-                      <option value="bi-weekly">Bi-weekly</option>
-                      <option value="monthly">Monthly</option>
-                    </select>
-                  </div>
-                </div>
+                                                         <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Period</label>
+                      <select
+                        value={formData.salary?.period || 'monthly'}
+                        onChange={(e) => handleInputChange('period', e.target.value, 'salary')}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        <option value="monthly">Monthly</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="daily">Daily</option>
+                      </select>
+                    </div>
+                 </div>
+                 
+                 <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-2">Salary Range (if negotiable)</label>
+                   <div className="flex space-x-2">
+                     <input
+                       type="number"
+                       placeholder="Min"
+                       value={formData.salary?.salaryRange?.min || ''}
+                       onChange={(e) => handleInputChange('min', e.target.value, 'salary', 'salaryRange')}
+                       className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                     />
+                     <span className="py-2">-</span>
+                     <input
+                       type="number"
+                       placeholder="Max"
+                       value={formData.salary?.salaryRange?.max || ''}
+                       onChange={(e) => handleInputChange('max', e.target.value, 'salary', 'salaryRange')}
+                       className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                     />
+                   </div>
+                 </div>
                 
-                <div className="mt-4 space-y-2">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.salary?.includesFood || false}
-                      onChange={(e) => handleInputChange('includesFood', e.target.checked, 'salary')}
-                      className="mr-2"
-                    />
-                    <span className="text-sm text-gray-700">Includes food allowance</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.salary?.includesAccommodation || false}
-                      onChange={(e) => handleInputChange('includesAccommodation', e.target.checked, 'salary')}
-                      className="mr-2"
-                    />
-                    <span className="text-sm text-gray-700">Includes accommodation</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.salary?.overtimePay || false}
-                      onChange={(e) => handleInputChange('overtimePay', e.target.checked, 'salary')}
-                      className="mr-2"
-                    />
-                    <span className="text-sm text-gray-700">Overtime pay available</span>
-                  </label>
-                </div>
+                                 <div className="mt-4 space-y-2">
+                   <label className="flex items-center">
+                     <input
+                       type="checkbox"
+                       checked={formData.salary?.negotiable || false}
+                       onChange={(e) => handleInputChange('negotiable', e.target.checked, 'salary')}
+                       className="mr-2"
+                     />
+                     <span className="text-sm text-gray-700">Salary is negotiable</span>
+                   </label>
+                   <label className="flex items-center">
+                     <input
+                       type="checkbox"
+                       checked={formData.salary?.performanceBonus || false}
+                       onChange={(e) => handleInputChange('performanceBonus', e.target.checked, 'salary')}
+                       className="mr-2"
+                     />
+                     <span className="text-sm text-gray-700">Performance bonus available</span>
+                   </label>
+                   <label className="flex items-center">
+                     <input
+                       type="checkbox"
+                       checked={formData.salary?.includesFood || false}
+                       onChange={(e) => handleInputChange('includesFood', e.target.checked, 'salary')}
+                       className="mr-2"
+                     />
+                     <span className="text-sm text-gray-700">Includes food allowance</span>
+                   </label>
+                   <label className="flex items-center">
+                     <input
+                       type="checkbox"
+                       checked={formData.salary?.includesAccommodation || false}
+                       onChange={(e) => handleInputChange('includesAccommodation', e.target.checked, 'salary')}
+                       className="mr-2"
+                     />
+                     <span className="text-sm text-gray-700">Includes accommodation</span>
+                   </label>
+                   <label className="flex items-center">
+                     <input
+                       type="checkbox"
+                       checked={formData.salary?.overtimePay || false}
+                       onChange={(e) => handleInputChange('overtimePay', e.target.checked, 'salary')}
+                       className="mr-2"
+                     />
+                     <span className="text-sm text-gray-700">Overtime pay available</span>
+                   </label>
+                 </div>
                              </div>
 
                {/* 7. Contract Terms */}

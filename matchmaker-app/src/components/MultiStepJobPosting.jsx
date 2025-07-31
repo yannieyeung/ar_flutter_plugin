@@ -2074,7 +2074,7 @@ const MultiStepJobPosting = ({ onSubmit, isLoading }) => {
         period: formData.salary?.period || 'monthly',
         negotiable: formData.salary?.negotiable || false,
         performanceBonus: formData.salary?.performanceBonus || false,
-        salaryRange: { min: '', max: '' }
+        salaryRange: formData.salary?.salaryRange || { min: '', max: '' }
       },
       
       // Job details
