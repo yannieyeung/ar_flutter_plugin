@@ -68,7 +68,7 @@ const BasicJobInfoStep = ({ data, onChange, errors }) => (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Urgency</label>
           <select
-            value={data.urgency || 'flexible'}
+            value={data.urgency || ''}
             onChange={(e) => onChange({ ...data, urgency: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
@@ -373,7 +373,7 @@ const CareRequirementsStep = ({ data, onChange, errors }) => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Importance Level</label>
                   <select
-                    value={data.requirements?.careOfInfant?.importance || 'medium'}
+                    value={data.requirements?.careOfInfant?.importance || ''}
                     onChange={(e) => handleCareRequirementChange('careOfInfant', 'importance', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
@@ -459,7 +459,7 @@ const CareRequirementsStep = ({ data, onChange, errors }) => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Importance Level</label>
                   <select
-                    value={data.requirements?.careOfChildren?.importance || 'medium'}
+                    value={data.requirements?.careOfChildren?.importance || ''}
                     onChange={(e) => handleCareRequirementChange('careOfChildren', 'importance', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
@@ -550,7 +550,7 @@ const CareRequirementsStep = ({ data, onChange, errors }) => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Importance Level</label>
                   <select
-                    value={data.requirements?.careOfOldAge?.importance || 'medium'}
+                    value={data.requirements?.careOfOldAge?.importance || ''}
                     onChange={(e) => handleCareRequirementChange('careOfOldAge', 'importance', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
@@ -615,7 +615,7 @@ const CareRequirementsStep = ({ data, onChange, errors }) => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Importance Level</label>
                   <select
-                    value={data.requirements?.careOfDisabled?.importance || 'medium'}
+                    value={data.requirements?.careOfDisabled?.importance || ''}
                     onChange={(e) => handleCareRequirementChange('careOfDisabled', 'importance', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
@@ -715,7 +715,7 @@ const CareRequirementsStep = ({ data, onChange, errors }) => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Importance Level</label>
                 <select
-                  value={data.requirements?.generalHousework?.importance || 'medium'}
+                  value={data.requirements?.generalHousework?.importance || ''}
                   onChange={(e) => handleCareRequirementChange('generalHousework', 'importance', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
@@ -809,7 +809,7 @@ const CareRequirementsStep = ({ data, onChange, errors }) => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Importance Level</label>
                 <select
-                  value={data.requirements?.cooking?.importance || 'medium'}
+                  value={data.requirements?.cooking?.importance || ''}
                   onChange={(e) => handleCareRequirementChange('cooking', 'importance', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
@@ -1061,7 +1061,7 @@ const WorkRequirementsStep = ({ data, onChange, errors }) => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Communication Skills Required</label>
               <select
-                value={data.requirements?.communicationSkills || 'basic'}
+                value={data.requirements?.communicationSkills || ''}
                 onChange={(e) => onChange({
                   ...data,
                   requirements: {
@@ -1192,7 +1192,7 @@ const WorkRequirementsStep = ({ data, onChange, errors }) => {
                 <div className="flex items-center space-x-2">
                   <input
                     type="time"
-                    value={data.requirements?.workingHours?.start || '08:00'}
+                    value={data.requirements?.workingHours?.start || ''}
                     onChange={(e) => onChange({
                       ...data,
                       requirements: {
@@ -1208,7 +1208,7 @@ const WorkRequirementsStep = ({ data, onChange, errors }) => {
                   <span>to</span>
                   <input
                     type="time"
-                    value={data.requirements?.workingHours?.end || '18:00'}
+                    value={data.requirements?.workingHours?.end || ''}
                     onChange={(e) => onChange({
                       ...data,
                       requirements: {
@@ -1247,7 +1247,7 @@ const WorkRequirementsStep = ({ data, onChange, errors }) => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Off Days Required per Week</label>
                 <select
-                  value={data.requirements?.offDaysRequired || 1}
+                  value={data.requirements?.offDaysRequired || ''}
                   onChange={(e) => onChange({
                     ...data,
                     requirements: {
@@ -1380,7 +1380,7 @@ const CompensationStep = ({ data, onChange, errors }) => (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Currency</label>
           <select
-            value={data.salary?.currency || 'USD'}
+            value={data.salary?.currency || ''}
             onChange={(e) => onChange({
               ...data,
               salary: { ...data.salary, currency: e.target.value }
@@ -1411,7 +1411,7 @@ const CompensationStep = ({ data, onChange, errors }) => (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Period</label>
           <select
-            value={data.salary?.period || 'monthly'}
+            value={data.salary?.period || ''}
             onChange={(e) => onChange({
               ...data,
               salary: { ...data.salary, period: e.target.value }
@@ -1635,7 +1635,7 @@ const FinalDetailsStep = ({ data, onChange, errors }) => (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Experience Priority</label>
             <select
-              value={data.matchingPreferences?.prioritizeExperience || 'medium'}
+              value={data.matchingPreferences?.prioritizeExperience || ''}
               onChange={(e) => onChange({
                 ...data,
                 matchingPreferences: {
@@ -1655,7 +1655,7 @@ const FinalDetailsStep = ({ data, onChange, errors }) => (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Language Skills Priority</label>
             <select
-              value={data.matchingPreferences?.prioritizeLanguages || 'medium'}
+              value={data.matchingPreferences?.prioritizeLanguages || ''}
               onChange={(e) => onChange({
                 ...data,
                 matchingPreferences: {
@@ -1675,7 +1675,7 @@ const FinalDetailsStep = ({ data, onChange, errors }) => (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Nationality Priority</label>
             <select
-              value={data.matchingPreferences?.prioritizeNationality || 'low'}
+              value={data.matchingPreferences?.prioritizeNationality || ''}
               onChange={(e) => onChange({
                 ...data,
                 matchingPreferences: {
@@ -1695,7 +1695,7 @@ const FinalDetailsStep = ({ data, onChange, errors }) => (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Cultural Fit</label>
             <select
-              value={data.matchingPreferences?.culturalFit || 'medium'}
+              value={data.matchingPreferences?.culturalFit || ''}
               onChange={(e) => onChange({
                 ...data,
                 matchingPreferences: {
@@ -1786,7 +1786,7 @@ const FinalDetailsStep = ({ data, onChange, errors }) => (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Communication Language</label>
             <select
-              value={data.contact?.contactLanguage || 'English'}
+              value={data.contact?.contactLanguage || ''}
               onChange={(e) => onChange({
                 ...data,
                 contact: {
@@ -2038,15 +2038,15 @@ const MultiStepJobPosting = ({ onSubmit, isLoading }) => {
       },
       
       // Work Requirements (stored at top level)
-      minimumExperience: formData.requirements?.minimumExperience || 1,
-      helperExperienceRequired: formData.requirements?.helperExperienceRequired || false,
-      specificExperienceNeeded: formData.requirements?.specificExperienceNeeded || '',
-      educationLevel: formData.requirements?.educationLevel || 'primary',
-      ageRange: formData.requirements?.ageRange || { min: 21, max: 50 },
+      minimumExperience: formData.requirements?.minimumExperience || '',
+      helperExperienceRequired: formData.requirements?.helperExperienceRequired || '',
+      specificExperienceNeeded: formData.requirements?.specificExperienceNeeded || [],
+      educationLevel: formData.requirements?.educationLevel || '',
+      ageRange: formData.requirements?.ageRange || { min: '', max: '' },
       nationalityPreferences: formData.requirements?.nationalityPreferences || [],
       religionPreference: formData.requirements?.religionPreference || '',
       languagesRequired: formData.requirements?.languagesRequired || [],
-      communicationSkills: formData.requirements?.communicationSkills || 'basic',
+      communicationSkills: formData.requirements?.communicationSkills || '',
       physicalRequirements: formData.requirements?.physicalRequirements || {
         noAllergies: false,
         noMedicalIssues: false,
@@ -2057,21 +2057,21 @@ const MultiStepJobPosting = ({ onSubmit, isLoading }) => {
       // Schedule & Working Conditions (stored at top level)
       workingDays: formData.requirements?.workingDays || [],
       workingHours: formData.requirements?.workingHours || { 
-        start: '08:00', 
-        end: '18:00',
+        start: '', 
+        end: '',
         flexible: false,
         overtimeExpected: false
       },
-      liveIn: formData.requirements?.liveIn || 'required',
-      offDaysRequired: formData.requirements?.offDaysRequired || 1,
-      foodHandlingRequirements: formData.requirements?.foodHandlingRequirements || '',
-      dietaryAccommodations: formData.requirements?.dietaryAccommodations || '',
+      liveIn: formData.requirements?.liveIn || '',
+      offDaysRequired: formData.requirements?.offDaysRequired || '',
+      foodHandlingRequirements: formData.requirements?.foodHandlingRequirements || [],
+      dietaryAccommodations: formData.requirements?.dietaryAccommodations || [],
       
       // Salary information
       salary: {
         amount: formData.salary?.amount || '',
-        currency: formData.salary?.currency || 'USD',
-        period: formData.salary?.period || 'monthly',
+        currency: formData.salary?.currency || '',
+        period: formData.salary?.period || '',
         negotiable: formData.salary?.negotiable || false,
         performanceBonus: formData.salary?.performanceBonus || false,
         salaryRange: formData.salary?.salaryRange || { min: '', max: '' }
@@ -2080,7 +2080,7 @@ const MultiStepJobPosting = ({ onSubmit, isLoading }) => {
       // Job details
       startDate: formData.startDate || '',
       contractDuration: formData.contractDuration || '',
-      urgency: formData.urgency || 'flexible',
+      urgency: formData.urgency || '',
       probationPeriod: formData.probationPeriod || '',
       
       // Matching preferences
@@ -2096,16 +2096,13 @@ const MultiStepJobPosting = ({ onSubmit, isLoading }) => {
         preferredMethod: '',
         interviewMethod: '',
         availableForInterview: '',
-        contactLanguage: 'English'
+        contactLanguage: ''
       },
       
       // Additional Information
       specialRequirements: formData.specialRequirements || '',
       additionalNotes: formData.additionalNotes || '',
       requirements: formData.requirements || '',
-      additionalBenefits: formData.additionalBenefits || '',
-      workEnvironment: formData.workEnvironment || '',
-      familyValues: formData.familyValues || '',
       trialPeriod: formData.trialPeriod || false,
       trainingProvided: formData.trainingProvided || false
     };
