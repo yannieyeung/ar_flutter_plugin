@@ -68,7 +68,7 @@ const BasicJobInfoStep = ({ data, onChange, errors }) => (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Urgency</label>
           <select
-            value={data.urgency || ''}
+                          value={data.urgency || 'flexible'}
             onChange={(e) => onChange({ ...data, urgency: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
@@ -2038,15 +2038,15 @@ const MultiStepJobPosting = ({ onSubmit, isLoading }) => {
       },
       
       // Work Requirements (stored at top level)
-      minimumExperience: formData.requirements?.minimumExperience || '',
-      helperExperienceRequired: formData.requirements?.helperExperienceRequired || '',
+      minimumExperience: formData.requirements?.minimumExperience || 1,
+      helperExperienceRequired: formData.requirements?.helperExperienceRequired || 'required',
       specificExperienceNeeded: formData.requirements?.specificExperienceNeeded || [],
-      educationLevel: formData.requirements?.educationLevel || '',
-      ageRange: formData.requirements?.ageRange || { min: '', max: '' },
+      educationLevel: formData.requirements?.educationLevel || 'primary',
+      ageRange: formData.requirements?.ageRange || { min: 21, max: 50 },
       nationalityPreferences: formData.requirements?.nationalityPreferences || [],
       religionPreference: formData.requirements?.religionPreference || '',
       languagesRequired: formData.requirements?.languagesRequired || [],
-      communicationSkills: formData.requirements?.communicationSkills || '',
+      communicationSkills: formData.requirements?.communicationSkills || 'basic',
       physicalRequirements: formData.requirements?.physicalRequirements || {
         noAllergies: false,
         noMedicalIssues: false,
@@ -2057,21 +2057,21 @@ const MultiStepJobPosting = ({ onSubmit, isLoading }) => {
       // Schedule & Working Conditions (stored at top level)
       workingDays: formData.requirements?.workingDays || [],
       workingHours: formData.requirements?.workingHours || { 
-        start: '', 
-        end: '',
+        start: '08:00', 
+        end: '18:00',
         flexible: false,
         overtimeExpected: false
       },
-      liveIn: formData.requirements?.liveIn || '',
-      offDaysRequired: formData.requirements?.offDaysRequired || '',
+      liveIn: formData.requirements?.liveIn || 'required',
+      offDaysRequired: formData.requirements?.offDaysRequired || 1,
       foodHandlingRequirements: formData.requirements?.foodHandlingRequirements || '',
       dietaryAccommodations: formData.requirements?.dietaryAccommodations || '',
       
       // Salary information
       salary: {
         amount: formData.salary?.amount || '',
-        currency: formData.salary?.currency || '',
-        period: formData.salary?.period || '',
+        currency: formData.salary?.currency || 'USD',
+        period: formData.salary?.period || 'monthly',
         negotiable: formData.salary?.negotiable || false,
         performanceBonus: formData.salary?.performanceBonus || false,
         salaryRange: formData.salary?.salaryRange || { min: '', max: '' }
@@ -2080,7 +2080,7 @@ const MultiStepJobPosting = ({ onSubmit, isLoading }) => {
       // Job details
       startDate: formData.startDate || '',
       contractDuration: formData.contractDuration || '',
-      urgency: formData.urgency || '',
+      urgency: formData.urgency || 'flexible',
       probationPeriod: formData.probationPeriod || '',
       
       // Matching preferences
@@ -2096,7 +2096,7 @@ const MultiStepJobPosting = ({ onSubmit, isLoading }) => {
         preferredMethod: '',
         interviewMethod: '',
         availableForInterview: '',
-        contactLanguage: ''
+        contactLanguage: 'English'
       },
       
       // Additional Information
