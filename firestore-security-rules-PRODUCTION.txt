@@ -1,0 +1,115 @@
+// PRODUCTION-READY Firebase Security Rules with Enhanced Security
+// Apply these rules to your Firebase Console > Firestore Database > Rules
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions for validation
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isValidUser() {
+      return isAuthenticated() && 
+             request.auth.token.email_verified == true;
+    }
+    
+    function hasValidUserType(userType) {
+      return userType in ['employer', 'helper', 'agency'];
+    }
+    
+    // Users collection - enhanced validation
+    match /users/{userId} {
+      // Users can read and write their own document
+      allow read, write: if isAuthenticated() && isOwner(userId);
+      
+      // Limited profile access for matching (only essential fields)
+      allow read: if isAuthenticated() && 
+                     resource.data.keys().hasOnly(['name', 'userType', 'profilePicture', 'isRegistrationComplete']) &&
+                     hasValidUserType(resource.data.userType);
+    }
+    
+    // Job postings collection with enhanced validation
+    match /job_postings/{jobId} {
+      // Read access: only verified users can browse jobs
+      allow read: if isValidUser();
+      
+      // Create: enhanced validation
+      allow create: if isValidUser() && 
+                       isOwner(request.resource.data.employerId) &&
+                       request.resource.data.keys().hasAll(['jobTitle', 'jobDescription', 'employerId']) &&
+                       request.resource.data.employerId is string &&
+                       request.resource.data.jobTitle is string &&
+                       request.resource.data.jobDescription is string;
+      
+      // Update/Delete: only job owners
+      allow update, delete: if isValidUser() && 
+                               isOwner(resource.data.employerId);
+    }
+    
+    // Legacy jobs collection (same security as job_postings)
+    match /jobs/{jobId} {
+      allow read: if isValidUser();
+      
+      allow create: if isValidUser() && 
+                       isOwner(request.resource.data.employerId) &&
+                       request.resource.data.keys().hasAll(['jobTitle', 'jobDescription', 'employerId']);
+      
+      allow update, delete: if isValidUser() && 
+                               isOwner(resource.data.employerId);
+    }
+    
+    // Applications collection with enhanced security
+    match /applications/{applicationId} {
+      // Read: only involved parties with verified emails
+      allow read: if isValidUser() && 
+                     (isOwner(resource.data.applicantId) || 
+                      isOwner(resource.data.employerId));
+      
+      // Create: applicants only, with validation
+      allow create: if isValidUser() && 
+                       isOwner(request.resource.data.applicantId) &&
+                       request.resource.data.keys().hasAll(['applicantId', 'jobId', 'employerId']) &&
+                       request.resource.data.applicantId is string &&
+                       request.resource.data.jobId is string &&
+                       request.resource.data.employerId is string;
+      
+      // Update: both parties can update (for status changes)
+      allow update: if isValidUser() && 
+                       (isOwner(resource.data.applicantId) || 
+                        isOwner(resource.data.employerId)) &&
+                       // Prevent changing core IDs
+                       request.resource.data.applicantId == resource.data.applicantId &&
+                       request.resource.data.employerId == resource.data.employerId &&
+                       request.resource.data.jobId == resource.data.jobId;
+    }
+    
+    // Helpers collection with privacy controls
+    match /helpers/{helperId} {
+      // Read: only for matching purposes by verified users
+      allow read: if isValidUser();
+      
+      // Create/Update: helper owns their profile
+      allow create, update: if isValidUser() && 
+                               isOwner(helperId) &&
+                               request.resource.data.keys().hasAll(['userId', 'userType']) &&
+                               request.resource.data.userId == helperId &&
+                               request.resource.data.userType == 'helper';
+      
+      // Delete: helpers can delete their own profiles
+      allow delete: if isValidUser() && isOwner(helperId);
+    }
+    
+    // Admin collection (for system administrators)
+    match /admin/{document=**} {
+      // Only allow access to verified admin users
+      allow read, write: if isAuthenticated() && 
+                            request.auth.token.admin == true;
+    }
+  }
+}
