@@ -2064,8 +2064,8 @@ const MultiStepJobPosting = ({ onSubmit, isLoading }) => {
       },
       liveIn: formData.requirements?.liveIn || '',
       offDaysRequired: formData.requirements?.offDaysRequired || '',
-      foodHandlingRequirements: formData.requirements?.foodHandlingRequirements || [],
-      dietaryAccommodations: formData.requirements?.dietaryAccommodations || [],
+      foodHandlingRequirements: formData.requirements?.foodHandlingRequirements || '',
+      dietaryAccommodations: formData.requirements?.dietaryAccommodations || '',
       
       // Salary information
       salary: {
@@ -2102,7 +2102,6 @@ const MultiStepJobPosting = ({ onSubmit, isLoading }) => {
       // Additional Information
       specialRequirements: formData.specialRequirements || '',
       additionalNotes: formData.additionalNotes || '',
-      requirements: formData.requirements || '',
       trialPeriod: formData.trialPeriod || false,
       trainingProvided: formData.trainingProvided || false
     };

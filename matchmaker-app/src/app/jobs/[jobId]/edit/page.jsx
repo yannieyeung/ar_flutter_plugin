@@ -116,8 +116,8 @@ export default function EditJobPage({ params }) {
         workingHours: jobData.workingHours || { start: '08:00', end: '18:00', flexible: false, overtimeExpected: false },
         liveIn: jobData.liveIn || 'required',
         offDaysRequired: jobData.offDaysRequired || 1,
-        foodHandlingRequirements: jobData.foodHandlingRequirements || '',
-        dietaryAccommodations: jobData.dietaryAccommodations || '',
+        foodHandlingRequirements: Array.isArray(jobData.foodHandlingRequirements) ? jobData.foodHandlingRequirements.join(', ') : jobData.foodHandlingRequirements || '',
+        dietaryAccommodations: Array.isArray(jobData.dietaryAccommodations) ? jobData.dietaryAccommodations.join(', ') : jobData.dietaryAccommodations || '',
         
         // Salary Information
         salary: {
