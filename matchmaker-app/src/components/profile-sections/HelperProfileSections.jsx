@@ -286,23 +286,7 @@ export const HelperPersonalInfo = ({ user, isEditing, editData, setEditData, han
           )}
         </div>
 
-        {/* Expected Salary */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Expected Salary</label>
-          {isEditing ? (
-            <input
-              type="text"
-              value={editData.expectedSalary}
-              onChange={(e) => setEditData({...editData, expectedSalary: e.target.value})}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="e.g., $2000/month"
-            />
-          ) : (
-            <p className="mt-1 text-sm text-gray-900">{user?.expectedSalary || 'Not provided'}</p>
-          )}
-        </div>
-
-        {/* Languages */}
+                {/* Languages */}
         <div className="sm:col-span-2">
           <label className="block text-sm font-medium text-gray-700">Languages</label>
           {isEditing ? (

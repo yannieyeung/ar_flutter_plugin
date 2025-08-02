@@ -50,7 +50,6 @@ export default function ProfilePage() {
                    (typeof user.languages === 'string' && user.languages) ? 
                    user.languages.split(',').map(lang => lang.trim()).filter(lang => lang) : [],
         availability: user.availability || '',
-        expectedSalary: user.expectedSalary || '',
         countryOfBirth: user.countryOfBirth || '',
         cityOfBirth: user.cityOfBirth || '',
         height: user.height || '',

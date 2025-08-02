@@ -1,0 +1,70 @@
+// Simplified Firestore Security Rules (No Circular Dependencies)
+// Copy these rules to your Firebase Console -> Firestore Database -> Rules
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users collection rules - SIMPLE AND SAFE
+    match /users/{userId} {
+      // Users can read and write their own document
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow other authenticated users to read basic profile info
+      allow read: if request.auth != null;
+    }
+    
+    // Job Postings collection rules
+    match /job_postings/{jobId} {
+      // Anyone authenticated can read job postings
+      allow read: if request.auth != null;
+      
+      // Anyone authenticated can create job postings (simplified)
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.employerId;
+      
+      // Only job owners can update their own job postings
+      allow update: if request.auth != null && 
+        request.auth.uid == resource.data.employerId;
+      
+      // Only job owners can delete their own job postings
+      allow delete: if request.auth != null && 
+        request.auth.uid == resource.data.employerId;
+    }
+    
+    // Legacy jobs collection rules (for backward compatibility)
+    match /jobs/{jobId} {
+      // Anyone authenticated can read jobs
+      allow read: if request.auth != null;
+      
+      // Anyone authenticated can create jobs (simplified)
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.employerId;
+      
+      // Only job owners can update their own jobs
+      allow update: if request.auth != null && 
+        request.auth.uid == resource.data.employerId;
+      
+      // Only job owners can delete their own jobs
+      allow delete: if request.auth != null && 
+        request.auth.uid == resource.data.employerId;
+    }
+    
+    // Applications collection rules (for future implementation)
+    match /applications/{applicationId} {
+      // Anyone authenticated can read applications they're involved in
+      allow read: if request.auth != null && 
+        (request.auth.uid == resource.data.applicantId || 
+         request.auth.uid == resource.data.employerId);
+      
+      // Anyone authenticated can create applications
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.applicantId;
+      
+      // Applicants and employers can update applications
+      allow update: if request.auth != null && 
+        (request.auth.uid == resource.data.applicantId || 
+         request.auth.uid == resource.data.employerId);
+    }
+  }
+}

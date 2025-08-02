@@ -10,21 +10,21 @@ export async function GET(request) {
 
     // Check if Firebase Admin is available
     try {
-      const { db } = await import('@/lib/firebase-admin');
+      const { adminDb: db } = await import('@/lib/firebase-admin');
 
       let jobsQuery;
       
       if (userType === 'employer') {
         // Employers see only their own jobs
         console.log('👔 Jobs API: Fetching employer jobs for:', userId);
-        jobsQuery = db.collection('jobs')
+        jobsQuery = db.collection('job_postings')
           .where('employerId', '==', userId)
           .orderBy('datePosted', 'desc');
           
       } else if (userType === 'agency' || userType === 'individual_helper') {
         // Agencies and helpers see all active jobs
         console.log('🔍 Jobs API: Fetching all active jobs for:', userType);
-        jobsQuery = db.collection('jobs')
+        jobsQuery = db.collection('job_postings')
           .where('status', '==', 'active')
           .orderBy('datePosted', 'desc');
           
@@ -119,7 +119,7 @@ export async function POST(request) {
 
     // Check if Firebase Admin is available
     try {
-      const { db } = await import('@/lib/firebase-admin');
+      const { adminDb: db } = await import('@/lib/firebase-admin');
 
       // Verify user is an employer
       const userDoc = await db.collection('users').doc(employerId).get();
@@ -157,7 +157,7 @@ export async function POST(request) {
         contactInfo: contactInfo || {}
       };
 
-      const jobRef = await db.collection('jobs').add(jobData);
+      const jobRef = await db.collection('job_postings').add(jobData);
       
       console.log('✅ Jobs API: Job created successfully:', jobRef.id);
 

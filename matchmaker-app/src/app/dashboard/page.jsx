@@ -264,16 +264,30 @@ export default function DashboardPage() {
                             </div>
                             <div className="mt-3 flex justify-between items-center">
                               <div className="flex space-x-2">
-                                <button className="text-xs text-indigo-600 hover:text-indigo-900">
+                                <Link
+                                  href={`/jobs/${job.id}`}
+                                  className="text-xs text-indigo-600 hover:text-indigo-900"
+                                >
                                   View
-                                </button>
-                                <button className="text-xs text-gray-600 hover:text-gray-900">
+                                </Link>
+                                <Link
+                                  href={`/jobs/${job.id}/edit`}
+                                  className="text-xs text-gray-600 hover:text-gray-900"
+                                >
                                   Edit
-                                </button>
+                                </Link>
                               </div>
                               <div className="text-xs text-gray-500">
                                 {job.views || 0} views
                               </div>
+                            </div>
+                            <div className="mt-3 pt-3 border-t border-gray-100">
+                              <Link
+                                href={`/matches/${job.id}`}
+                                className="w-full inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                              >
+                                🎯 Find a Match
+                              </Link>
                             </div>
                           </div>
                         ))}
