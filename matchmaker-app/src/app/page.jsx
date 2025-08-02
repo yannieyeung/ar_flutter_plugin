@@ -10,22 +10,29 @@ export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
+    console.log('🔍 HomePage useEffect triggered:', {
+      loading,
+      firebaseUser: !!firebaseUser,
+      user: !!user,
+      userData: user
+    });
+
     if (!loading && firebaseUser) {
-      // Firebase user exists, check if we have user data
+      console.log('✅ User is authenticated, checking user data...');
+      
       if (user && user.isRegistrationComplete) {
-        // User has completed registration, go to dashboard
+        console.log('🎯 User registration complete, redirecting to dashboard...');
         router.push('/dashboard');
       } else if (user && !user.isRegistrationComplete) {
-        // User hasn't completed registration, go to registration
+        console.log('📝 User registration incomplete, redirecting to registration...');
         router.push(`/registration/${user.userType}`);
       } else if (!user) {
-        // Firebase user exists but no user document - this is our problem!
         console.log('🚨 Firebase user exists but no user document found');
         console.log('Firebase UID:', firebaseUser.uid);
-        console.log('User data:', user);
-        // For now, let's redirect to registration to complete setup
-        router.push('/registration/employer'); // Default to employer, user can change
+        router.push('/registration/employer');
       }
+    } else {
+      console.log('⏳ Still loading or no firebase user:', { loading, firebaseUser: !!firebaseUser });
     }
   }, [user, firebaseUser, loading, router]);
 
