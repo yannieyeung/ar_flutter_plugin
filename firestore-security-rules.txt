@@ -12,10 +12,36 @@ service cloud.firestore {
       
       // Allow other authenticated users to read basic profile info (for job listings)
       allow read: if request.auth != null && 
-        resource.data.keys().hasAny(['firstName', 'lastName', 'companyName', 'location']);
+        resource.data.keys().hasAny(['firstName', 'lastName', 'companyName', 'location', 'name', 'userType']);
     }
     
-    // Jobs collection rules
+    // Job Postings collection rules (updated collection name)
+    match /job_postings/{jobId} {
+      // Anyone authenticated can read active job postings (for agencies and helpers)
+      allow read: if request.auth != null && resource.data.status == 'active';
+      
+      // Employers can read their own job postings (any status)
+      allow read: if request.auth != null && 
+        request.auth.uid == resource.data.employerId;
+      
+      // Only employers can create job postings
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.employerId &&
+        isEmployer(request.auth.uid) &&
+        validateJobData(request.resource.data);
+      
+      // Only employers can update their own job postings
+      allow update: if request.auth != null && 
+        request.auth.uid == resource.data.employerId &&
+        request.auth.uid == request.resource.data.employerId &&
+        validateJobUpdateData(request.resource.data);
+      
+      // Only employers can delete their own job postings
+      allow delete: if request.auth != null && 
+        request.auth.uid == resource.data.employerId;
+    }
+    
+    // Legacy jobs collection rules (for backward compatibility)
     match /jobs/{jobId} {
       // Anyone authenticated can read active jobs (for agencies and helpers)
       allow read: if request.auth != null && resource.data.status == 'active';
@@ -27,7 +53,7 @@ service cloud.firestore {
       // Only employers can create jobs
       allow create: if request.auth != null && 
         request.auth.uid == request.resource.data.employerId &&
-        getUserType(request.auth.uid) == 'employer' &&
+        isEmployer(request.auth.uid) &&
         validateJobData(request.resource.data);
       
       // Only employers can update their own jobs
@@ -54,8 +80,7 @@ service cloud.firestore {
       // Only agencies and helpers can create applications
       allow create: if request.auth != null && 
         request.auth.uid == request.resource.data.applicantId &&
-        (getUserType(request.auth.uid) == 'agency' || 
-         getUserType(request.auth.uid) == 'individual_helper') &&
+        (isAgency(request.auth.uid) || isHelper(request.auth.uid)) &&
         validateApplicationData(request.resource.data);
       
       // Applicants can update their own applications
@@ -73,25 +98,31 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(uid)).data.userType;
     }
     
+    function isEmployer(uid) {
+      let userType = getUserType(uid);
+      return userType == 'employer' || userType == 'individual_employer';
+    }
+    
+    function isAgency(uid) {
+      return getUserType(uid) == 'agency';
+    }
+    
+    function isHelper(uid) {
+      return getUserType(uid) == 'individual_helper';
+    }
+    
     function validateJobData(data) {
-      return data.keys().hasAll(['employerId', 'title', 'description', 'category', 'status']) &&
+      return data.keys().hasAny(['employerId', 'jobTitle', 'jobDescription']) &&
         data.employerId is string &&
-        data.title is string &&
-        data.description is string &&
-        data.category in ['domestic_helper', 'caregiver', 'driver', 'cook', 'other'] &&
-        data.status in ['active', 'paused', 'filled', 'expired'] &&
-        data.datePosted is string &&
-        data.lastUpdated is string;
+        (data.jobTitle is string || data.title is string) &&
+        (data.jobDescription is string || data.description is string);
     }
     
     function validateJobUpdateData(data) {
-      return data.keys().hasAll(['employerId', 'title', 'description', 'category', 'status']) &&
+      return data.keys().hasAny(['employerId', 'jobTitle', 'jobDescription']) &&
         data.employerId is string &&
-        data.title is string &&
-        data.description is string &&
-        data.category in ['domestic_helper', 'caregiver', 'driver', 'cook', 'other'] &&
-        data.status in ['active', 'paused', 'filled', 'expired'] &&
-        data.lastUpdated is string;
+        (data.jobTitle is string || data.title is string) &&
+        (data.jobDescription is string || data.description is string);
     }
     
     function validateApplicationData(data) {
