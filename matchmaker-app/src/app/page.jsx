@@ -1,6 +1,57 @@
+'use client';
+
 import Link from 'next/link';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function HomePage() {
+  const { user, firebaseUser, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && firebaseUser) {
+      // Firebase user exists, check if we have user data
+      if (user && user.isRegistrationComplete) {
+        // User has completed registration, go to dashboard
+        router.push('/dashboard');
+      } else if (user && !user.isRegistrationComplete) {
+        // User hasn't completed registration, go to registration
+        router.push(`/registration/${user.userType}`);
+      } else if (!user) {
+        // Firebase user exists but no user document - this is our problem!
+        console.log('🚨 Firebase user exists but no user document found');
+        console.log('Firebase UID:', firebaseUser.uid);
+        console.log('User data:', user);
+        // For now, let's redirect to registration to complete setup
+        router.push('/registration/employer'); // Default to employer, user can change
+      }
+    }
+  }, [user, firebaseUser, loading, router]);
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render landing page if user is authenticated (they'll be redirected)
+  if (firebaseUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Redirecting...</p>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Header */}
