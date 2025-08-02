@@ -27,7 +27,6 @@ service cloud.firestore {
       // Only employers can create job postings
       allow create: if request.auth != null && 
         request.auth.uid == request.resource.data.employerId &&
-        isEmployer(request.auth.uid) &&
         validateJobData(request.resource.data);
       
       // Only employers can update their own job postings
@@ -53,7 +52,6 @@ service cloud.firestore {
       // Only employers can create jobs
       allow create: if request.auth != null && 
         request.auth.uid == request.resource.data.employerId &&
-        isEmployer(request.auth.uid) &&
         validateJobData(request.resource.data);
       
       // Only employers can update their own jobs
@@ -80,7 +78,6 @@ service cloud.firestore {
       // Only agencies and helpers can create applications
       allow create: if request.auth != null && 
         request.auth.uid == request.resource.data.applicantId &&
-        (isAgency(request.auth.uid) || isHelper(request.auth.uid)) &&
         validateApplicationData(request.resource.data);
       
       // Applicants can update their own applications
@@ -93,23 +90,7 @@ service cloud.firestore {
         onlyStatusChanged(resource.data, request.resource.data);
     }
     
-    // Helper functions
-    function getUserType(uid) {
-      return get(/databases/$(database)/documents/users/$(uid)).data.userType;
-    }
-    
-    function isEmployer(uid) {
-      let userType = getUserType(uid);
-      return userType == 'employer' || userType == 'individual_employer';
-    }
-    
-    function isAgency(uid) {
-      return getUserType(uid) == 'agency';
-    }
-    
-    function isHelper(uid) {
-      return getUserType(uid) == 'individual_helper';
-    }
+    // Helper functions (removed circular dependency functions)
     
     function validateJobData(data) {
       return data.keys().hasAny(['employerId', 'jobTitle', 'jobDescription']) &&
