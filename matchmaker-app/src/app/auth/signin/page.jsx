@@ -86,8 +86,23 @@ function SignInContent() {
         });
         const checkResult = await checkResponse.json();
         console.log('📋 SignIn: User check result:', checkResult);
+        
+        // If user doesn't exist in our system, show error immediately
+        if (checkResult.success && !checkResult.exists) {
+          throw new Error('No account found with this email address. Please sign up first.');
+        }
+        
+        // If the API call failed, we'll proceed and let Firebase handle the error
+        if (!checkResult.success) {
+          console.log('⚠️ SignIn: User check API failed, proceeding with Firebase auth');
+        }
       } catch (checkError) {
+        // If it's our custom error about user not existing, re-throw it
+        if (checkError.message.includes('No account found')) {
+          throw checkError;
+        }
         console.log('⚠️ SignIn: Could not check user existence:', checkError.message);
+        // If it's a network/API error, proceed and let Firebase handle it
       }
 
       // Sign in with Firebase directly
