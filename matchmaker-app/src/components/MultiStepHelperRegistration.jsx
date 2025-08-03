@@ -376,7 +376,7 @@ const ExperienceStep = ({ data, onChange, errors }) => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Proficiency Level</label>
                     <select
-                      value={lang.proficiency || 'basic'}
+                                                value={lang.proficiency || ''}
                       onChange={(e) => handleLanguageChange(index, 'proficiency', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
@@ -574,7 +574,7 @@ const PreferencesStep = ({ data, onChange, errors }) => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Importance to you</label>
                   <select
-                    value={data.preferences?.[care.key]?.importance || 'medium'}
+                                              value={data.preferences?.[care.key]?.importance || ''}
                     onChange={(e) => handlePreferenceChange(care.key, 'importance', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
@@ -694,7 +694,7 @@ const PreferencesStep = ({ data, onChange, errors }) => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Importance to you</label>
               <select
-                value={data.preferences?.generalHousework?.importance || 'medium'}
+                                          value={data.preferences?.generalHousework?.importance || ''}
                 onChange={(e) => handlePreferenceChange('generalHousework', 'importance', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
@@ -751,7 +751,7 @@ const PreferencesStep = ({ data, onChange, errors }) => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Importance to you</label>
               <select
-                value={data.preferences?.cooking?.importance || 'medium'}
+                                          value={data.preferences?.cooking?.importance || ''}
                 onChange={(e) => handlePreferenceChange('cooking', 'importance', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >

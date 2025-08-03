@@ -488,7 +488,7 @@ export default function EditJobPage({ params }) {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Urgency</label>
                       <select
-                        value={formData.urgency || 'flexible'}
+                        value={formData.urgency || ''}
                         onChange={(e) => handleInputChange('urgency', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       >
@@ -706,7 +706,7 @@ export default function EditJobPage({ params }) {
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Importance Level</label>
                             <select
-                              value={formData.careOfInfant?.importance || 'medium'}
+                              value={formData.careOfInfant?.importance || ''}
                               onChange={(e) => handleInputChange('importance', e.target.value, 'careOfInfant')}
                               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             >
@@ -764,7 +764,7 @@ export default function EditJobPage({ params }) {
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Importance Level</label>
                             <select
-                              value={formData.careOfChildren?.importance || 'medium'}
+                              value={formData.careOfChildren?.importance || ''}
                               onChange={(e) => handleInputChange('importance', e.target.value, 'careOfChildren')}
                               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             >
@@ -834,7 +834,7 @@ export default function EditJobPage({ params }) {
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Importance Level</label>
                             <select
-                              value={formData.careOfOldAge?.importance || 'medium'}
+                              value={formData.careOfOldAge?.importance || ''}
                               onChange={(e) => handleInputChange('importance', e.target.value, 'careOfOldAge')}
                               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             >
@@ -910,7 +910,7 @@ export default function EditJobPage({ params }) {
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Importance Level</label>
                             <select
-                              value={formData.careOfDisabled?.importance || 'medium'}
+                              value={formData.careOfDisabled?.importance || ''}
                               onChange={(e) => handleInputChange('importance', e.target.value, 'careOfDisabled')}
                               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             >
@@ -969,7 +969,7 @@ export default function EditJobPage({ params }) {
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Importance Level</label>
                             <select
-                              value={formData.generalHousework?.importance || 'medium'}
+                              value={formData.generalHousework?.importance || ''}
                               onChange={(e) => handleInputChange('importance', e.target.value, 'generalHousework')}
                               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             >
@@ -1002,7 +1002,7 @@ export default function EditJobPage({ params }) {
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Importance Level</label>
                             <select
-                              value={formData.cooking?.importance || 'medium'}
+                              value={formData.cooking?.importance || ''}
                               onChange={(e) => handleInputChange('importance', e.target.value, 'cooking')}
                               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             >
@@ -1053,7 +1053,7 @@ export default function EditJobPage({ params }) {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Education Level</label>
                       <select
-                        value={formData.educationLevel || 'primary'}
+                        value={formData.educationLevel || ''}
                         onChange={(e) => handleInputChange('educationLevel', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       >
@@ -1070,20 +1070,20 @@ export default function EditJobPage({ params }) {
                       <label className="block text-sm font-medium text-gray-700 mb-2">Age Range</label>
                       <div className="grid grid-cols-2 gap-2">
                         <input
-                          type="number"
-                          min="18"
-                          max="65"
-                          value={formData.ageRange?.min || 21}
-                          onChange={(e) => handleInputChange('min', parseInt(e.target.value) || 21, 'ageRange')}
+                                          type="number"
+                min="18"
+                max="65"
+                value={formData.ageRange?.min || ''}
+                                                      onChange={(e) => handleInputChange('min', parseInt(e.target.value) || '', 'ageRange')}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                           placeholder="Min age"
                         />
                         <input
-                          type="number"
-                          min="18"
-                          max="65"
-                          value={formData.ageRange?.max || 50}
-                          onChange={(e) => handleInputChange('max', parseInt(e.target.value) || 50, 'ageRange')}
+                                          type="number"
+                min="18"
+                max="65"
+                value={formData.ageRange?.max || ''}
+                                                      onChange={(e) => handleInputChange('max', parseInt(e.target.value) || '', 'ageRange')}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                           placeholder="Max age"
                         />
@@ -1093,7 +1093,7 @@ export default function EditJobPage({ params }) {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Communication Skills</label>
                       <select
-                        value={formData.communicationSkills || 'basic'}
+                        value={formData.communicationSkills || ''}
                         onChange={(e) => handleInputChange('communicationSkills', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       >
@@ -1237,7 +1237,7 @@ export default function EditJobPage({ params }) {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Live-in Requirement</label>
                     <select
-                      value={formData.liveIn || 'required'}
+                      value={formData.liveIn || ''}
                       onChange={(e) => handleInputChange('liveIn', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
@@ -1295,7 +1295,7 @@ export default function EditJobPage({ params }) {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Currency</label>
                     <select
-                      value={formData.salary?.currency || 'SGD'}
+                      value={formData.salary?.currency || ''}
                       onChange={(e) => handleInputChange('currency', e.target.value, 'salary')}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
@@ -1467,7 +1467,7 @@ export default function EditJobPage({ params }) {
                      <div>
                        <label className="block text-sm font-medium text-gray-700 mb-2">Experience Priority</label>
                        <select
-                         value={formData.matchingPreferences?.prioritizeExperience || 'medium'}
+                         value={formData.matchingPreferences?.prioritizeExperience || ''}
                          onChange={(e) => handleInputChange('prioritizeExperience', e.target.value, 'matchingPreferences')}
                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                        >
@@ -1481,7 +1481,7 @@ export default function EditJobPage({ params }) {
                      <div>
                        <label className="block text-sm font-medium text-gray-700 mb-2">Language Skills Priority</label>
                        <select
-                         value={formData.matchingPreferences?.prioritizeLanguages || 'medium'}
+                         value={formData.matchingPreferences?.prioritizeLanguages || ''}
                          onChange={(e) => handleInputChange('prioritizeLanguages', e.target.value, 'matchingPreferences')}
                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                        >
@@ -1509,7 +1509,7 @@ export default function EditJobPage({ params }) {
                      <div>
                        <label className="block text-sm font-medium text-gray-700 mb-2">Cultural Fit</label>
                        <select
-                         value={formData.matchingPreferences?.culturalFit || 'medium'}
+                         value={formData.matchingPreferences?.culturalFit || ''}
                          onChange={(e) => handleInputChange('culturalFit', e.target.value, 'matchingPreferences')}
                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                        >
@@ -1580,7 +1580,7 @@ export default function EditJobPage({ params }) {
                      <div>
                        <label className="block text-sm font-medium text-gray-700 mb-2">Communication Language</label>
                        <select
-                         value={formData.contact?.contactLanguage || 'English'}
+                         value={formData.contact?.contactLanguage || ''}
                          onChange={(e) => handleInputChange('contactLanguage', e.target.value, 'contact')}
                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                        >

@@ -68,7 +68,7 @@ const BasicJobInfoStep = ({ data, onChange, errors }) => (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Urgency</label>
           <select
-                          value={data.urgency || 'flexible'}
+                          value={data.urgency || ''}
             onChange={(e) => onChange({ ...data, urgency: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
@@ -2070,8 +2070,8 @@ const MultiStepJobPosting = ({ onSubmit, isLoading }) => {
       // Salary information
       salary: {
         amount: formData.salary?.amount || '',
-        currency: formData.salary?.currency || 'USD',
-        period: formData.salary?.period || 'monthly',
+        currency: formData.salary?.currency || '',
+        period: formData.salary?.period || '',
         negotiable: formData.salary?.negotiable || false,
         performanceBonus: formData.salary?.performanceBonus || false,
         salaryRange: formData.salary?.salaryRange || { min: '', max: '' }
@@ -2080,15 +2080,15 @@ const MultiStepJobPosting = ({ onSubmit, isLoading }) => {
       // Job details
       startDate: formData.startDate || '',
       contractDuration: formData.contractDuration || '',
-      urgency: formData.urgency || 'flexible',
+      urgency: formData.urgency || '',
       probationPeriod: formData.probationPeriod || '',
       
       // Matching preferences
       matchingPreferences: formData.matchingPreferences || {
-        prioritizeExperience: 'medium',
-        prioritizeLanguages: 'medium',
-        prioritizeNationality: 'low',
-        culturalFit: 'medium'
+        prioritizeExperience: '',
+        prioritizeLanguages: '',
+        prioritizeNationality: '',
+        culturalFit: ''
       },
       
       // Contact and additional info
@@ -2096,7 +2096,7 @@ const MultiStepJobPosting = ({ onSubmit, isLoading }) => {
         preferredMethod: '',
         interviewMethod: '',
         availableForInterview: '',
-        contactLanguage: 'English'
+        contactLanguage: ''
       },
       
       // Additional Information
