@@ -46,7 +46,9 @@ export async function POST(request) {
             email: firestoreUser?.email,
             phoneNumber: firestoreUser?.phoneNumber,
             userType: firestoreUser?.userType,
-            isRegistrationComplete: firestoreUser?.isRegistrationComplete
+            isRegistrationComplete: firestoreUser?.isRegistrationComplete,
+            rawData: firestoreUser ? Object.keys(firestoreUser) : 'null',
+            fullData: firestoreUser
           });
         } catch (firestoreError) {
           console.log('❌ Check-User: Firestore user not found:', firestoreError.message);
