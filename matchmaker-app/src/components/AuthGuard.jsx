@@ -9,15 +9,26 @@ export function AuthGuard({ children, requireRegistration = false }) {
   const router = useRouter();
 
   useEffect(() => {
+    console.log('🛡️ AuthGuard: Check', {
+      loading,
+      firebaseUser: !!firebaseUser,
+      user: !!user,
+      isRegistrationComplete: user?.isRegistrationComplete,
+      requireRegistration,
+      pathname: typeof window !== 'undefined' ? window.location.pathname : 'server'
+    });
+
     if (!loading) {
       // Not authenticated
       if (!firebaseUser) {
+        console.log('🚫 AuthGuard: No firebase user, redirecting to signin');
         router.push('/auth/signin');
         return;
       }
 
       // User data not found
       if (!user) {
+        console.log('🚫 AuthGuard: No user data, redirecting to signin');
         router.push('/auth/signin');
         return;
       }

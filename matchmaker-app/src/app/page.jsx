@@ -10,14 +10,27 @@ export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
+    console.log('🏠 HomePage: Route check', {
+      loading,
+      firebaseUser: !!firebaseUser,
+      user: !!user,
+      isRegistrationComplete: user?.isRegistrationComplete,
+      userType: user?.userType
+    });
+
     if (!loading && firebaseUser) {
       if (user && user.isRegistrationComplete) {
+        console.log('🎯 HomePage: Redirecting to dashboard');
         router.push('/dashboard');
       } else if (user && !user.isRegistrationComplete) {
+        console.log('📝 HomePage: Redirecting to registration');
         router.push(`/registration/${user.userType}`);
       } else if (!user) {
+        console.log('👤 HomePage: No user data, redirecting to registration');
         router.push('/registration/employer');
       }
+    } else {
+      console.log('⏳ HomePage: Still loading or no firebase user');
     }
   }, [user, firebaseUser, loading, router]);
 
