@@ -65,19 +65,19 @@ const BasicJobInfoStep = ({ data, onChange, errors }) => (
           {errors.country && <p className="text-red-500 text-sm mt-1">{errors.country}</p>}
         </div>
         
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Urgency</label>
-          <select
-                          value={data.urgency || ''}
-            onChange={(e) => onChange({ ...data, urgency: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="immediate">Immediate (within 1 week)</option>
-            <option value="within_week">Within 2 weeks</option>
-            <option value="within_month">Within a month</option>
-            <option value="flexible">Flexible timing</option>
-          </select>
-        </div>
+                  <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Urgency</label>
+            <select
+              value={data.urgency || 'flexible'}
+              onChange={(e) => onChange({ ...data, urgency: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="immediate">Immediate (within 1 week)</option>
+              <option value="within_week">Within 2 weeks</option>
+              <option value="within_month">Within a month</option>
+              <option value="flexible">Flexible timing</option>
+            </select>
+          </div>
       </div>
 
       <div>
@@ -284,6 +284,23 @@ const HouseholdInfoStep = ({ data, onChange, errors }) => {
               </label>
             </div>
             {errors.householdComposition && <p className="text-red-500 text-sm mt-1">{errors.householdComposition}</p>}
+            
+            {/* Pet Type Input - shown when Has Pets is selected */}
+            {data.employer?.hasPets && (
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Pet Type(s)</label>
+                <input
+                  type="text"
+                  value={data.employer?.petType || ''}
+                  onChange={(e) => onChange({
+                    ...data,
+                    employer: { ...data.employer, petType: e.target.value }
+                  })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., Dog, Cat, Bird, Fish (separate multiple pets with commas)"
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -1969,10 +1986,8 @@ const MultiStepJobPosting = ({ onSubmit, isLoading }) => {
       jobTitle: formData.jobTitle || '',
       jobDescription: formData.jobDescription || '',
       location: {
-        address: '',
         city: formData.location?.city || '',
-        country: formData.location?.country || '',
-        coordinates: { lat: '', lng: '' }
+        country: formData.location?.country || ''
       },
       
       // Employer demographics
@@ -1984,7 +1999,7 @@ const MultiStepJobPosting = ({ onSubmit, isLoading }) => {
         hasElderly: formData.employer?.hasElderly || false,
         hasDisabled: formData.employer?.hasDisabled || false,
         hasPets: formData.employer?.hasPets || false,
-        petTypes: formData.employer?.petTypes || [],
+        petType: formData.employer?.petType || '',
         householdLanguages: formData.employer?.householdLanguages || [],
         culturalBackground: formData.employer?.culturalBackground || '',
         workingParents: formData.employer?.workingParents || false,
@@ -2063,15 +2078,15 @@ const MultiStepJobPosting = ({ onSubmit, isLoading }) => {
         overtimeExpected: false
       },
       liveIn: formData.requirements?.liveIn || 'required',
-      offDaysRequired: formData.requirements?.offDaysRequired || 1,
+      offDaysRequired: formData.requirements?.offDaysRequired || 0,
       foodHandlingRequirements: formData.requirements?.foodHandlingRequirements || '',
       dietaryAccommodations: formData.requirements?.dietaryAccommodations || '',
       
       // Salary information
       salary: {
         amount: formData.salary?.amount || '',
-        currency: formData.salary?.currency || '',
-        period: formData.salary?.period || '',
+        currency: formData.salary?.currency || 'USD',
+        period: formData.salary?.period || 'monthly',
         negotiable: formData.salary?.negotiable || false,
         performanceBonus: formData.salary?.performanceBonus || false,
         salaryRange: formData.salary?.salaryRange || { min: '', max: '' }
@@ -2080,15 +2095,15 @@ const MultiStepJobPosting = ({ onSubmit, isLoading }) => {
       // Job details
       startDate: formData.startDate || '',
       contractDuration: formData.contractDuration || '',
-      urgency: formData.urgency || '',
-      probationPeriod: formData.probationPeriod || '',
+      urgency: formData.urgency || 'flexible',
+      probationPeriod: formData.probationPeriod || 'none',
       
       // Matching preferences
       matchingPreferences: formData.matchingPreferences || {
-        prioritizeExperience: '',
-        prioritizeLanguages: '',
-        prioritizeNationality: '',
-        culturalFit: ''
+        prioritizeExperience: 'medium',
+        prioritizeLanguages: 'medium',
+        prioritizeNationality: 'medium',
+        prioritizeCulturalFit: formData.matchingPreferences?.culturalFit || 'medium'
       },
       
       // Contact and additional info
