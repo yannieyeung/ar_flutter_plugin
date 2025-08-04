@@ -2092,6 +2092,10 @@ const MultiStepJobPosting = ({ onSubmit, isLoading }) => {
         salaryRange: formData.salary?.salaryRange || { min: '', max: '' }
       },
       
+      // Benefits and Accommodations
+      benefits: formData.benefits || [],
+      accommodations: formData.accommodations || [],
+      
       // Job details
       startDate: formData.startDate || '',
       contractDuration: formData.contractDuration || '',
