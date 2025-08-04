@@ -14,6 +14,29 @@ service cloud.firestore {
       allow read: if request.auth != null && resource.data.keys().hasAny(['name', 'userType', 'profilePicture']);
     }
     
+    // User Photos collection - for photo upload metadata
+    match /user_photos/{photoId} {
+      // Users can read their own photo metadata
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      
+      // Users can create photo metadata for their own photos
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId &&
+        request.resource.data.keys().hasAll(['userId', 'photoType', 'fileName']) &&
+        request.resource.data.userId is string &&
+        request.resource.data.photoType is string &&
+        request.resource.data.fileName is string;
+      
+      // Users can update their own photo metadata
+      allow update: if request.auth != null && 
+        request.auth.uid == resource.data.userId &&
+        request.auth.uid == request.resource.data.userId;
+      
+      // Users can delete their own photo metadata
+      allow delete: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+    }
+    
     // Job postings collection (new naming)
     match /job_postings/{jobId} {
       // Anyone authenticated can read job postings

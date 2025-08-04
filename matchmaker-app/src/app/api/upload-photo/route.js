@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { db } from '../../../lib/firebase.js';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { adminDb } from '../../../lib/firebase-admin.js';
+import { FieldValue } from 'firebase-admin/firestore';
 
 // Create server-side Supabase client with service role
 function getServerSupabaseClient() {
@@ -119,12 +119,12 @@ export async function POST(request) {
       supabasePath: uploadData.path,
       supabaseUrl: urlData.publicUrl,
       bucket,
-      uploadedAt: serverTimestamp(),
+      uploadedAt: FieldValue.serverTimestamp(),
       ...metadata
     };
     
     console.log('💾 Saving metadata to Firebase...');
-    const docRef = await addDoc(collection(db, 'user_photos'), photoMetadata);
+    const docRef = await adminDb.collection('user_photos').add(photoMetadata);
     
     // Return success response
     const result = {
