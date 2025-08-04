@@ -1,22 +1,32 @@
 import React from 'react';
 import MultiStepForm from './MultiStepForm';
 
-// Common input styling for dark mode compatibility
+// Common styling for dark mode compatibility
 const inputClassName = "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400";
 const selectClassName = "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white";
 const textareaClassName = "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400";
+const labelClassName = "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2";
+const headingClassName = "text-xl font-semibold text-gray-900 dark:text-white mb-2";
+const subheadingClassName = "text-lg font-medium text-gray-900 dark:text-white";
+const descriptionClassName = "text-gray-600 dark:text-gray-300";
+const cardClassName = "bg-gray-50 dark:bg-gray-800 p-6 rounded-lg";
+const coloredCardClassName = {
+  blue: "bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg border border-blue-200 dark:border-blue-800",
+  green: "bg-green-50 dark:bg-green-900/20 p-6 rounded-lg border border-green-200 dark:border-green-800",
+  gray: "bg-gray-50 dark:bg-gray-800 p-6 rounded-lg"
+};
 
 // Step 1: Basic Job Information
 const BasicJobInfoStep = ({ data, onChange, errors }) => (
-  <div className="space-y-6">
+  <div className="space-y-6 dark:bg-gray-900 dark:text-white">
     <div className="text-center mb-8">
-      <h2 className="text-xl font-semibold text-gray-900 mb-2">Basic Job Information</h2>
-      <p className="text-gray-600">Tell us about the job you're posting</p>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Basic Job Information</h2>
+        <p className="text-gray-600 dark:text-gray-300">Tell us about the job you're posting</p>
     </div>
     
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Job Title <span className="text-red-500">*</span></label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Job Title <span className="text-red-500">*</span></label>
         <input
           type="text"
           value={data.jobTitle || ''}
@@ -128,25 +138,25 @@ const HouseholdInfoStep = ({ data, onChange, errors }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 dark:bg-gray-900">
       <div className="text-center mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Household Information</h2>
-        <p className="text-gray-600">Help us understand your family to find the perfect match</p>
+        <h2 className={headingClassName}>Household Information</h2>
+        <p className={descriptionClassName}>Help us understand your family to find the perfect match</p>
       </div>
       
-      <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
+      <div className={coloredCardClassName.blue}>
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Household Size <span className="text-red-500">*</span></label>
-              <select
-                value={data.employer?.householdSize || ''}
-                onChange={(e) => onChange({
-                  ...data,
-                  employer: { ...data.employer, householdSize: e.target.value }
-                })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
+                              <label className={labelClassName}>Household Size <span className="text-red-500">*</span></label>
+                              <select
+                  value={data.employer?.householdSize || ''}
+                  onChange={(e) => onChange({
+                    ...data,
+                    employer: { ...data.employer, householdSize: e.target.value }
+                  })}
+                  className={selectClassName}
+                >
                 <option value="">Select Size</option>
                 <option value="1">1 person</option>
                 <option value="2">2 people</option>
@@ -348,16 +358,16 @@ const CareRequirementsStep = ({ data, onChange, errors }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 dark:bg-gray-900">
       <div className="text-center mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Care Requirements <span className="text-red-500">*</span></h2>
-        <p className="text-gray-600">What type of care do you need for your family members?</p>
+        <h2 className={headingClassName}>Care Requirements <span className="text-red-500">*</span></h2>
+        <p className={descriptionClassName}>What type of care do you need for your family members?</p>
         {errors.careRequirements && <p className="text-red-500 text-sm mt-2">{errors.careRequirements}</p>}
       </div>
       
       <div className="space-y-6">
         {/* Care of Infants */}
-        <div className="border rounded-lg p-6 bg-gray-50">
+        <div className="border rounded-lg p-6 bg-gray-50 dark:bg-gray-800 dark:border-gray-600">
           <label className="flex items-center mb-4">
             <input
               type="checkbox"
@@ -365,7 +375,7 @@ const CareRequirementsStep = ({ data, onChange, errors }) => {
               onChange={(e) => handleCareRequirementChange('careOfInfant', 'required', e.target.checked)}
               className="mr-3 scale-125"
             />
-            <span className="text-lg font-medium text-gray-900">Care of Infants (0-12 months)</span>
+            <span className="text-lg font-medium text-gray-900 dark:text-white">Care of Infants (0-12 months)</span>
           </label>
           
           {data.requirements?.careOfInfant?.required && (
@@ -882,13 +892,13 @@ const WorkRequirementsStep = ({ data, onChange, errors }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 dark:bg-gray-900">
       <div className="text-center mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Work Requirements</h2>
-        <p className="text-gray-600">What are your requirements for the helper?</p>
+        <h2 className={headingClassName}>Work Requirements</h2>
+        <p className={descriptionClassName}>What are your requirements for the helper?</p>
       </div>
       
-      <div className="bg-gray-50 p-6 rounded-lg space-y-6">
+      <div className={`${cardClassName} space-y-6`}>
         {/* Experience Requirements */}
         <div>
           <h3 className="text-lg font-medium text-gray-900 mb-4">Experience Requirements</h3>
@@ -1374,14 +1384,14 @@ const WorkRequirementsStep = ({ data, onChange, errors }) => {
 
 // Step 5: Compensation & Benefits
 const CompensationStep = ({ data, onChange, errors }) => (
-  <div className="space-y-6">
+  <div className="space-y-6 dark:bg-gray-900">
     <div className="text-center mb-8">
-      <h2 className="text-xl font-semibold text-gray-900 mb-2">Compensation & Benefits</h2>
-      <p className="text-gray-600">Define the compensation package you're offering</p>
+      <h2 className={headingClassName}>Compensation & Benefits</h2>
+      <p className={descriptionClassName}>Define the compensation package you're offering</p>
     </div>
     
-    <div className="bg-green-50 p-6 rounded-lg border border-green-200 space-y-6">
-      <h3 className="text-lg font-medium text-green-800">💰 Salary Information</h3>
+    <div className={`${coloredCardClassName.green} space-y-6`}>
+      <h3 className="text-lg font-medium text-green-800 dark:text-green-300">💰 Salary Information</h3>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
@@ -1581,16 +1591,16 @@ const CompensationStep = ({ data, onChange, errors }) => (
 
 // Step 6: Final Details
 const FinalDetailsStep = ({ data, onChange, errors }) => (
-  <div className="space-y-6">
+  <div className="space-y-6 dark:bg-gray-900">
     <div className="text-center mb-8">
-      <h2 className="text-xl font-semibold text-gray-900 mb-2">Final Details</h2>
-      <p className="text-gray-600">Almost done! Add any final details about the job</p>
+      <h2 className={headingClassName}>Final Details</h2>
+      <p className={descriptionClassName}>Almost done! Add any final details about the job</p>
     </div>
     
     <div className="space-y-6">
       {/* Job Details */}
-      <div className="bg-gray-50 p-6 rounded-lg">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Job Details</h3>
+              <div className={cardClassName}>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Job Details</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -1649,9 +1659,9 @@ const FinalDetailsStep = ({ data, onChange, errors }) => (
       </div>
 
       {/* Matching Preferences */}
-      <div className="bg-green-50 p-6 rounded-lg">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Matching Preferences</h3>
-        <p className="text-gray-600 mb-4">Help us prioritize what's most important to you in finding the right match</p>
+              <div className={coloredCardClassName.green}>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Matching Preferences</h3>
+          <p className="text-gray-600 dark:text-gray-300 mb-4">Help us prioritize what's most important to you in finding the right match</p>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -1861,9 +1871,9 @@ const FinalDetailsStep = ({ data, onChange, errors }) => (
         </div>
       </div>
 
-      <div className="bg-blue-50 p-4 rounded-lg">
-        <h3 className="text-lg font-medium text-blue-800 mb-2">📋 Summary</h3>
-        <div className="text-sm text-blue-700 space-y-1">
+      <div className={coloredCardClassName.blue}>
+        <h3 className="text-lg font-medium text-blue-800 dark:text-blue-300 mb-2">📋 Summary</h3>
+        <div className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
           <p><strong>Job:</strong> {data.jobTitle || 'Not specified'}</p>
           <p><strong>Location:</strong> {data.location?.city || 'Not specified'}, {data.location?.country || 'Not specified'}</p>
           <p><strong>Household Size:</strong> {data.employer?.householdSize || 'Not specified'}</p>
