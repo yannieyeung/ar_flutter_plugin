@@ -68,7 +68,7 @@ const BasicJobInfoStep = ({ data, onChange, errors }) => (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Urgency</label>
           <select
-            value={data.urgency || 'flexible'}
+                          value={data.urgency || ''}
             onChange={(e) => onChange({ ...data, urgency: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
@@ -373,7 +373,7 @@ const CareRequirementsStep = ({ data, onChange, errors }) => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Importance Level</label>
                   <select
-                    value={data.requirements?.careOfInfant?.importance || 'medium'}
+                    value={data.requirements?.careOfInfant?.importance || ''}
                     onChange={(e) => handleCareRequirementChange('careOfInfant', 'importance', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
@@ -459,7 +459,7 @@ const CareRequirementsStep = ({ data, onChange, errors }) => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Importance Level</label>
                   <select
-                    value={data.requirements?.careOfChildren?.importance || 'medium'}
+                    value={data.requirements?.careOfChildren?.importance || ''}
                     onChange={(e) => handleCareRequirementChange('careOfChildren', 'importance', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
@@ -550,7 +550,7 @@ const CareRequirementsStep = ({ data, onChange, errors }) => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Importance Level</label>
                   <select
-                    value={data.requirements?.careOfOldAge?.importance || 'medium'}
+                    value={data.requirements?.careOfOldAge?.importance || ''}
                     onChange={(e) => handleCareRequirementChange('careOfOldAge', 'importance', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
@@ -615,7 +615,7 @@ const CareRequirementsStep = ({ data, onChange, errors }) => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Importance Level</label>
                   <select
-                    value={data.requirements?.careOfDisabled?.importance || 'medium'}
+                    value={data.requirements?.careOfDisabled?.importance || ''}
                     onChange={(e) => handleCareRequirementChange('careOfDisabled', 'importance', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
@@ -715,7 +715,7 @@ const CareRequirementsStep = ({ data, onChange, errors }) => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Importance Level</label>
                 <select
-                  value={data.requirements?.generalHousework?.importance || 'medium'}
+                  value={data.requirements?.generalHousework?.importance || ''}
                   onChange={(e) => handleCareRequirementChange('generalHousework', 'importance', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
@@ -809,7 +809,7 @@ const CareRequirementsStep = ({ data, onChange, errors }) => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Importance Level</label>
                 <select
-                  value={data.requirements?.cooking?.importance || 'medium'}
+                  value={data.requirements?.cooking?.importance || ''}
                   onChange={(e) => handleCareRequirementChange('cooking', 'importance', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
@@ -1061,7 +1061,7 @@ const WorkRequirementsStep = ({ data, onChange, errors }) => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Communication Skills Required</label>
               <select
-                value={data.requirements?.communicationSkills || 'basic'}
+                value={data.requirements?.communicationSkills || ''}
                 onChange={(e) => onChange({
                   ...data,
                   requirements: {
@@ -1192,7 +1192,7 @@ const WorkRequirementsStep = ({ data, onChange, errors }) => {
                 <div className="flex items-center space-x-2">
                   <input
                     type="time"
-                    value={data.requirements?.workingHours?.start || '08:00'}
+                    value={data.requirements?.workingHours?.start || ''}
                     onChange={(e) => onChange({
                       ...data,
                       requirements: {
@@ -1208,7 +1208,7 @@ const WorkRequirementsStep = ({ data, onChange, errors }) => {
                   <span>to</span>
                   <input
                     type="time"
-                    value={data.requirements?.workingHours?.end || '18:00'}
+                    value={data.requirements?.workingHours?.end || ''}
                     onChange={(e) => onChange({
                       ...data,
                       requirements: {
@@ -1247,7 +1247,7 @@ const WorkRequirementsStep = ({ data, onChange, errors }) => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Off Days Required per Week</label>
                 <select
-                  value={data.requirements?.offDaysRequired || 1}
+                  value={data.requirements?.offDaysRequired || ''}
                   onChange={(e) => onChange({
                     ...data,
                     requirements: {
@@ -1380,7 +1380,7 @@ const CompensationStep = ({ data, onChange, errors }) => (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Currency</label>
           <select
-            value={data.salary?.currency || 'USD'}
+            value={data.salary?.currency || ''}
             onChange={(e) => onChange({
               ...data,
               salary: { ...data.salary, currency: e.target.value }
@@ -1411,7 +1411,7 @@ const CompensationStep = ({ data, onChange, errors }) => (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Period</label>
           <select
-            value={data.salary?.period || 'monthly'}
+            value={data.salary?.period || ''}
             onChange={(e) => onChange({
               ...data,
               salary: { ...data.salary, period: e.target.value }
@@ -1635,7 +1635,7 @@ const FinalDetailsStep = ({ data, onChange, errors }) => (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Experience Priority</label>
             <select
-              value={data.matchingPreferences?.prioritizeExperience || 'medium'}
+              value={data.matchingPreferences?.prioritizeExperience || ''}
               onChange={(e) => onChange({
                 ...data,
                 matchingPreferences: {
@@ -1655,7 +1655,7 @@ const FinalDetailsStep = ({ data, onChange, errors }) => (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Language Skills Priority</label>
             <select
-              value={data.matchingPreferences?.prioritizeLanguages || 'medium'}
+              value={data.matchingPreferences?.prioritizeLanguages || ''}
               onChange={(e) => onChange({
                 ...data,
                 matchingPreferences: {
@@ -1675,7 +1675,7 @@ const FinalDetailsStep = ({ data, onChange, errors }) => (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Nationality Priority</label>
             <select
-              value={data.matchingPreferences?.prioritizeNationality || 'low'}
+              value={data.matchingPreferences?.prioritizeNationality || ''}
               onChange={(e) => onChange({
                 ...data,
                 matchingPreferences: {
@@ -1695,7 +1695,7 @@ const FinalDetailsStep = ({ data, onChange, errors }) => (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Cultural Fit</label>
             <select
-              value={data.matchingPreferences?.culturalFit || 'medium'}
+              value={data.matchingPreferences?.culturalFit || ''}
               onChange={(e) => onChange({
                 ...data,
                 matchingPreferences: {
@@ -1786,7 +1786,7 @@ const FinalDetailsStep = ({ data, onChange, errors }) => (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Communication Language</label>
             <select
-              value={data.contact?.contactLanguage || 'English'}
+              value={data.contact?.contactLanguage || ''}
               onChange={(e) => onChange({
                 ...data,
                 contact: {
@@ -1991,123 +1991,119 @@ const MultiStepJobPosting = ({ onSubmit, isLoading }) => {
         cookingStyle: formData.employer?.cookingStyle || []
       },
       
-      // Requirements with safe defaults
-      requirements: {
-        careOfInfant: {
-          required: formData.requirements?.careOfInfant?.required || false,
-          ageRangeMonths: formData.requirements?.careOfInfant?.ageRangeMonths || [],
-          numberOfInfants: formData.requirements?.careOfInfant?.numberOfInfants || 0,
-          importance: formData.requirements?.careOfInfant?.importance || 'medium',
-          specificNeeds: formData.requirements?.careOfInfant?.specificNeeds || ''
-        },
-        careOfChildren: {
-          required: formData.requirements?.careOfChildren?.required || false,
-          ageRangeYears: formData.requirements?.careOfChildren?.ageRangeYears || [],
-          numberOfChildren: formData.requirements?.careOfChildren?.numberOfChildren || 0,
-          importance: formData.requirements?.careOfChildren?.importance || 'medium',
-          specificNeeds: formData.requirements?.careOfChildren?.specificNeeds || '',
-          schoolSupport: formData.requirements?.careOfChildren?.schoolSupport || false
-        },
-        careOfDisabled: {
-          required: formData.requirements?.careOfDisabled?.required || false,
-          disabilityType: formData.requirements?.careOfDisabled?.disabilityType || '',
-          importance: formData.requirements?.careOfDisabled?.importance || 'medium',
-          specificNeeds: formData.requirements?.careOfDisabled?.specificNeeds || ''
-        },
-        careOfOldAge: {
-          required: formData.requirements?.careOfOldAge?.required || false,
-          numberOfElderly: formData.requirements?.careOfOldAge?.numberOfElderly || 0,
-          mobilityAssistance: formData.requirements?.careOfOldAge?.mobilityAssistance || false,
-          medicationManagement: formData.requirements?.careOfOldAge?.medicationManagement || false,
-          importance: formData.requirements?.careOfOldAge?.importance || 'medium',
-          specificNeeds: formData.requirements?.careOfOldAge?.specificNeeds || ''
-        },
-        generalHousework: {
-          required: false,
-          householdSize: '',
-          cleaningFrequency: '',
-          importance: 'medium',
-          specificTasks: []
-        },
-        cooking: {
-          required: false,
-          cuisinePreferences: [],
-          dietaryRestrictions: [],
-          mealPreparation: [],
-          importance: 'medium',
-          specificNeeds: ''
-        },
-        minimumExperience: formData.requirements?.minimumExperience || '',
-        helperExperienceRequired: formData.requirements?.helperExperienceRequired || '',
-        specificExperienceNeeded: [],
-        educationLevel: '',
-        ageRange: { min: 21, max: 50 },
-        nationalityPreferences: [],
-        religionPreference: '',
-        languagesRequired: [],
-        communicationSkills: 'basic',
-        physicalRequirements: {
-          noAllergies: false,
-          noMedicalIssues: false,
-          noPhysicalDisabilities: false,
-          specificHealthRequirements: ''
-        },
-        workingDays: [],
-        workingHours: { 
-          start: formData.requirements?.workingHours?.start || '08:00', 
-          end: formData.requirements?.workingHours?.end || '18:00',
-          flexible: false,
-          overtimeExpected: false
-        },
-        liveIn: formData.requirements?.liveIn || '',
-        offDaysRequired: formData.requirements?.offDaysRequired || 1,
-        foodHandlingRequirements: [],
-        dietaryAccommodations: []
+      // Care Requirements (stored at top level to match form structure)
+      careOfInfant: formData.requirements?.careOfInfant || {
+        required: false,
+        ageRangeMonths: [],
+        numberOfInfants: 0,
+        importance: 'medium',
+        specificNeeds: ''
       },
+      careOfChildren: formData.requirements?.careOfChildren || {
+        required: false,
+        ageRangeYears: [],
+        numberOfChildren: 0,
+        importance: 'medium',
+        specificNeeds: '',
+        schoolSupport: false
+      },
+      careOfDisabled: formData.requirements?.careOfDisabled || {
+        required: false,
+        disabilityType: '',
+        importance: 'medium',
+        specificNeeds: ''
+      },
+      careOfOldAge: formData.requirements?.careOfOldAge || {
+        required: false,
+        numberOfElderly: 0,
+        mobilityAssistance: false,
+        medicationManagement: false,
+        importance: 'medium',
+        specificNeeds: ''
+      },
+      generalHousework: formData.requirements?.generalHousework || {
+        required: false,
+        householdSize: '',
+        cleaningFrequency: '',
+        importance: 'medium',
+        specificTasks: []
+      },
+      cooking: formData.requirements?.cooking || {
+        required: false,
+        cuisinePreferences: [],
+        dietaryRestrictions: [],
+        mealPreparation: [],
+        importance: 'medium',
+        specificNeeds: ''
+      },
+      
+      // Work Requirements (stored at top level)
+      minimumExperience: formData.requirements?.minimumExperience || 1,
+      helperExperienceRequired: formData.requirements?.helperExperienceRequired || 'required',
+      specificExperienceNeeded: formData.requirements?.specificExperienceNeeded || [],
+      educationLevel: formData.requirements?.educationLevel || 'primary',
+      ageRange: formData.requirements?.ageRange || { min: 21, max: 50 },
+      nationalityPreferences: formData.requirements?.nationalityPreferences || [],
+      religionPreference: formData.requirements?.religionPreference || '',
+      languagesRequired: formData.requirements?.languagesRequired || [],
+      communicationSkills: formData.requirements?.communicationSkills || 'basic',
+      physicalRequirements: formData.requirements?.physicalRequirements || {
+        noAllergies: false,
+        noMedicalIssues: false,
+        noPhysicalDisabilities: false,
+        specificHealthRequirements: ''
+      },
+      
+      // Schedule & Working Conditions (stored at top level)
+      workingDays: formData.requirements?.workingDays || [],
+      workingHours: formData.requirements?.workingHours || { 
+        start: '08:00', 
+        end: '18:00',
+        flexible: false,
+        overtimeExpected: false
+      },
+      liveIn: formData.requirements?.liveIn || 'required',
+      offDaysRequired: formData.requirements?.offDaysRequired || 1,
+      foodHandlingRequirements: formData.requirements?.foodHandlingRequirements || '',
+      dietaryAccommodations: formData.requirements?.dietaryAccommodations || '',
       
       // Salary information
       salary: {
         amount: formData.salary?.amount || '',
-        currency: formData.salary?.currency || 'USD',
-        period: formData.salary?.period || 'monthly',
+        currency: formData.salary?.currency || '',
+        period: formData.salary?.period || '',
         negotiable: formData.salary?.negotiable || false,
         performanceBonus: formData.salary?.performanceBonus || false,
-        salaryRange: { min: '', max: '' }
+        salaryRange: formData.salary?.salaryRange || { min: '', max: '' }
       },
       
       // Job details
       startDate: formData.startDate || '',
       contractDuration: formData.contractDuration || '',
-      urgency: formData.urgency || 'flexible',
-      probationPeriod: '',
+      urgency: formData.urgency || '',
+      probationPeriod: formData.probationPeriod || '',
       
       // Matching preferences
-      matchingPreferences: {
-        prioritizeExperience: 'medium',
-        prioritizeLanguages: 'medium',
-        prioritizeNationality: 'low',
-        prioritizeAge: 'low',
-        prioritizeEducation: 'low',
-        flexibilityImportance: 'medium',
-        personalityMatch: 'medium',
-        culturalFit: 'medium'
+      matchingPreferences: formData.matchingPreferences || {
+        prioritizeExperience: '',
+        prioritizeLanguages: '',
+        prioritizeNationality: '',
+        culturalFit: ''
       },
       
       // Contact and additional info
-      contact: {
+      contact: formData.contact || {
         preferredMethod: '',
         interviewMethod: '',
         availableForInterview: '',
-        timeZone: '',
-        contactLanguage: 'English'
+        contactLanguage: ''
       },
       
-      benefits: [],
-      accommodations: [],
+      // Additional Information
       specialRequirements: formData.specialRequirements || '',
-      additionalNotes: '',
-      trialPeriod: false,
-      trainingProvided: false
+      additionalNotes: formData.additionalNotes || '',
+      trialPeriod: formData.trialPeriod || false,
+      trainingProvided: formData.trainingProvided || false
     };
     
     onSubmit(processedData);

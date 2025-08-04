@@ -1,6 +1,62 @@
+'use client';
+
 import Link from 'next/link';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function HomePage() {
+  const { user, firebaseUser, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    console.log('🏠 HomePage: Route check', {
+      loading,
+      firebaseUser: !!firebaseUser,
+      user: !!user,
+      isRegistrationComplete: user?.isRegistrationComplete,
+      userType: user?.userType
+    });
+
+    if (!loading && firebaseUser) {
+      if (user && user.isRegistrationComplete) {
+        console.log('🎯 HomePage: Redirecting to dashboard');
+        router.push('/dashboard');
+      } else if (user && !user.isRegistrationComplete) {
+        console.log('📝 HomePage: Redirecting to registration');
+        router.push(`/registration/${user.userType}`);
+      } else if (!user) {
+        console.log('👤 HomePage: No user data, redirecting to registration');
+        router.push('/registration/employer');
+      }
+    } else {
+      console.log('⏳ HomePage: Still loading or no firebase user');
+    }
+  }, [user, firebaseUser, loading, router]);
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render landing page if user is authenticated (they'll be redirected)
+  if (firebaseUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Redirecting...</p>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Header */}

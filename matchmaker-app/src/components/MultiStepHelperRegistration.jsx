@@ -126,64 +126,7 @@ const MedicalInfoStep = ({ data, onChange, errors }) => (
         )}
       </div>
 
-      {/* Food Handling Preferences */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Food Handling Preferences</label>
-        <div className="space-y-2">
-          {[
-            { value: 'no_pork', label: 'Cannot handle pork' },
-            { value: 'no_beef', label: 'Cannot handle beef' },
-            { value: 'no_alcohol', label: 'Cannot handle alcohol' },
-            { value: 'vegetarian_only', label: 'Prefer vegetarian cooking only' },
-            { value: 'halal_only', label: 'Halal food preparation only' },
-            { value: 'kosher_familiar', label: 'Familiar with kosher requirements' }
-          ].map(pref => (
-            <label key={pref.value} className="flex items-center">
-              <input
-                type="checkbox"
-                checked={(data.foodHandlingPreferences || []).includes(pref.value)}
-                onChange={(e) => {
-                  const current = data.foodHandlingPreferences || [];
-                  const newPrefs = e.target.checked
-                    ? [...current, pref.value]
-                    : current.filter(p => p !== pref.value);
-                  onChange({ ...data, foodHandlingPreferences: newPrefs });
-                }}
-                className="mr-2"
-              />
-              {pref.label}
-            </label>
-          ))}
-        </div>
-      </div>
 
-      {/* Required Off Days */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">How many off days do you require per week? <span className="text-red-500">*</span> <span className="text-sm text-gray-500">(This helps with job matching)</span></label>
-        <select
-          value={data.requiredOffDays || ''}
-          onChange={(e) => onChange({ ...data, requiredOffDays: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">Select Number</option>
-          {[0, 1, 2, 3, 4].map(num => (
-            <option key={num} value={num}>{num} day{num !== 1 ? 's' : ''} per week</option>
-          ))}
-        </select>
-        {errors.requiredOffDays && <p className="text-red-500 text-sm mt-1">{errors.requiredOffDays}</p>}
-      </div>
-
-      {/* Other Remarks */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Additional Health Information or Remarks (Optional)</label>
-        <textarea
-          value={data.otherMedicalRemarks || ''}
-          onChange={(e) => onChange({ ...data, otherMedicalRemarks: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Any other health-related information you'd like to share..."
-          rows="2"
-        />
-      </div>
     </div>
   </div>
 );
@@ -433,7 +376,7 @@ const ExperienceStep = ({ data, onChange, errors }) => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Proficiency Level</label>
                     <select
-                      value={lang.proficiency || 'basic'}
+                                                value={lang.proficiency || ''}
                       onChange={(e) => handleLanguageChange(index, 'proficiency', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
@@ -562,8 +505,8 @@ const PreferencesStep = ({ data, onChange, errors }) => {
   return (
     <div className="space-y-8">
       <div className="text-center mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Job Preferences & Requirements <span className="text-red-500">*</span></h2>
-        <p className="text-gray-600">Help us match you with the right families by sharing your preferences</p>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Job Preferences & Work Requirements <span className="text-red-500">*</span></h2>
+        <p className="text-gray-600">Help us match you with the right families by sharing your preferences and work requirements</p>
         {errors.carePreferences && <p className="text-red-500 text-sm mt-2">{errors.carePreferences}</p>}
         {errors.houseworkPreference && <p className="text-red-500 text-sm mt-1">{errors.houseworkPreference}</p>}
         {errors.cookingPreference && <p className="text-red-500 text-sm mt-1">{errors.cookingPreference}</p>}
@@ -631,7 +574,7 @@ const PreferencesStep = ({ data, onChange, errors }) => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Importance to you</label>
                   <select
-                    value={data.preferences?.[care.key]?.importance || 'medium'}
+                                              value={data.preferences?.[care.key]?.importance || ''}
                     onChange={(e) => handlePreferenceChange(care.key, 'importance', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
@@ -751,7 +694,7 @@ const PreferencesStep = ({ data, onChange, errors }) => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Importance to you</label>
               <select
-                value={data.preferences?.generalHousework?.importance || 'medium'}
+                                          value={data.preferences?.generalHousework?.importance || ''}
                 onChange={(e) => handlePreferenceChange('generalHousework', 'importance', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
@@ -808,7 +751,7 @@ const PreferencesStep = ({ data, onChange, errors }) => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Importance to you</label>
               <select
-                value={data.preferences?.cooking?.importance || 'medium'}
+                                          value={data.preferences?.cooking?.importance || ''}
                 onChange={(e) => handlePreferenceChange('cooking', 'importance', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
@@ -941,6 +884,72 @@ const PreferencesStep = ({ data, onChange, errors }) => {
               </label>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* Food Handling Preferences */}
+      <div className="space-y-6">
+        <h3 className="text-lg font-medium text-gray-900">Food Handling & Work Preferences</h3>
+        
+        <div className="border rounded-lg p-6 bg-gray-50">
+          <label className="block text-lg font-medium text-gray-900 mb-2">Food Handling Preferences</label>
+          <p className="text-sm text-gray-600 mb-3">Select any dietary or religious restrictions that apply to you</p>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { value: 'no_pork', label: 'Cannot handle pork' },
+              { value: 'no_beef', label: 'Cannot handle beef' },
+              { value: 'no_alcohol', label: 'Cannot handle alcohol' },
+              { value: 'vegetarian_only', label: 'Prefer vegetarian cooking only' },
+              { value: 'halal_only', label: 'Halal food preparation only' },
+              { value: 'kosher_familiar', label: 'Familiar with kosher requirements' }
+            ].map(pref => (
+              <label key={pref.value} className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={(data.foodHandlingPreferences || []).includes(pref.value)}
+                  onChange={(e) => {
+                    const current = data.foodHandlingPreferences || [];
+                    const newPrefs = e.target.checked
+                      ? [...current, pref.value]
+                      : current.filter(p => p !== pref.value);
+                    onChange({ ...data, foodHandlingPreferences: newPrefs });
+                  }}
+                  className="mr-2"
+                />
+                <span className="text-sm">{pref.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Required Off Days */}
+        <div className="border rounded-lg p-6 bg-gray-50">
+          <label className="block text-lg font-medium text-gray-900 mb-2">Required Off Days <span className="text-red-500">*</span></label>
+          <p className="text-sm text-gray-600 mb-3">How many off days do you require per week? This helps with job matching</p>
+          <select
+            value={data.requiredOffDays || ''}
+            onChange={(e) => onChange({ ...data, requiredOffDays: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Select Number</option>
+            {[0, 1, 2, 3, 4].map(num => (
+              <option key={num} value={num}>{num} day{num !== 1 ? 's' : ''} per week</option>
+            ))}
+          </select>
+          {errors.requiredOffDays && <p className="text-red-500 text-sm mt-1">{errors.requiredOffDays}</p>}
+        </div>
+
+        {/* Other Remarks */}
+        <div className="border rounded-lg p-6 bg-gray-50">
+          <label className="block text-lg font-medium text-gray-900 mb-2">Additional Remarks (Optional)</label>
+          <p className="text-sm text-gray-600 mb-3">Any other preferences, requirements, or information you'd like to share</p>
+          <textarea
+            value={data.otherMedicalRemarks || ''}
+            onChange={(e) => onChange({ ...data, otherMedicalRemarks: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Any other preferences, work requirements, or information you'd like potential employers to know..."
+            rows="3"
+          />
         </div>
       </div>
     </div>

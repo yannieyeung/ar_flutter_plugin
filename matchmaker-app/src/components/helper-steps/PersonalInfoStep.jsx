@@ -294,20 +294,7 @@ const PersonalInfoStep = ({ data, onChange, errors }) => {
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Expected Salary (SGD per month)
-          </label>
-          <input
-            type="text"
-            value={data.expectedSalary || ""}
-            onChange={(e) =>
-              handleInputChange("expectedSalary", e.target.value)
-            }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="e.g., $800, $900-1000"
-          />
-        </div>
+
 
         {/* <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">

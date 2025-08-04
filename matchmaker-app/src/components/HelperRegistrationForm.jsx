@@ -2303,7 +2303,7 @@ const HelperRegistrationForm = ({ onSubmit, isLoading = false }) => {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
                       <select
-                        value={employer.salary?.currency || 'USD'}
+                        value={employer.salary?.currency || ''}
                         onChange={(e) => handleEmployerChange(index, 'salary.currency', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
