@@ -1,6 +1,11 @@
 import React from 'react';
 import MultiStepForm from './MultiStepForm';
 
+// Common input styling for dark mode compatibility
+const inputClassName = "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400";
+const selectClassName = "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white";
+const textareaClassName = "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400";
+
 // Step 1: Basic Job Information
 const BasicJobInfoStep = ({ data, onChange, errors }) => (
   <div className="space-y-6">
@@ -16,7 +21,7 @@ const BasicJobInfoStep = ({ data, onChange, errors }) => (
           type="text"
           value={data.jobTitle || ''}
           onChange={(e) => onChange({ ...data, jobTitle: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className={inputClassName}
           placeholder="e.g., Domestic Helper for Family with Young Children"
         />
         {errors.jobTitle && <p className="text-red-500 text-sm mt-1">{errors.jobTitle}</p>}
@@ -27,7 +32,7 @@ const BasicJobInfoStep = ({ data, onChange, errors }) => (
         <textarea
           value={data.jobDescription || ''}
           onChange={(e) => onChange({ ...data, jobDescription: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className={textareaClassName}
           rows="4"
           placeholder="Describe the job responsibilities, family environment, and what you're looking for in a helper..."
         />
@@ -44,7 +49,7 @@ const BasicJobInfoStep = ({ data, onChange, errors }) => (
               ...data, 
               location: { ...data.location, city: e.target.value }
             })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={inputClassName}
             placeholder="Enter city name"
           />
           {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city}</p>}
@@ -59,7 +64,7 @@ const BasicJobInfoStep = ({ data, onChange, errors }) => (
               ...data, 
               location: { ...data.location, country: e.target.value }
             })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={inputClassName}
             placeholder="Enter country name"
           />
           {errors.country && <p className="text-red-500 text-sm mt-1">{errors.country}</p>}
@@ -70,7 +75,7 @@ const BasicJobInfoStep = ({ data, onChange, errors }) => (
             <select
               value={data.urgency || 'flexible'}
               onChange={(e) => onChange({ ...data, urgency: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={selectClassName}
             >
               <option value="immediate">Immediate (within 1 week)</option>
               <option value="within_week">Within 2 weeks</option>
@@ -86,7 +91,7 @@ const BasicJobInfoStep = ({ data, onChange, errors }) => (
           type="date"
           value={data.startDate || ''}
           onChange={(e) => onChange({ ...data, startDate: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className={inputClassName}
         />
         {errors.startDate && <p className="text-red-500 text-sm mt-1">{errors.startDate}</p>}
       </div>
@@ -181,7 +186,7 @@ const HouseholdInfoStep = ({ data, onChange, errors }) => {
                 ...data,
                 employer: { ...data.employer, culturalBackground: e.target.value }
               })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={inputClassName}
               placeholder="e.g., Chinese, Indian, Malay, Western"
             />
             {errors.culturalBackground && <p className="text-red-500 text-sm mt-1">{errors.culturalBackground}</p>}
@@ -289,16 +294,16 @@ const HouseholdInfoStep = ({ data, onChange, errors }) => {
             {data.employer?.hasPets && (
               <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Pet Type(s)</label>
-                <input
-                  type="text"
-                  value={data.employer?.petType || ''}
-                  onChange={(e) => onChange({
-                    ...data,
-                    employer: { ...data.employer, petType: e.target.value }
-                  })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g., Dog, Cat, Bird, Fish (separate multiple pets with commas)"
-                />
+                                 <input
+                   type="text"
+                   value={data.employer?.petType || ''}
+                   onChange={(e) => onChange({
+                     ...data,
+                     employer: { ...data.employer, petType: e.target.value }
+                   })}
+                   className={inputClassName}
+                   placeholder="e.g., Dog, Cat, Bird, Fish (separate multiple pets with commas)"
+                 />
               </div>
             )}
           </div>
