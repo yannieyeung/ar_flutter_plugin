@@ -17,16 +17,34 @@ export async function GET(request) {
       if (userType === 'employer') {
         // Employers see only their own jobs
         console.log('👔 Jobs API: Fetching employer jobs for:', userId);
+        
+        // Debug: Check what employer IDs actually exist
+        const allJobsForDebug = await db.collection('job_postings').limit(5).get();
+        const existingEmployerIds = allJobsForDebug.docs.map(doc => doc.data().employerId);
+        console.log('🔍 Debug: Existing employer IDs in database:', existingEmployerIds);
+        console.log('🔍 Debug: Looking for employerId that equals:', userId);
+        console.log('🔍 Debug: Do any match?', existingEmployerIds.includes(userId));
+        
+        // Try query without orderBy first to see if that's the issue
+        console.log('🔍 Debug: Trying query without orderBy first...');
+        const testQuery = db.collection('job_postings').where('employerId', '==', userId);
+        const testSnapshot = await testQuery.get();
+        console.log(`🔍 Debug: Query without orderBy found ${testSnapshot.docs.length} jobs`);
+        
+        // Temporarily remove orderBy to test if that's causing the issue
+        console.log('🔍 Debug: Using query WITHOUT orderBy to test...');
         jobsQuery = db.collection('job_postings')
-          .where('employerId', '==', userId)
-          .orderBy('datePosted', 'desc');
+          .where('employerId', '==', userId);
+          // .orderBy('datePosted', 'desc'); // Commented out for debugging
           
       } else if (userType === 'agency' || userType === 'individual_helper') {
         // Agencies and helpers see all active jobs
         console.log('🔍 Jobs API: Fetching all active jobs for:', userType);
+        // Temporarily remove orderBy to test if that's causing the issue
+        console.log('🔍 Debug: Using helper/agency query WITHOUT orderBy to test...');
         jobsQuery = db.collection('job_postings')
-          .where('status', '==', 'active')
-          .orderBy('datePosted', 'desc');
+          .where('status', '==', 'active');
+          // .orderBy('datePosted', 'desc'); // Commented out for debugging
           
       } else {
         return NextResponse.json({

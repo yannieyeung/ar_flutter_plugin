@@ -94,6 +94,33 @@ const EXPERIENCE_TYPES = [
   "Cook", "Driver", "Tutor", "Cleaner"
 ];
 
+const EXPERIENCE_LEVELS = ['beginner', 'intermediate', 'advanced', 'expert'];
+const PROFICIENCY_LEVELS = ['basic', 'intermediate', 'advanced', 'native'];
+const LANGUAGES = [
+  'English', 'Mandarin', 'Cantonese', 'Malay', 'Tamil', 'Hindi',
+  'Tagalog', 'Indonesian', 'Burmese', 'Sinhalese', 'Thai', 'Vietnamese',
+  'Arabic', 'French', 'German', 'Spanish', 'Japanese', 'Korean'
+];
+const CUISINES = ['Chinese', 'Western', 'Malay', 'Indian', 'Japanese', 'Korean', 'Thai', 'Vietnamese', 'Indonesian', 'Filipino', 'Italian', 'Mediterranean'];
+const IMPORTANCE_LEVELS = ['low', 'medium', 'high', 'critical'];
+const HOUSE_TYPES = ['Studio Apartment', '1-2 Bedroom Apartment', '3+ Bedroom Apartment', '2-Storey House', '3+ Storey House', 'Condominium', 'Landed Property', 'HDB Flat'];
+const WORK_COUNTRIES = ['Singapore', 'Hong Kong', 'UAE', 'Saudi Arabia', 'Qatar', 'Kuwait', 'Taiwan', 'Malaysia'];
+
+// Task categories for detailed experience
+const EXPERIENCE_TASKS = {
+  careOfInfant: ['feeding', 'diaper_changing', 'bathing', 'sleep_training', 'playtime', 'development_activities', 'safety_monitoring'],
+  careOfChildren: ['homework_help', 'school_pickup_dropoff', 'meal_preparation', 'playtime', 'extracurricular_activities', 'bedtime_routine', 'tutoring'],
+  careOfDisabled: ['mobility_assistance', 'personal_care', 'communication_support', 'therapy_assistance', 'medication_management', 'special_equipment_use'],
+  careOfOldAge: ['mobility_assistance', 'medication_management', 'personal_hygiene', 'companionship', 'meal_assistance', 'medical_appointments'],
+  generalHousework: ['general_cleaning', 'deep_cleaning', 'laundry', 'ironing', 'organizing', 'grocery_shopping', 'home_maintenance'],
+  cooking: ['meal_planning', 'grocery_shopping', 'food_preparation', 'special_diets', 'baking', 'food_safety']
+};
+
+const DISABILITY_TYPES = ['Physical disabilities', 'Intellectual disabilities', 'Autism', 'Multiple disabilities'];
+const ELDERLY_SPECIALTIES = ['Dementia care', 'Post-surgery care', 'Mobility assistance', 'Medication management'];
+const INFANT_AGES = ['0-3 months', '3-6 months', '6-12 months'];
+const CHILDREN_AGES = ['1-3 years', '4-6 years', '7-9 years', '10-12 years'];
+
 // Generate realistic helper data
 function generateHelperData(index) {
   const country = COUNTRIES[Math.floor(Math.random() * COUNTRIES.length)];
@@ -145,9 +172,11 @@ function generateHelperData(index) {
     experience: hasExperience ? {
       totalYears: yearsOfExperience,
       previousJobs: generateExperienceHistory(yearsOfExperience),
-      specializations: selectedSkills.slice(0, 3)
+      specializations: selectedSkills.slice(0, 3),
+      ...generateDetailedExperience(hasExperience, yearsOfExperience)
     } : {},
-    relevantSkills: selectedSkills,
+    relevantSkills: hasExperience ? selectedSkills : selectedSkills.join(', '),
+    languagesSpoken: hasExperience ? '' : LANGUAGES.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 3) + 1).join(', '),
     
     // Medical Information
     hasAllergies: Math.random() > 0.8 ? 'yes' : 'no', // 20% have allergies
@@ -156,14 +185,19 @@ function generateHelperData(index) {
     illnessDetails: Math.random() > 0.9 ? 'Minor health conditions, fully recovered' : '',
     hasPhysicalDisabilities: 'no', // Assume no disabilities for seed data
     disabilityDetails: '',
+    disabilitiesDetails: '', // Match form field name
     
-    // Food and Dietary Preferences
-    foodHandlingPreferences: {
-      canCookPork: Math.random() > 0.3,
-      canCookBeef: Math.random() > 0.2,
-      canHandleAlcohol: Math.random() > 0.4,
-      dietaryRestrictions: Math.random() > 0.8 ? ['Halal', 'Vegetarian', 'No restrictions'][Math.floor(Math.random() * 3)] : 'No restrictions'
-    },
+    // Food and Dietary Preferences (match form structure - array format)
+    foodHandlingPreferences: (() => {
+      const prefs = [];
+      if (Math.random() > 0.7) prefs.push('no_pork');
+      if (Math.random() > 0.8) prefs.push('no_beef');
+      if (Math.random() > 0.6) prefs.push('no_alcohol');
+      if (Math.random() > 0.9) prefs.push('vegetarian_only');
+      if (Math.random() > 0.8) prefs.push('halal_only');
+      if (Math.random() > 0.95) prefs.push('kosher_familiar');
+      return prefs;
+    })(),
     
     // Work Preferences
     requiredOffDays: Math.floor(Math.random() * 2) + 1, // 1-2 days off per week
@@ -173,22 +207,29 @@ function generateHelperData(index) {
       comfortableWithPets: Math.random() > 0.3,
       comfortableWithElderly: Math.random() > 0.4,
       comfortableWithChildren: Math.random() > 0.2,
-      preferredLocation: ['Central', 'East', 'West', 'North', 'South'][Math.floor(Math.random() * 5)] + ' Singapore'
+      preferredLocation: ['Central', 'East', 'West', 'North', 'South'][Math.floor(Math.random() * 5)] + ' Singapore',
+      ...generateDetailedPreferences()
     },
+    
+    // Salary Expectations
+    expectations: generateSalaryExpectations(),
     
     // Availability & Interview
     interview: {
       availableForInterview: true,
       preferredInterviewTime: ['Morning', 'Afternoon', 'Evening'][Math.floor(Math.random() * 3)],
-      canStartWork: getRandomStartDate()
+      canStartWork: getRandomStartDate(),
+      ...generateEnhancedInterview()
     },
     readiness: {
       hasValidPassport: true,
       hasWorkPermit: Math.random() > 0.5,
       needsVisaSponsorship: Math.random() > 0.6,
-      canRelocate: true
+      canRelocate: true,
+      ...generateEnhancedReadiness()
     },
     otherRemarks: getRandomRemarks(),
+    otherMedicalRemarks: Math.random() > 0.8 ? getRandomRemarks() : '',
     
     // ML Profile for AI matching
     mlProfile: {
@@ -384,6 +425,178 @@ function generateWorkPreferencesVector() {
     overtime: Math.random() > 0.4,
     travel: Math.random() > 0.8
   };
+}
+
+// Generate detailed experience for experienced helpers
+function generateDetailedExperience(hasExperience, yearsOfExperience) {
+  if (!hasExperience || yearsOfExperience === 0) {
+    return {};
+  }
+
+  const experienceCategories = ['careOfInfant', 'careOfChildren', 'careOfDisabled', 'careOfOldAge', 'generalHousework', 'cooking'];
+  const experience = {};
+  
+  // Randomly select 2-5 categories to have experience in
+  const numCategories = Math.floor(Math.random() * 4) + 2; // 2-5 categories
+  const selectedCategories = experienceCategories.sort(() => 0.5 - Math.random()).slice(0, numCategories);
+  
+  selectedCategories.forEach(category => {
+    const categoryYears = Math.floor(Math.random() * yearsOfExperience) + 1;
+    const yearsFrom = Math.max(0, categoryYears - 2);
+    const yearsTo = categoryYears;
+    
+    experience[category] = {
+      hasExperience: true,
+      experienceLevel: EXPERIENCE_LEVELS[Math.floor(Math.random() * EXPERIENCE_LEVELS.length)],
+      yearsFrom: yearsFrom.toString(),
+      yearsTo: yearsTo.toString(),
+      specificTasks: EXPERIENCE_TASKS[category].sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 4) + 2)
+    };
+
+    // Add cuisine data for cooking
+    if (category === 'cooking') {
+      experience[category].cuisines = CUISINES.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 4) + 2);
+    }
+  });
+
+  // Generate languages spoken
+  const numLanguages = Math.floor(Math.random() * 3) + 1; // 1-3 languages
+  const selectedLanguages = LANGUAGES.sort(() => 0.5 - Math.random()).slice(0, numLanguages);
+  
+  experience.languagesSpoken = selectedLanguages.map(language => ({
+    language,
+    proficiency: PROFICIENCY_LEVELS[Math.floor(Math.random() * PROFICIENCY_LEVELS.length)],
+    canTeach: Math.random() > 0.7 // 30% chance can teach children
+  }));
+
+  // Add other skills
+  experience.otherSkills = [
+    'First Aid certified', 'Pet care experience', 'Driving license', 
+    'Massage therapy', 'Tutoring experience', 'Basic computer skills'
+  ].sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 3) + 1).join(', ');
+
+  return experience;
+}
+
+// Generate detailed preferences
+function generateDetailedPreferences() {
+  const preferences = {};
+  
+  // Care preferences
+  const careCategories = ['careOfInfant', 'careOfChildren', 'careOfDisabled', 'careOfOldAge'];
+  careCategories.forEach(category => {
+    const willing = ['yes', 'maybe', 'no'][Math.floor(Math.random() * 3)];
+    preferences[category] = {
+      willing,
+      importance: IMPORTANCE_LEVELS[Math.floor(Math.random() * IMPORTANCE_LEVELS.length)],
+      maxNumber: willing === 'yes' ? Math.floor(Math.random() * 4) + 1 : 0
+    };
+
+    // Add specific preferences based on category
+    if (category === 'careOfInfant' && willing === 'yes') {
+      preferences[category].preferredAges = INFANT_AGES.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 2) + 1);
+    }
+    if (category === 'careOfChildren' && willing === 'yes') {
+      preferences[category].preferredAges = CHILDREN_AGES.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 2) + 1);
+    }
+    if (category === 'careOfDisabled' && willing === 'yes') {
+      preferences[category].preferredTypes = DISABILITY_TYPES.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 2) + 1);
+    }
+    if (category === 'careOfOldAge' && willing === 'yes') {
+      preferences[category].specialties = ELDERLY_SPECIALTIES.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 2) + 1);
+    }
+  });
+
+  // Housework preferences
+  preferences.generalHousework = {
+    willing: ['yes', 'maybe', 'no'][Math.floor(Math.random() * 3)],
+    importance: IMPORTANCE_LEVELS[Math.floor(Math.random() * IMPORTANCE_LEVELS.length)],
+    preferredHouseSizes: HOUSE_TYPES.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 3) + 2)
+  };
+
+  // Cooking preferences
+  preferences.cooking = {
+    willing: ['yes', 'maybe', 'no'][Math.floor(Math.random() * 3)],
+    importance: IMPORTANCE_LEVELS[Math.floor(Math.random() * IMPORTANCE_LEVELS.length)],
+    preferredCuisines: CUISINES.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 4) + 2)
+  };
+
+  // Work environment preferences
+  preferences.workEnvironment = {
+    liveInPreference: ['live_in_only', 'live_out_only', 'either'][Math.floor(Math.random() * 3)],
+    petFriendly: ['love_pets', 'comfortable', 'no_pets'][Math.floor(Math.random() * 3)]
+  };
+
+  // Location preferences
+  preferences.location = {
+    preferredCountries: WORK_COUNTRIES.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 3) + 1)
+  };
+
+  return preferences;
+}
+
+// Generate salary expectations
+function generateSalaryExpectations() {
+  const minimumAmount = (Math.floor(Math.random() * 10) + 8) * 100; // 800-1700
+  const preferredAmount = minimumAmount + (Math.floor(Math.random() * 5) + 1) * 100; // 100-500 more than minimum
+  
+  return {
+    salary: {
+      minimumAmount: minimumAmount.toString(),
+      preferredAmount: preferredAmount.toString(),
+      negotiable: Math.random() > 0.4, // 60% are negotiable
+      performanceBonusExpected: Math.random() > 0.6 // 40% want bonuses
+    }
+  };
+}
+
+// Generate enhanced readiness data
+function generateEnhancedReadiness() {
+  const hasValidPassport = Math.random() > 0.2; // 80% have valid passport
+  const canStartWork = ['immediately', 'within_month', 'after_date'][Math.floor(Math.random() * 3)];
+  const visaStatus = ['first_time', 'valid_permit', 'expired_permit', 'transfer_ready', 'citizen_pr'][Math.floor(Math.random() * 5)];
+  
+  const readiness = {
+    hasValidPassport: hasValidPassport ? 'yes' : 'no',
+    canStartWork,
+    visaStatus
+  };
+
+  if (hasValidPassport) {
+    // Generate passport expiry 1-5 years from now
+    const expiryDate = new Date();
+    expiryDate.setFullYear(expiryDate.getFullYear() + Math.floor(Math.random() * 5) + 1);
+    readiness.passportExpiry = expiryDate.toISOString().split('T')[0];
+  }
+
+  if (canStartWork === 'after_date') {
+    // Generate start date 1-90 days from now
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() + Math.floor(Math.random() * 90) + 1);
+    readiness.startDate = startDate.toISOString().split('T')[0];
+  }
+
+  return readiness;
+}
+
+// Generate enhanced interview preferences
+function generateEnhancedInterview() {
+  const availability = ['immediate', 'weekdays_only', 'weekends_only', 'after_date'][Math.floor(Math.random() * 4)];
+  const means = ['whatsapp_video_call', 'zoom_video_call', 'voice_call', 'face_to_face', 'others'][Math.floor(Math.random() * 5)];
+  
+  const interview = {
+    availability,
+    means
+  };
+
+  if (availability === 'after_date') {
+    // Generate availability date 1-30 days from now
+    const availabilityDate = new Date();
+    availabilityDate.setDate(availabilityDate.getDate() + Math.floor(Math.random() * 30) + 1);
+    interview.availabilityDate = availabilityDate.toISOString().split('T')[0];
+  }
+
+  return interview;
 }
 
 // Main seeding function
