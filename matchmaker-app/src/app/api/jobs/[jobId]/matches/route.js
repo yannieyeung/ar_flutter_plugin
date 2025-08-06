@@ -8,7 +8,10 @@ import { headers } from 'next/headers';
  */
 export async function GET(request, { params }) {
   try {
-    const { jobId } = await params;
+    // Await params for Next.js 15 compatibility
+    const resolvedParams = await params;
+    const { jobId } = resolvedParams;
+    
     const { searchParams } = new URL(request.url);
     
     // Get pagination parameters
@@ -16,7 +19,7 @@ export async function GET(request, { params }) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const offset = (page - 1) * limit;
 
-    // Get user ID from request headers or auth context
+    // Get user ID from request headers or auth context - await headers for Next.js 15
     const headersList = await headers();
     const userId = headersList.get('x-user-id') || searchParams.get('userId');
 
@@ -143,7 +146,10 @@ export async function GET(request, { params }) {
  */
 export async function POST(request, { params }) {
   try {
-    const { jobId } = await params;
+    // Await params for Next.js 15 compatibility
+    const resolvedParams = await params;
+    const { jobId } = resolvedParams;
+    
     const body = await request.json();
     const { helperId, action, userId, helperData, jobData } = body;
 
