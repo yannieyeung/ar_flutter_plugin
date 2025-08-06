@@ -11,7 +11,7 @@ import * as tf from '@tensorflow/tfjs';
 // Get helpers from database (using existing QueryService)
 async function getAllHelpers() {
   try {
-    return await QueryService.getUsersByType('helper', 1000); // Get up to 1000 helpers
+    return await QueryService.getUsersByType('individual_helper', 1000); // Get up to 1000 helpers
   } catch (error) {
     console.error('Error fetching helpers:', error);
     return [];

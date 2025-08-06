@@ -8,7 +8,7 @@ import { headers } from 'next/headers';
  */
 export async function GET(request, { params }) {
   try {
-    const { jobId } = params;
+    const { jobId } = await params;
     const { searchParams } = new URL(request.url);
     
     // Get pagination parameters
@@ -17,7 +17,7 @@ export async function GET(request, { params }) {
     const offset = (page - 1) * limit;
 
     // Get user ID from request headers or auth context
-    const headersList = headers();
+    const headersList = await headers();
     const userId = headersList.get('x-user-id') || searchParams.get('userId');
 
     console.log(`🎯 Enhanced matching request for job ${jobId}, page ${page}, limit ${limit}`);
@@ -143,7 +143,7 @@ export async function GET(request, { params }) {
  */
 export async function POST(request, { params }) {
   try {
-    const { jobId } = params;
+    const { jobId } = await params;
     const body = await request.json();
     const { helperId, action, userId, helperData, jobData } = body;
 
