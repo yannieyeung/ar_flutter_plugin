@@ -48,7 +48,8 @@ class CompensationRuleEngine {
   }
 
   evaluateRule(rule, helper, job, currentScore, scoreBreakdown) {
-    const context = this.buildEvaluationContext(helper, job, currentScore, scoreBreakdown);
+    try {
+      const context = this.buildEvaluationContext(helper, job, currentScore, scoreBreakdown);
     
     // Use Function constructor to safely evaluate the condition
     try {
@@ -68,14 +69,27 @@ class CompensationRuleEngine {
           reason: rule.reason || `Rule applied: ${rule.condition}`
         };
       }
-    } catch (error) {
-      console.error('Error evaluating rule condition:', rule.condition, error);
-    }
+      } catch (error) {
+        console.error('Error evaluating rule condition:', rule.condition, error);
+      }
 
-    return { applies: false, adjustment: 0 };
+      return { applies: false, adjustment: 0 };
+    } catch (error) {
+      console.error('Error evaluating compensation rule:', error);
+      return { applies: false, adjustment: 0 };
+    }
   }
 
   buildEvaluationContext(helper, job, currentScore, scoreBreakdown) {
+    // Debug: Log nationality data structure
+    if (job.preferences?.nationality !== undefined) {
+      console.log('🔍 Debug nationality data:', {
+        type: typeof job.preferences.nationality,
+        value: job.preferences.nationality,
+        isArray: Array.isArray(job.preferences.nationality)
+      });
+    }
+    
     return {
       // Helper attributes
       hasEnglish: helper.languages?.some(l => l.language.toLowerCase().includes('english')) || false,
@@ -92,9 +106,9 @@ class CompensationRuleEngine {
       requiresCooking: job.requirements?.cooking?.required || false,
       requiresElderlyCare: job.requirements?.elderlyCare?.required || false,
       preferredNationalities: Array.isArray(job.preferences?.nationality) 
-        ? job.preferences.nationality.map(n => n.toLowerCase()) 
+        ? job.preferences.nationality.map(n => String(n || '').toLowerCase()).filter(Boolean)
         : job.preferences?.nationality 
-          ? [job.preferences.nationality.toLowerCase()]
+          ? [String(job.preferences.nationality || '').toLowerCase()].filter(Boolean)
           : [],
       ageRange: job.preferences?.age || {},
       
@@ -108,12 +122,12 @@ class CompensationRuleEngine {
               // Helper functions for rules
         isPreferredNationality: function(nat) {
           const prefs = Array.isArray(job.preferences?.nationality) 
-            ? job.preferences.nationality 
+            ? job.preferences.nationality.map(n => String(n || '').toLowerCase()).filter(Boolean)
             : job.preferences?.nationality 
-              ? [job.preferences.nationality] 
+              ? [String(job.preferences.nationality || '').toLowerCase()].filter(Boolean)
               : [];
           return prefs.some(pref => 
-            pref.toLowerCase() === nat?.toLowerCase()
+            pref === String(nat || '').toLowerCase()
           );
         },
       
