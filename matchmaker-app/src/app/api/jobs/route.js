@@ -25,6 +25,12 @@ export async function GET(request) {
         console.log('🔍 Debug: Looking for employerId that equals:', userId);
         console.log('🔍 Debug: Do any match?', existingEmployerIds.includes(userId));
         
+        // Try query without orderBy first to see if that's the issue
+        console.log('🔍 Debug: Trying query without orderBy first...');
+        const testQuery = db.collection('job_postings').where('employerId', '==', userId);
+        const testSnapshot = await testQuery.get();
+        console.log(`🔍 Debug: Query without orderBy found ${testSnapshot.docs.length} jobs`);
+        
         jobsQuery = db.collection('job_postings')
           .where('employerId', '==', userId)
           .orderBy('datePosted', 'desc');
