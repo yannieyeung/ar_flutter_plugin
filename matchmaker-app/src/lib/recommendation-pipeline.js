@@ -165,30 +165,40 @@ function normalizeHelperData(helper) {
   // Extract experience data
   const extractExperience = (helper) => {
     const experience = helper.experience || {};
+    
+    // Safely handle relevantSkills - it might be a string, array, or undefined
+    const skillsText = Array.isArray(helper.relevantSkills) 
+      ? helper.relevantSkills.join(' ').toLowerCase()
+      : (helper.relevantSkills && typeof helper.relevantSkills === 'string') 
+        ? helper.relevantSkills.toLowerCase()
+        : '';
+    
     return {
       childCare: experience.childCare || 
                  experience.child_care || 
                  helper.hasChildCareExperience ||
-                 (helper.relevantSkills && helper.relevantSkills.toLowerCase().includes('childcare')),
+                 skillsText.includes('childcare') ||
+                 skillsText.includes('child care'),
       cooking: experience.cooking || 
                helper.hasCookingExperience ||
-               (helper.relevantSkills && helper.relevantSkills.toLowerCase().includes('cooking')),
+               skillsText.includes('cooking'),
       cleaning: experience.cleaning || 
                 helper.hasCleaningExperience ||
-                (helper.relevantSkills && helper.relevantSkills.toLowerCase().includes('cleaning')),
+                skillsText.includes('cleaning'),
       elderlyCare: experience.elderlyCare || 
                    experience.elderly_care ||
                    helper.hasElderlyCareExperience ||
-                   (helper.relevantSkills && helper.relevantSkills.toLowerCase().includes('elderly')),
+                   skillsText.includes('elderly'),
       petCare: experience.petCare || 
                experience.pet_care ||
                helper.hasPetCareExperience ||
-               (helper.relevantSkills && helper.relevantSkills.toLowerCase().includes('pet'))
+               skillsText.includes('pet')
     };
   };
 
   return {
     id: helper.uid || helper.id,
+    uid: helper.uid || helper.id, // Ensure both id and uid are available
     fullName: helper.fullName || helper.name || `${helper.firstName || ''} ${helper.lastName || ''}`.trim(),
     age: calculateAge(helper.dateOfBirth),
     nationality: helper.nationality || helper.countryOfBirth || '',
@@ -199,7 +209,11 @@ function normalizeHelperData(helper) {
                      (helper.experience?.totalYears) || 
                      (helper.hasBeenHelperBefore === 'yes' ? 2 : 0), // Default assumption
     cookingSkills: helper.cookingSkills || 
-                   (helper.relevantSkills ? helper.relevantSkills.split(',').map(s => s.trim()) : []),
+                   (typeof helper.relevantSkills === 'string' 
+                     ? helper.relevantSkills.split(',').map(s => s.trim()) 
+                     : Array.isArray(helper.relevantSkills) 
+                       ? helper.relevantSkills 
+                       : []),
     isVerified: helper.isVerified || false,
     isActive: helper.isActive !== false, // Default to true unless explicitly false
     hasPhoto: !!helper.photoURL || !!helper.profilePicture,
@@ -211,7 +225,11 @@ function normalizeHelperData(helper) {
     educationLevel: helper.educationLevel || '',
     maritalStatus: helper.maritalStatus || '',
     numberOfChildren: helper.numberOfChildren || 0,
-    relevantSkills: helper.relevantSkills || ''
+    relevantSkills: typeof helper.relevantSkills === 'string' 
+      ? helper.relevantSkills 
+      : Array.isArray(helper.relevantSkills) 
+        ? helper.relevantSkills.join(', ') 
+        : ''
   };
 }
 

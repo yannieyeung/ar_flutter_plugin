@@ -91,7 +91,11 @@ class CompensationRuleEngine {
       requiresChildCare: job.requirements?.childCare?.required || false,
       requiresCooking: job.requirements?.cooking?.required || false,
       requiresElderlyCare: job.requirements?.elderlyCare?.required || false,
-      preferredNationalities: job.preferences?.nationality?.map(n => n.toLowerCase()) || [],
+      preferredNationalities: Array.isArray(job.preferences?.nationality) 
+        ? job.preferences.nationality.map(n => n.toLowerCase()) 
+        : job.preferences?.nationality 
+          ? [job.preferences.nationality.toLowerCase()]
+          : [],
       ageRange: job.preferences?.age || {},
       
       // Current matching scores
@@ -101,12 +105,17 @@ class CompensationRuleEngine {
       nationalityScore: scoreBreakdown?.nationality?.score || 0,
       ageScore: scoreBreakdown?.age?.score || 0,
       
-      // Helper functions for rules
-      isPreferredNationality: function(nat) {
-        return job.preferences?.nationality?.some(pref => 
-          pref.toLowerCase() === nat?.toLowerCase()
-        ) || false;
-      },
+              // Helper functions for rules
+        isPreferredNationality: function(nat) {
+          const prefs = Array.isArray(job.preferences?.nationality) 
+            ? job.preferences.nationality 
+            : job.preferences?.nationality 
+              ? [job.preferences.nationality] 
+              : [];
+          return prefs.some(pref => 
+            pref.toLowerCase() === nat?.toLowerCase()
+          );
+        },
       
       meetsAgeRequirement: function(age) {
         const ageRange = job.preferences?.age;

@@ -37,14 +37,17 @@ export async function GET(request, { params }) {
         // Track viewing of the match results (async, don't wait)
         paginatedMatches.forEach(async (match) => {
           try {
-            await userDecisionTracker.trackDecision(
-              userId,
-              match.helper.id,
-              jobId,
-              'viewed',
-              match.helper,
-              result.jobInfo
-            );
+            const helperId = match.helper?.id || match.helper?.uid;
+            if (helperId) {
+              await userDecisionTracker.trackDecision(
+                userId,
+                helperId,
+                jobId,
+                'viewed',
+                match.helper,
+                result.jobInfo
+              );
+            }
           } catch (trackingError) {
             console.error('Error tracking view decision:', trackingError);
             // Don't fail the request for tracking errors
@@ -60,7 +63,7 @@ export async function GET(request, { params }) {
       success: true,
       matches: paginatedMatches.map(match => ({
         helper: {
-          id: match.helper.id,
+          id: match.helper.id || match.helper.uid,
           fullName: match.helper.fullName,
           age: match.helper.age,
           nationality: match.helper.nationality,
