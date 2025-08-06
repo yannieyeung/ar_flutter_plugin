@@ -54,7 +54,13 @@ export default function MatchesPage({ params }) {
       setError(null);
 
       const response = await fetch(
-        `/api/jobs/${jobId}/matches?page=${page}&limit=${MATCHES_PER_PAGE}`
+        `/api/jobs/${jobId}/matches?page=${page}&limit=${MATCHES_PER_PAGE}&userId=${user?.uid}`,
+        {
+          headers: {
+            'x-user-id': user?.uid || '',
+            'Content-Type': 'application/json'
+          }
+        }
       );
 
       if (!response.ok) {
@@ -70,9 +76,9 @@ export default function MatchesPage({ params }) {
         setMatches(data.matches);
       }
       
-      setTotalMatches(data.totalMatches);
-      setHasMore(data.hasMore && matches.length + data.matches.length < MAX_MATCHES);
-      setTotalPages(Math.min(data.totalPages, Math.ceil(MAX_MATCHES / MATCHES_PER_PAGE)));
+      setTotalMatches(data.pagination?.totalMatches || data.totalMatches || 0);
+      setHasMore(data.pagination?.hasMore || data.hasMore || false);
+      setTotalPages(data.pagination?.totalPages || Math.ceil((data.totalMatches || 0) / MATCHES_PER_PAGE));
       setCurrentPage(page);
       
     } catch (error) {
@@ -87,6 +93,52 @@ export default function MatchesPage({ params }) {
   const loadMoreMatches = () => {
     if (hasMore && !loadingMore && currentPage < totalPages) {
       fetchMatches(currentPage + 1, true);
+    }
+  };
+
+  // Track user interactions with helper cards
+  const trackHelperInteraction = async (helperId, action, helperData = {}) => {
+    try {
+      await fetch(`/api/jobs/${jobId}/matches`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          helperId,
+          action,
+          userId: user?.uid,
+          helperData,
+          jobData: job
+        })
+      });
+      console.log(`📊 Tracked ${action} for helper ${helperId}`);
+    } catch (error) {
+      console.error('Error tracking interaction:', error);
+      // Don't fail the user action for tracking errors
+    }
+  };
+
+  const handleHelperClick = (helper, action) => {
+    // Track the click
+    trackHelperInteraction(helper.id, action, helper);
+    
+    // Handle the action
+    switch (action) {
+      case 'view_profile':
+        // Navigate to helper profile or open modal
+        console.log('View profile for:', helper.fullName);
+        break;
+      case 'contact':
+        // Open contact modal or navigate to contact page
+        console.log('Contact:', helper.fullName);
+        break;
+      case 'favorite':
+        // Add to favorites
+        console.log('Favorite:', helper.fullName);
+        break;
+      default:
+        console.log('Unknown action:', action);
     }
   };
 
@@ -298,16 +350,28 @@ export default function MatchesPage({ params }) {
                                   ))}
                                   <div className="pt-2 mt-3 border-t border-gray-300">
                                     <div className="text-sm font-medium text-gray-800">
-                                      Final Score Calculation:
+                                      Enhanced Score Calculation:
                                     </div>
                                     <div className="text-xs text-gray-600 mt-1">
-                                      Skills ({match.scoreBreakdown.skills.score}% × 30%) + 
-                                      Experience ({match.scoreBreakdown.experience.score}% × 25%) + 
-                                      Location ({match.scoreBreakdown.location.score}% × 20%) + 
-                                      Nationality ({match.scoreBreakdown.nationality.score}% × 10%) + 
-                                      Age ({match.scoreBreakdown.age.score}% × 10%) + 
-                                      Religion ({match.scoreBreakdown.religion.score}% × 5%) = {match.similarity}%
+                                      Base Score: {match.baseScore || match.score}%
+                                      {match.compensationScore > 0 && (
+                                        <> + Compensation: {match.compensationScore}%</>
+                                      )}
+                                      {match.personalizedScore && (
+                                        <> + AI Personalization: {match.personalizedScore}%</>
+                                      )}
+                                      {' = Final: '}{match.finalScore || match.score}%
                                     </div>
+                                    {match.appliedRules && match.appliedRules.length > 0 && (
+                                      <div className="mt-2">
+                                        <div className="text-xs font-medium text-gray-700">Applied Rules:</div>
+                                        <div className="text-xs text-gray-600">
+                                          {match.appliedRules.map((rule, idx) => (
+                                            <div key={idx}>• {rule.reason} (+{rule.adjustment * 100}%)</div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               </details>
@@ -315,33 +379,53 @@ export default function MatchesPage({ params }) {
                           )}
                         </div>
 
-                        {/* Match Score */}
+                        {/* Enhanced Match Score */}
                         <div className="flex-shrink-0 ml-6">
                           <div className="text-center">
-                            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getMatchScoreColor(match.similarity)}`}>
-                              {match.similarity}% Match
+                            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getMatchScoreColor(match.finalScore || match.score || match.similarity)}`}>
+                              {match.finalScore || match.score || match.similarity}% Match
                             </div>
                             <p className="text-xs text-gray-500 mt-1">
-                              {getMatchScoreLabel(match.similarity)}
+                              {getMatchScoreLabel(match.finalScore || match.score || match.similarity)}
                             </p>
+                            {match.isPersonalized && (
+                              <p className="text-xs text-purple-600 mt-1">
+                                🤖 AI Personalized
+                              </p>
+                            )}
                             {match.helper.profileCompleteness && (
                               <p className="text-xs text-gray-400 mt-1">
                                 {match.helper.profileCompleteness}% Complete Profile
+                              </p>
+                            )}
+                            {match.compensationScore > 0 && (
+                              <p className="text-xs text-blue-600 mt-1">
+                                +{match.compensationScore}% Bonus
                               </p>
                             )}
                           </div>
                         </div>
                       </div>
 
-                      {/* Action Buttons */}
+                      {/* Action Buttons with Click Tracking */}
                       <div className="mt-6 flex space-x-3">
-                        <button className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <button 
+                          onClick={() => handleHelperClick(match.helper, 'view_profile')}
+                          className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        >
                           View Full Profile
                         </button>
-                        <button className="flex-1 bg-white text-indigo-600 border border-indigo-600 px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <button 
+                          onClick={() => handleHelperClick(match.helper, 'contact')}
+                          className="flex-1 bg-white text-indigo-600 border border-indigo-600 px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        >
                           Contact Helper
                         </button>
-                        <button className="px-4 py-2 text-gray-400 hover:text-gray-600">
+                        <button 
+                          onClick={() => handleHelperClick(match.helper, 'favorite')}
+                          className="px-4 py-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                          title="Add to Favorites"
+                        >
                           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                           </svg>

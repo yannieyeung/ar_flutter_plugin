@@ -1,0 +1,95 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users collection - existing rules
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null && 
+                    (resource.data.userType == 'individual_helper' || 
+                     resource.data.userType == 'agency_helper') &&
+                    resource.data.isActive == true &&
+                    resource.data.isRegistrationComplete == true;
+    }
+
+    // Job postings collection - existing rules
+    match /job_postings/{jobId} {
+      allow read, write: if request.auth != null && 
+                           request.auth.uid == resource.data.employerId;
+      allow create: if request.auth != null && 
+                      request.auth.uid == request.resource.data.employerId;
+      allow read: if request.auth != null;
+    }
+
+    // User decisions collection - for ML training
+    match /user_decisions/{decisionId} {
+      allow create: if request.auth != null && 
+                      request.auth.uid == request.resource.data.userId;
+      allow read: if request.auth != null && 
+                    request.auth.uid == resource.data.userId;
+      allow update, delete: if false; // Decisions are immutable once created
+    }
+
+    // Recommendations collection - generated matches
+    match /recommendations/{jobId} {
+      allow read: if request.auth != null && 
+                    request.auth.uid == resource.data.employerId;
+      allow write: if false; // Only server can write recommendations
+    }
+
+    // Recommendation requests collection - triggers for generating matches
+    match /recommendation_requests/{jobId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && 
+                      request.auth.uid == request.resource.data.employerId;
+      allow update: if false; // Only server can update status
+    }
+
+    // ML retraining requests collection
+    match /ml_retraining_requests/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && 
+                      request.auth.uid == request.resource.data.userId;
+      allow update: if false; // Only server can update status
+    }
+
+    // ML training data collection - prepared training datasets
+    match /ml_training_data/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false; // Only server can write training data
+    }
+
+    // User preferences collection - for storing custom compensation rules
+    match /user_preferences/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Helper favorites collection - for tracking user preferences
+    match /helper_favorites/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Match feedback collection - for improving recommendations
+    match /match_feedback/{feedbackId} {
+      allow create: if request.auth != null && 
+                      request.auth.uid == request.resource.data.employerId;
+      allow read: if request.auth != null && 
+                    request.auth.uid == resource.data.employerId;
+      allow update: if request.auth != null && 
+                      request.auth.uid == resource.data.employerId;
+    }
+
+    // Analytics collection - aggregated data for insights
+    match /analytics/{document=**} {
+      allow read: if request.auth != null && 
+                    request.auth.token.admin == true;
+      allow write: if false; // Only server can write analytics
+    }
+
+    // System configuration collection
+    match /system_config/{configId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+                     request.auth.token.admin == true;
+    }
+  }
+}
