@@ -255,7 +255,7 @@ export default function MatchesPage({ params }) {
               ) : (
                 <div className="space-y-4">
                   {matches.map((match, index) => (
-                    <div key={match.helper.id} className="bg-white rounded-lg shadow p-6">
+                    <div key={match.helper.id || match.helper.uid || `helper-${index}`} className="bg-white rounded-lg shadow p-6">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center space-x-3">
@@ -308,7 +308,7 @@ export default function MatchesPage({ params }) {
                               <div className="flex flex-wrap gap-2">
                                 {match.matchReasons.map((reason, idx) => (
                                   <span
-                                    key={idx}
+                                    key={`reason-${idx}-${String(reason).slice(0, 10)}`}
                                     className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
                                   >
                                     {reason}
@@ -367,7 +367,7 @@ export default function MatchesPage({ params }) {
                                         <div className="text-xs font-medium text-gray-700">Applied Rules:</div>
                                         <div className="text-xs text-gray-600">
                                           {match.appliedRules.map((rule, idx) => (
-                                            <div key={idx}>• {rule.reason} (+{rule.adjustment * 100}%)</div>
+                                            <div key={`rule-${idx}-${rule.reason?.slice(0, 10) || idx}`}>• {rule.reason} (+{rule.adjustment * 100}%)</div>
                                           ))}
                                         </div>
                                       </div>
