@@ -17,6 +17,14 @@ export async function GET(request) {
       if (userType === 'employer') {
         // Employers see only their own jobs
         console.log('👔 Jobs API: Fetching employer jobs for:', userId);
+        
+        // Debug: Check what employer IDs actually exist
+        const allJobsForDebug = await db.collection('job_postings').limit(5).get();
+        const existingEmployerIds = allJobsForDebug.docs.map(doc => doc.data().employerId);
+        console.log('🔍 Debug: Existing employer IDs in database:', existingEmployerIds);
+        console.log('🔍 Debug: Looking for employerId that equals:', userId);
+        console.log('🔍 Debug: Do any match?', existingEmployerIds.includes(userId));
+        
         jobsQuery = db.collection('job_postings')
           .where('employerId', '==', userId)
           .orderBy('datePosted', 'desc');
