@@ -191,6 +191,9 @@ function generateHelperData(index) {
       experienceTimeline: []
     },
     
+    // Trigger feature computation flag
+    needsFeatureComputation: true,
+    
     relevantSkills: hasExperience ? selectedSkills : selectedSkills.join(', '),
     languagesSpoken: hasExperience ? '' : LANGUAGES.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 3) + 1).join(', '),
     

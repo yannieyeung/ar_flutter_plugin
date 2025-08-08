@@ -9,7 +9,9 @@
     "start": "next start",
     "lint": "next lint",
     "setup-supabase": "node create-supabase-buckets.js",
-    "seed:helpers": "node scripts/seedHelpers.js"
+    "seed:helpers": "node scripts/seedHelpers.js",
+    "compute:features": "node scripts/computeHelperFeatures.js",
+    "compute:features:force": "node scripts/computeHelperFeatures.js --force"
   },
   "dependencies": {
     "@firebase/auth": "^1.8.1",

@@ -8,6 +8,7 @@ import {
   getStructuredExperienceForML,
   validateExperienceData
 } from '../lib/experience-utils';
+import { featureComputationService } from '../lib/feature-computation-service';
 
 // Enhanced Medical & Health Information Step
 const MedicalInfoStep = ({ data, onChange, errors }) => (
@@ -152,7 +153,7 @@ const ExperienceStep = ({ data, onChange, errors }) => {
   const getTotalExperienceYearsWrapper = () => getTotalExperienceYears(data.experience);
   const getStructuredExperienceForMLWrapper = () => getStructuredExperienceForML(data.experience);
 
-  const handleExperienceChange = (type, field, value) => {
+  const handleExperienceChange = async (type, field, value) => {
     const updatedData = {
       ...data,
       experience: {
@@ -166,6 +167,28 @@ const ExperienceStep = ({ data, onChange, errors }) => {
 
     // Auto-calculate and store structured ML data
     updatedData.experienceForML = getStructuredExperienceForML(updatedData.experience);
+    
+    // Trigger feature computation if helper has ID (during profile updates)
+    if (data.uid && (field === 'startYear' || field === 'endYear' || field === 'experienceLevel')) {
+      try {
+        // Debounce feature computation to avoid excessive calls
+        if (handleExperienceChange.timeoutId) {
+          clearTimeout(handleExperienceChange.timeoutId);
+        }
+        
+        handleExperienceChange.timeoutId = setTimeout(async () => {
+          console.log('🔄 Updating helper features due to experience change...');
+          await featureComputationService.updateFeatures(
+            data.uid, 
+            { experience: updatedData.experience, experienceForML: updatedData.experienceForML },
+            updatedData
+          );
+        }, 2000); // 2 second debounce
+      } catch (error) {
+        console.warn('⚠️ Failed to update helper features:', error);
+        // Don't block the UI update
+      }
+    }
     
     onChange(updatedData);
   };

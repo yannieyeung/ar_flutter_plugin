@@ -7,6 +7,7 @@ import { enhancedMatchingService, DynamicScorer } from './enhanced-matching-serv
 import { JobService } from './jobs-service';
 import { QueryService } from './db';
 import { getStructuredExperienceForML, migrateExperienceFormat } from './experience-utils';
+import { featureComputationService } from './feature-computation-service';
 import * as tf from '@tensorflow/tfjs';
 
 // Get helpers from database (using existing QueryService)
@@ -199,9 +200,19 @@ function normalizeHelperData(helper) {
     };
   };
 
-  // Handle experience data - migrate old format if needed and ensure ML structure exists
+  // Handle experience data - use pre-computed features if available
   const migratedExperience = helper.experience ? migrateExperienceFormat(helper.experience) : {};
   const experienceForML = helper.experienceForML || getStructuredExperienceForML(migratedExperience);
+
+  // Try to get pre-computed ML features for enhanced performance
+  let precomputedFeatures = null;
+  if (helper.uid || helper.id) {
+    try {
+      precomputedFeatures = await featureComputationService.getComputedFeatures(helper.uid || helper.id);
+    } catch (error) {
+      console.warn(`⚠️ Could not load pre-computed features for helper ${helper.uid || helper.id}:`, error);
+    }
+  }
 
   return {
     id: helper.uid || helper.id,
@@ -233,6 +244,10 @@ function normalizeHelperData(helper) {
     
     // ML-ready experience data for TensorFlow matching
     experienceForML: experienceForML,
+    
+    // Pre-computed ML features for enhanced performance
+    mlFeatures: precomputedFeatures,
+    hasPrecomputedFeatures: !!precomputedFeatures,
     
     // Additional helper info for display
     location: helper.location || { city: helper.cityOfBirth, country: helper.countryOfBirth },
