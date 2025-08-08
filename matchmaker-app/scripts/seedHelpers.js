@@ -169,12 +169,28 @@ function generateHelperData(index) {
     
     // Experience and Skills
     hasBeenHelperBefore: hasExperience ? 'yes' : 'no',
-    experience: hasExperience ? {
-      totalYears: yearsOfExperience,
-      previousJobs: generateExperienceHistory(yearsOfExperience),
-      specializations: selectedSkills.slice(0, 3),
-      ...generateDetailedExperience(hasExperience, yearsOfExperience)
-    } : {},
+    experience: hasExperience ? (() => {
+      const detailedExperience = generateDetailedExperience(hasExperience, yearsOfExperience);
+      return {
+        totalYears: yearsOfExperience,
+        previousJobs: generateExperienceHistory(yearsOfExperience),
+        specializations: selectedSkills.slice(0, 3),
+        ...detailedExperience
+      };
+    })() : {},
+    
+    // Pre-computed ML-ready experience data for TensorFlow matching
+    experienceForML: hasExperience ? (() => {
+      const detailedExperience = generateDetailedExperience(hasExperience, yearsOfExperience);
+      return generateExperienceForML(detailedExperience);
+    })() : {
+      totalExperienceYears: 0,
+      skillsExperience: {},
+      skillsCompetency: {},
+      activeSkills: [],
+      experienceTimeline: []
+    },
+    
     relevantSkills: hasExperience ? selectedSkills : selectedSkills.join(', '),
     languagesSpoken: hasExperience ? '' : LANGUAGES.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 3) + 1).join(', '),
     
@@ -435,21 +451,30 @@ function generateDetailedExperience(hasExperience, yearsOfExperience) {
 
   const experienceCategories = ['careOfInfant', 'careOfChildren', 'careOfDisabled', 'careOfOldAge', 'generalHousework', 'cooking'];
   const experience = {};
+  const currentYear = new Date().getFullYear();
   
   // Randomly select 2-5 categories to have experience in
   const numCategories = Math.floor(Math.random() * 4) + 2; // 2-5 categories
   const selectedCategories = experienceCategories.sort(() => 0.5 - Math.random()).slice(0, numCategories);
   
   selectedCategories.forEach(category => {
-    const categoryYears = Math.floor(Math.random() * yearsOfExperience) + 1;
-    const yearsFrom = Math.max(0, categoryYears - 2);
-    const yearsTo = categoryYears;
+    // Generate realistic year ranges
+    const categoryExperienceYears = Math.min(
+      Math.floor(Math.random() * yearsOfExperience) + 1,
+      yearsOfExperience
+    );
+    
+    // Some experiences might be ongoing (70% chance), others completed
+    const isOngoing = Math.random() > 0.3;
+    
+    const startYear = currentYear - categoryExperienceYears;
+    const endYear = isOngoing ? null : startYear + categoryExperienceYears - 1;
     
     experience[category] = {
       hasExperience: true,
       experienceLevel: EXPERIENCE_LEVELS[Math.floor(Math.random() * EXPERIENCE_LEVELS.length)],
-      yearsFrom: yearsFrom.toString(),
-      yearsTo: yearsTo.toString(),
+      startYear: startYear,
+      endYear: endYear,
       specificTasks: EXPERIENCE_TASKS[category].sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 4) + 2)
     };
 
@@ -476,6 +501,83 @@ function generateDetailedExperience(hasExperience, yearsOfExperience) {
   ].sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 3) + 1).join(', ');
 
   return experience;
+}
+
+// Helper function to calculate years of experience from year ranges
+function calculateExperienceYears(startYear, endYear = null) {
+  if (!startYear) return 0;
+  const end = endYear || new Date().getFullYear();
+  return Math.max(0, end - startYear + 1);
+}
+
+// Helper function to structure experience data for ML/TensorFlow
+function generateExperienceForML(experience) {
+  if (!experience) return {};
+  
+  const experienceCategories = ['careOfInfant', 'careOfChildren', 'careOfDisabled', 'careOfOldAge', 'generalHousework', 'cooking'];
+  const structuredData = {
+    totalExperienceYears: 0,
+    skillsExperience: {},
+    skillsCompetency: {},
+    activeSkills: [],
+    experienceTimeline: []
+  };
+
+  let maxYears = 0;
+
+  experienceCategories.forEach(category => {
+    if (experience[category]?.hasExperience) {
+      const categoryData = experience[category];
+      const years = calculateExperienceYears(categoryData.startYear, categoryData.endYear);
+      maxYears = Math.max(maxYears, years);
+      
+      structuredData.skillsExperience[category] = {
+        hasExperience: true,
+        yearsOfExperience: years,
+        experienceLevel: categoryData.experienceLevel || 'beginner',
+        startYear: categoryData.startYear,
+        endYear: categoryData.endYear,
+        isCurrent: !categoryData.endYear,
+        specificTasks: categoryData.specificTasks || [],
+        taskCount: (categoryData.specificTasks || []).length
+      };
+
+      // Add to active skills list
+      structuredData.activeSkills.push(category);
+
+      // Add to timeline
+      structuredData.experienceTimeline.push({
+        skill: category,
+        startYear: categoryData.startYear,
+        endYear: categoryData.endYear || new Date().getFullYear(),
+        years: years,
+        level: categoryData.experienceLevel
+      });
+
+      // Calculate competency score (for ML features)
+      let competencyScore = 0;
+      switch (categoryData.experienceLevel) {
+        case 'expert': competencyScore = 1.0; break;
+        case 'advanced': competencyScore = 0.8; break;
+        case 'intermediate': competencyScore = 0.6; break;
+        case 'beginner': competencyScore = 0.4; break;
+        default: competencyScore = 0.2;
+      }
+      
+      // Adjust based on years of experience
+      const experienceMultiplier = Math.min(years / 5, 1); // Cap at 5 years for max score
+      structuredData.skillsCompetency[category] = competencyScore * (0.5 + 0.5 * experienceMultiplier);
+    } else {
+      structuredData.skillsExperience[category] = {
+        hasExperience: false,
+        yearsOfExperience: 0
+      };
+      structuredData.skillsCompetency[category] = 0;
+    }
+  });
+
+  structuredData.totalExperienceYears = maxYears;
+  return structuredData;
 }
 
 // Generate detailed preferences

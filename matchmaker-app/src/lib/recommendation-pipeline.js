@@ -6,6 +6,7 @@
 import { enhancedMatchingService, DynamicScorer } from './enhanced-matching-service';
 import { JobService } from './jobs-service';
 import { QueryService } from './db';
+import { getStructuredExperienceForML, migrateExperienceFormat } from './experience-utils';
 import * as tf from '@tensorflow/tfjs';
 
 // Get helpers from database (using existing QueryService)
@@ -198,6 +199,10 @@ function normalizeHelperData(helper) {
     };
   };
 
+  // Handle experience data - migrate old format if needed and ensure ML structure exists
+  const migratedExperience = helper.experience ? migrateExperienceFormat(helper.experience) : {};
+  const experienceForML = helper.experienceForML || getStructuredExperienceForML(migratedExperience);
+
   return {
     id: helper.uid || helper.id,
     uid: helper.uid || helper.id, // Ensure both id and uid are available
@@ -207,9 +212,13 @@ function normalizeHelperData(helper) {
     religion: helper.religion || '',
     languages: extractLanguages(helper.languagesSpoken || helper.languages),
     experience: extractExperience(helper),
-    experienceYears: helper.experienceYears || 
+    
+    // Enhanced experience data using new ML structure
+    experienceYears: experienceForML.totalExperienceYears || 
+                     helper.experienceYears || 
                      (helper.experience?.totalYears) || 
-                     (helper.hasBeenHelperBefore === 'yes' ? 2 : 0), // Default assumption
+                     (helper.hasBeenHelperBefore === 'yes' ? 2 : 0),
+    
     cookingSkills: helper.cookingSkills || 
                    (typeof helper.relevantSkills === 'string' 
                      ? helper.relevantSkills.split(',').map(s => s.trim()) 
@@ -221,6 +230,9 @@ function normalizeHelperData(helper) {
     hasPhoto: !!helper.photoURL || !!helper.profilePicture,
     lastActive: helper.lastActive || helper.lastLoginAt || new Date(),
     profileCompleteness: helper.profileCompleteness || calculateProfileCompleteness(helper),
+    
+    // ML-ready experience data for TensorFlow matching
+    experienceForML: experienceForML,
     
     // Additional helper info for display
     location: helper.location || { city: helper.cityOfBirth, country: helper.countryOfBirth },

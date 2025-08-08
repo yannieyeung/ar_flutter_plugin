@@ -2,6 +2,12 @@ import React from 'react';
 import MultiStepForm from './MultiStepForm';
 import PersonalInfoStep from './helper-steps/PersonalInfoStep';
 import PhotosDocumentsStep from './helper-steps/PhotosDocumentsStep';
+import { 
+  calculateExperienceYears, 
+  getTotalExperienceYears, 
+  getStructuredExperienceForML,
+  validateExperienceData
+} from '../lib/experience-utils';
 
 // Enhanced Medical & Health Information Step
 const MedicalInfoStep = ({ data, onChange, errors }) => (
@@ -142,8 +148,12 @@ const ExperienceStep = ({ data, onChange, errors }) => {
   ];
   const CUISINES = ['Chinese', 'Western', 'Malay', 'Indian', 'Japanese', 'Korean', 'Thai', 'Vietnamese', 'Indonesian', 'Filipino', 'Italian', 'Mediterranean'];
 
+  // Wrapper functions to use the utility functions with component data
+  const getTotalExperienceYearsWrapper = () => getTotalExperienceYears(data.experience);
+  const getStructuredExperienceForMLWrapper = () => getStructuredExperienceForML(data.experience);
+
   const handleExperienceChange = (type, field, value) => {
-    onChange({
+    const updatedData = {
       ...data,
       experience: {
         ...data.experience,
@@ -152,7 +162,12 @@ const ExperienceStep = ({ data, onChange, errors }) => {
           [field]: value
         }
       }
-    });
+    };
+
+    // Auto-calculate and store structured ML data
+    updatedData.experienceForML = getStructuredExperienceForML(updatedData.experience);
+    
+    onChange(updatedData);
   };
 
   const handleLanguageChange = (index, field, value) => {
@@ -275,30 +290,50 @@ const ExperienceStep = ({ data, onChange, errors }) => {
                   {/* Years of Experience */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Years of Experience (From)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Started Year</label>
                       <input
                         type="number"
-                        min="0"
-                        max="50"
-                        value={data.experience?.[category.key]?.yearsFrom || ''}
-                        onChange={(e) => handleExperienceChange(category.key, 'yearsFrom', e.target.value)}
+                        min="1990"
+                        max={new Date().getFullYear()}
+                        value={data.experience?.[category.key]?.startYear || ''}
+                        onChange={(e) => handleExperienceChange(category.key, 'startYear', parseInt(e.target.value) || '')}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="0"
+                        placeholder={`e.g., ${new Date().getFullYear() - 5}`}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Years of Experience (To)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        End Year 
+                        <span className="text-xs text-gray-500 ml-1">(leave empty if current)</span>
+                      </label>
                       <input
                         type="number"
-                        min="0"
-                        max="50"
-                        value={data.experience?.[category.key]?.yearsTo || ''}
-                        onChange={(e) => handleExperienceChange(category.key, 'yearsTo', e.target.value)}
+                        min="1990"
+                        max={new Date().getFullYear()}
+                        value={data.experience?.[category.key]?.endYear || ''}
+                        onChange={(e) => handleExperienceChange(category.key, 'endYear', parseInt(e.target.value) || '')}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="5"
+                        placeholder="Current"
                       />
                     </div>
                   </div>
+                  
+                  {/* Calculate and Display Experience Duration */}
+                  {data.experience?.[category.key]?.startYear && (
+                    <div className="bg-blue-50 p-3 rounded-lg">
+                      <p className="text-sm text-blue-800">
+                        <strong>Experience Duration:</strong> {
+                          (() => {
+                            const startYear = data.experience[category.key].startYear;
+                            const endYear = data.experience[category.key].endYear || new Date().getFullYear();
+                            const years = Math.max(0, endYear - startYear + 1);
+                            return years === 1 ? '1 year' : `${years} years`;
+                          })()
+                        }
+                        {!data.experience[category.key].endYear && ' (ongoing)'}
+                      </p>
+                    </div>
+                  )}
 
                   {/* Specific Tasks */}
                   <div>
@@ -353,6 +388,50 @@ const ExperienceStep = ({ data, onChange, errors }) => {
               )}
             </div>
           ))}
+
+          {/* Experience Summary */}
+          {getTotalExperienceYearsWrapper() > 0 && (
+            <div className="border-2 border-green-200 rounded-lg p-6 bg-green-50">
+              <h3 className="text-lg font-medium text-green-900 mb-4">📊 Your Experience Summary</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white p-4 rounded-lg">
+                  <h4 className="font-medium text-gray-900 mb-2">Total Experience</h4>
+                  <p className="text-2xl font-bold text-green-600">{getTotalExperienceYearsWrapper()} years</p>
+                  <p className="text-sm text-gray-600">Maximum experience across all skills</p>
+                </div>
+                <div className="bg-white p-4 rounded-lg">
+                  <h4 className="font-medium text-gray-900 mb-2">Active Skills</h4>
+                  <p className="text-2xl font-bold text-blue-600">{getStructuredExperienceForMLWrapper().activeSkills.length}</p>
+                  <p className="text-sm text-gray-600">Skills with experience</p>
+                </div>
+              </div>
+              
+              {/* Skills Breakdown */}
+              <div className="mt-4">
+                <h4 className="font-medium text-gray-900 mb-3">Skills Experience Breakdown</h4>
+                <div className="space-y-2">
+                  {Object.entries(getStructuredExperienceForMLWrapper().skillsExperience)
+                    .filter(([_, skill]) => skill.hasExperience)
+                    .map(([category, skill]) => (
+                      <div key={category} className="flex justify-between items-center bg-white p-3 rounded-lg">
+                        <div>
+                          <span className="font-medium capitalize">
+                            {category.replace(/([A-Z])/g, ' $1').toLowerCase().replace(/^./, str => str.toUpperCase())}
+                          </span>
+                          <span className="text-sm text-gray-500 ml-2">
+                            ({skill.experienceLevel})
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <span className="font-bold text-green-600">{skill.yearsOfExperience} years</span>
+                          {skill.isCurrent && <span className="text-xs text-blue-600 block">Currently active</span>}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Languages Section */}
           <div className="border rounded-lg p-6 bg-gray-50">
