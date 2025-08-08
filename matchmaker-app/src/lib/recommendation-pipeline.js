@@ -61,8 +61,10 @@ export async function getTopHelpers(jobId, limit = 10, employerId = null) {
     // 3. Initialize enhanced matching service
     await enhancedMatchingService.initialize();
 
-    // 4. Score and sort helpers
-    const scorer = new DynamicScorer(job);
+    // 4. Create personalized scorer
+    const scorer = employerId 
+      ? await DynamicScorer.createPersonalized(job, employerId)
+      : new DynamicScorer(job);
     const scoredHelpers = [];
 
     for (let i = 0; i < helpers.length; i++) {

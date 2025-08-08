@@ -169,7 +169,7 @@ class CompensationRuleEngine {
 }
 
 // Enhanced data normalization function
-export function extractScoringCriteria(job) {
+export async function extractScoringCriteria(job, employerId = null) {
   const criteria = {
     // Core requirements with weights
     requirements: {
@@ -231,34 +231,10 @@ export function extractScoringCriteria(job) {
       }
     },
 
-    // Flexible compensation rules
-    compensationRules: job.compensationRules || [
-      // Default compensation rules - can be customized per employer
-      {
-        condition: "hasEnglish && !hasChildExperience && requiresChildCare",
-        action: "addChildCareWeight(0.3)",
-        description: "English speaker bonus for childcare without direct experience",
-        reason: "English proficiency can compensate for lack of childcare experience"
-      },
-      {
-        condition: "hasCookingExperience && !isPreferredNationality(nationality) && requiresCooking",
-        action: "addNationalityWeight(0.2)",
-        description: "Cooking experience bonus for non-preferred nationality",
-        reason: "Strong cooking skills can compensate for nationality preference"
-      },
-      {
-        condition: "experienceYears >= 5 && !meetsAgeRequirement(age)",
-        action: "addExperienceBonus(0.25)",
-        description: "Experience bonus for age requirement flexibility",
-        reason: "Extensive experience can compensate for age preferences"
-      },
-      {
-        condition: "isVerified && hasAllRequiredSkills()",
-        action: "addVerificationBonus(0.15)",
-        description: "Verification bonus for meeting all requirements",
-        reason: "Verified profiles with all skills get additional consideration"
-      }
-    ],
+    // Dynamic compensation rules based on employer's profile
+    compensationRules: employerId 
+      ? await generateEmployerSpecificRules(job, employerId)
+      : (job.compensationRules || getDefaultCompensationRules(job)),
 
     // Salary and work conditions
     workConditions: {
@@ -276,11 +252,213 @@ export function extractScoringCriteria(job) {
   return criteria;
 }
 
+// Add after the existing extractScoringCriteria function
+export async function generateEmployerSpecificRules(job, employerId) {
+  try {
+    // Get employer's hiring history and preferences
+    const employerProfile = await getEmployerProfile(employerId);
+    const hiringHistory = await getEmployerHiringHistory(employerId);
+    
+    // Analyze employer's flexibility patterns
+    const flexibilityProfile = analyzeEmployerFlexibility(hiringHistory);
+    
+    // Generate personalized compensation rules
+    const personalizedRules = [];
+    
+    // Age Flexibility Rules
+    if (flexibilityProfile.ageFlexibility > 0.6) {
+      personalizedRules.push({
+        condition: "age > preferredMaxAge && experienceYears >= 2",
+        action: `addAgeWeight(${flexibilityProfile.ageFlexibility})`,
+        reason: `Employer accepts older experienced helpers (flexibility: ${Math.round(flexibilityProfile.ageFlexibility * 100)}%)`
+      });
+    } else if (flexibilityProfile.ageFlexibility < 0.3) {
+      personalizedRules.push({
+        condition: "age > preferredMaxAge",
+        action: "subtractScore(0.3)",
+        reason: "Employer strictly prefers younger helpers"
+      });
+    }
+    
+    // Nationality Flexibility Rules  
+    if (flexibilityProfile.nationalityFlexibility > 0.7) {
+      personalizedRules.push({
+        condition: "!isPreferredNationality(nationality) && (hasChildExperience || hasCookingExperience)",
+        action: `addNationalityWeight(${flexibilityProfile.nationalityFlexibility * 0.6})`,
+        reason: `Employer open to other nationalities with skills (flexibility: ${Math.round(flexibilityProfile.nationalityFlexibility * 100)}%)`
+      });
+    }
+    
+    // Experience Compensation Rules
+    if (flexibilityProfile.skillCompensation > 0.5) {
+      personalizedRules.push({
+        condition: "!hasChildExperience && hasEnglish && experienceYears >= 3",
+        action: `addWeight(${flexibilityProfile.skillCompensation * 0.4})`,
+        reason: "Employer accepts English speakers to compensate for specific skill gaps"
+      });
+    }
+    
+    // Language Preference Rules
+    if (employerProfile.strongLanguagePreference) {
+      personalizedRules.push({
+        condition: "hasEnglish && (!preferredAge || age <= preferredMaxAge + 3)",
+        action: "addLanguageWeight(0.3)",
+        reason: "Strong English preference allows minor age flexibility"
+      });
+    }
+    
+    // Budget-based flexibility (if employer offers higher compensation)
+    if (job.compensation > employerProfile.averageOfferedCompensation * 1.2) {
+      personalizedRules.push({
+        condition: "(!isPreferredNationality(nationality) || age > preferredMaxAge) && experienceYears >= 2",
+        action: "addCompensationWeight(0.5)",
+        reason: "Higher budget allows flexibility on nationality/age for experienced helpers"
+      });
+    }
+    
+    return personalizedRules;
+    
+  } catch (error) {
+    console.error('Error generating employer-specific rules:', error);
+    // Fallback to default rules
+    return getDefaultCompensationRules(job);
+  }
+}
+
+// Analyze employer's historical hiring patterns
+export function analyzeEmployerFlexibility(hiringHistory) {
+  if (!hiringHistory || hiringHistory.length < 3) {
+    // Default moderate flexibility for new employers
+    return {
+      ageFlexibility: 0.5,
+      nationalityFlexibility: 0.5, 
+      skillCompensation: 0.5,
+      experienceFlexibility: 0.5
+    };
+  }
+  
+  const hired = hiringHistory.filter(h => h.action === 'hired');
+  const total = hired.length;
+  
+  if (total === 0) return { ageFlexibility: 0.5, nationalityFlexibility: 0.5, skillCompensation: 0.5, experienceFlexibility: 0.5 };
+  
+  // Calculate age flexibility
+  const ageFlexibleHires = hired.filter(h => 
+    h.helper.age > (h.job.preferences?.age?.max || 50)
+  ).length;
+  const ageFlexibility = ageFlexibleHires / total;
+  
+  // Calculate nationality flexibility
+  const nationalityFlexibleHires = hired.filter(h => {
+    const preferredNats = h.job.preferences?.nationality || [];
+    return !preferredNats.includes(h.helper.nationality);
+  }).length;
+  const nationalityFlexibility = nationalityFlexibleHires / total;
+  
+  // Calculate skill compensation patterns
+  const skillCompensationHires = hired.filter(h => {
+    // Hired someone lacking specific skills but having others
+    const lacksChildCare = h.job.requirements?.childCare?.required && !h.helper.experience?.childCare;
+    const hasOtherSkills = h.helper.experience?.cooking || h.helper.languages?.includes('English');
+    return lacksChildCare && hasOtherSkills;
+  }).length;
+  const skillCompensation = skillCompensationHires / total;
+  
+  // Calculate experience flexibility
+  const minExpRequired = hired.map(h => h.job.requirements?.minimumExperience || 0);
+  const actualExp = hired.map(h => h.helper.experienceYears || 0);
+  const experienceFlexibility = actualExp.filter((exp, i) => exp >= minExpRequired[i]).length / total;
+  
+  return {
+    ageFlexibility: Math.min(ageFlexibility, 1.0),
+    nationalityFlexibility: Math.min(nationalityFlexibility, 1.0),
+    skillCompensation: Math.min(skillCompensation, 1.0),
+    experienceFlexibility: Math.min(experienceFlexibility, 1.0)
+  };
+}
+
+// Get employer profile with preferences
+async function getEmployerProfile(employerId) {
+  try {
+    const { adminDb } = await import('./firebase-admin');
+    const doc = await adminDb.collection('users').doc(employerId).get();
+    const userData = doc.data();
+    
+    // Calculate average compensation offered
+    const jobsSnapshot = await adminDb.collection('job_postings')
+      .where('employerId', '==', employerId)
+      .get();
+    
+    const compensations = jobsSnapshot.docs
+      .map(doc => doc.data().compensation)
+      .filter(comp => comp && comp > 0);
+    
+    const avgCompensation = compensations.length > 0 
+      ? compensations.reduce((sum, comp) => sum + comp, 0) / compensations.length
+      : 2000; // Default
+    
+    return {
+      preferences: userData?.preferences || {},
+      averageOfferedCompensation: avgCompensation,
+      strongLanguagePreference: userData?.preferences?.prioritizeLanguages === 'high',
+      hiringCount: jobsSnapshot.docs.length
+    };
+  } catch (error) {
+    console.error('Error fetching employer profile:', error);
+    return {
+      preferences: {},
+      averageOfferedCompensation: 2000,
+      strongLanguagePreference: false,
+      hiringCount: 0
+    };
+  }
+}
+
+// Get employer's hiring history for analysis
+async function getEmployerHiringHistory(employerId, limit = 20) {
+  try {
+    const { adminDb } = await import('./firebase-admin');
+    const snapshot = await adminDb.collection('user_decisions')
+      .where('userId', '==', employerId)
+      .orderBy('timestamp', 'desc')
+      .limit(limit)
+      .get();
+    
+    return snapshot.docs.map(doc => doc.data());
+  } catch (error) {
+    console.error('Error fetching hiring history:', error);
+    return [];
+  }
+}
+
+// Fallback default rules
+function getDefaultCompensationRules(job) {
+  return [
+    {
+      condition: "hasEnglish && experienceYears >= 2",
+      action: "addWeight(0.3)",
+      reason: "English proficiency with experience"
+    },
+    {
+      condition: "age <= preferredMaxAge + 2 && experienceYears >= 3",
+      action: "addAgeWeight(0.2)",
+      reason: "Slight age flexibility for experienced helpers"
+    }
+  ];
+}
+
 // Dynamic Scorer Class
 export class DynamicScorer {
-  constructor(jobRequirements) {
-    this.criteria = extractScoringCriteria(jobRequirements);
+  constructor(jobRequirements, criteria = null) {
+    // If criteria is provided (from async call), use it directly
+    this.criteria = criteria || extractScoringCriteria(jobRequirements);
     this.compensationEngine = new CompensationRuleEngine(this.criteria.compensationRules);
+  }
+
+  // Async factory method for personalized scoring
+  static async createPersonalized(jobRequirements, employerId) {
+    const criteria = await extractScoringCriteria(jobRequirements, employerId);
+    return new DynamicScorer(jobRequirements, criteria);
   }
 
   scoreHelper(helper) {
