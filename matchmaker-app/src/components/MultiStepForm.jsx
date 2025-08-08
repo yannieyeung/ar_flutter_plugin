@@ -67,6 +67,21 @@ const MultiStepForm = ({
         Object.assign(allPreviousData, dataToValidate[`step_${i}`] || {});
       }
       
+      // Debug: Show what data is being passed to validation
+      console.log(`🔍 VALIDATION DATA PREPARATION for step ${currentStep}:`, {
+        stepTitle: steps[currentStep]?.title,
+        dataToValidateKeys: Object.keys(dataToValidate),
+        stepDataKeys: Object.keys(dataToValidate[`step_${currentStep}`] || {}),
+        stepDataContent: dataToValidate[`step_${currentStep}`],
+        allPreviousDataKeys: Object.keys(allPreviousData),
+        medicalFields: {
+          hasAllergies: allPreviousData.hasAllergies,
+          hasPastIllness: allPreviousData.hasPastIllness,
+          hasPhysicalDisabilities: allPreviousData.hasPhysicalDisabilities,
+          requiredOffDays: allPreviousData.requiredOffDays
+        }
+      });
+      
       const errors = currentStepComponent.validate(allPreviousData);
       setStepErrors(prev => ({
         ...prev,
