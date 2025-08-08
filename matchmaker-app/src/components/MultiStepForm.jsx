@@ -46,13 +46,6 @@ const MultiStepForm = ({
     
     setFormData(updatedFormData);
     
-    console.log(`📝 FORM DATA UPDATED - Step ${currentStep} (${steps[currentStep]?.title}):`, {
-      changedFields,
-      stepData: updatedFormData[`step_${currentStep}`],
-      allKeys: Object.keys(updatedFormData[`step_${currentStep}`] || {}),
-      timestamp: new Date().toLocaleTimeString()
-    });
-    
     // Trigger validation for the current step whenever data changes
     // Pass the updated data directly to avoid state timing issues
     validateCurrentStepWithData(updatedFormData);
@@ -67,21 +60,6 @@ const MultiStepForm = ({
         Object.assign(allPreviousData, dataToValidate[`step_${i}`] || {});
       }
       
-      // Debug: Show what data is being passed to validation
-      console.log(`🔍 VALIDATION DATA PREPARATION for step ${currentStep}:`, {
-        stepTitle: steps[currentStep]?.title,
-        dataToValidateKeys: Object.keys(dataToValidate),
-        stepDataKeys: Object.keys(dataToValidate[`step_${currentStep}`] || {}),
-        stepDataContent: dataToValidate[`step_${currentStep}`],
-        allPreviousDataKeys: Object.keys(allPreviousData),
-        medicalFields: {
-          hasAllergies: allPreviousData.hasAllergies,
-          hasPastIllness: allPreviousData.hasPastIllness,
-          hasPhysicalDisabilities: allPreviousData.hasPhysicalDisabilities,
-          requiredOffDays: allPreviousData.requiredOffDays
-        }
-      });
-      
       const errors = currentStepComponent.validate(allPreviousData);
       setStepErrors(prev => ({
         ...prev,
@@ -90,22 +68,11 @@ const MultiStepForm = ({
       
       const isComplete = Object.keys(errors).length === 0;
       
-      console.log(`🎯 STEP ${currentStep} (${steps[currentStep]?.title}) VALIDATION:`, {
-        errors,
-        errorCount: Object.keys(errors).length,
-        isComplete,
-        timestamp: new Date().toLocaleTimeString()
-      });
-      
       // Update completion status for this step
-      setStepCompletionStatus(prev => {
-        const newStatus = {
-          ...prev,
-          [currentStep]: isComplete
-        };
-        console.log(`📊 COMPLETION STATUS UPDATED:`, newStatus);
-        return newStatus;
-      });
+      setStepCompletionStatus(prev => ({
+        ...prev,
+        [currentStep]: isComplete
+      }));
       
       return isComplete;
     }
@@ -184,8 +151,6 @@ const MultiStepForm = ({
 
   const goToStep = (stepIndex) => {
     if (stepIndex >= 0 && stepIndex < steps.length) {
-      console.log(`🚀 NAVIGATING from step ${currentStep} (${steps[currentStep]?.title}) to step ${stepIndex} (${steps[stepIndex]?.title})`);
-      
       // Validate current step before leaving
       validateCurrentStep();
       
@@ -196,8 +161,6 @@ const MultiStepForm = ({
       setTimeout(() => {
         validateStep(stepIndex);
       }, 100);
-      
-      console.log(`✅ NAVIGATION COMPLETE - Now on step ${stepIndex} (${steps[stepIndex]?.title})`);
     }
   };
 
@@ -305,20 +268,6 @@ const MultiStepForm = ({
               const isIncomplete = stepCompletionStatus[index] === false;
               const isCurrent = index === currentStep;
               const isVisited = stepCompletionStatus.hasOwnProperty(index);
-              
-              // Debug logging for medical step (index 1)
-              if (index === 1) {
-                console.log(`🎯 MEDICAL STEP INDICATOR STATUS:`, {
-                  stepIndex: index,
-                  stepTitle: step.title,
-                  completionStatusValue: stepCompletionStatus[index],
-                  isCompleted,
-                  isIncomplete,
-                  isCurrent,
-                  isVisited,
-                  fullCompletionStatus: stepCompletionStatus
-                });
-              }
               
               return (
                 <div 

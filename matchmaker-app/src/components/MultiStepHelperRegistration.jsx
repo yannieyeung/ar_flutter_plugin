@@ -11,20 +11,7 @@ import {
 import { clientFeatureComputationService } from '../lib/feature-computation-client';
 
 // Enhanced Medical & Health Information Step
-const MedicalInfoStep = ({ data, onChange, errors }) => {
-  console.log('🏥 MEDICAL STEP RENDER - Data received:', {
-    dataKeys: Object.keys(data || {}),
-    medicalFields: {
-      hasAllergies: data?.hasAllergies,
-      hasPastIllness: data?.hasPastIllness,
-      hasPhysicalDisabilities: data?.hasPhysicalDisabilities,
-      requiredOffDays: data?.requiredOffDays
-    },
-    errorsKeys: Object.keys(errors || {}),
-    timestamp: new Date().toLocaleTimeString()
-  });
-
-  return (
+const MedicalInfoStep = ({ data, onChange, errors }) => (
   <div className="space-y-6">
     <div className="text-center mb-8">
       <h2 className="text-xl font-semibold text-gray-900 mb-2">Medical History & Health Information</h2>
@@ -44,12 +31,7 @@ const MedicalInfoStep = ({ data, onChange, errors }) => {
               name="hasAllergies"
               value="yes"
               checked={data.hasAllergies === 'yes'}
-              onChange={(e) => {
-                console.log('🔄 MEDICAL FIELD CHANGE - hasAllergies:', e.target.value);
-                const newData = { ...data, hasAllergies: e.target.value };
-                console.log('🔄 MEDICAL FIELD CHANGE - New data object:', newData);
-                onChange(newData);
-              }}
+              onChange={(e) => onChange({ ...data, hasAllergies: e.target.value })}
               className="mr-2"
             />
             Yes
@@ -178,8 +160,7 @@ const MedicalInfoStep = ({ data, onChange, errors }) => {
 
     </div>
   </div>
-  );
-};
+);
 
 // Enhanced Experience & Skills Step
 const ExperienceStep = ({ data, onChange, errors }) => {
@@ -1069,22 +1050,7 @@ const PreferencesStep = ({ data, onChange, errors }) => {
           </div>
         </div>
 
-        {/* Required Off Days */}
-        <div className="border rounded-lg p-6 bg-gray-50">
-          <label className="block text-lg font-medium text-gray-900 mb-2">Required Off Days <span className="text-red-500">*</span></label>
-          <p className="text-sm text-gray-600 mb-3">How many off days do you require per week? This helps with job matching</p>
-          <select
-            value={data.requiredOffDays || ''}
-            onChange={(e) => onChange({ ...data, requiredOffDays: e.target.value === '' ? '' : parseInt(e.target.value) })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Select Number</option>
-            {[0, 1, 2, 3, 4].map(num => (
-              <option key={num} value={num}>{num} day{num !== 1 ? 's' : ''} per week</option>
-            ))}
-          </select>
-          {errors.requiredOffDays && <p className="text-red-500 text-sm mt-1">{errors.requiredOffDays}</p>}
-        </div>
+
 
         {/* Other Remarks */}
         <div className="border rounded-lg p-6 bg-gray-50">
@@ -1553,61 +1519,33 @@ const MultiStepHelperRegistration = ({ onSubmit, isLoading }) => {
       title: 'Medical',
       component: MedicalInfoStep,
       validate: (data) => {
-        console.log('🔍 MEDICAL VALIDATION - Full data object keys:', Object.keys(data));
-        console.log('🔍 MEDICAL VALIDATION - Medical-specific data:', {
-          hasAllergies: data.hasAllergies,
-          hasPastIllness: data.hasPastIllness,
-          hasPhysicalDisabilities: data.hasPhysicalDisabilities,
-          requiredOffDays: data.requiredOffDays,
-          requiredOffDaysType: typeof data.requiredOffDays,
-          allergiesDetails: data.allergiesDetails,
-          illnessDetails: data.illnessDetails,
-          disabilitiesDetails: data.disabilitiesDetails
-        });
-        
         const errors = {};
         
         // Required health questions
         if (!data.hasAllergies) {
           errors.hasAllergies = 'Please specify if you have any allergies';
-          console.log('❌ hasAllergies validation failed:', data.hasAllergies);
         }
         
         if (!data.hasPastIllness) {
           errors.hasPastIllness = 'Please specify if you have any past or existing medical conditions';
-          console.log('❌ hasPastIllness validation failed:', data.hasPastIllness);
         }
         
         if (!data.hasPhysicalDisabilities) {
           errors.hasPhysicalDisabilities = 'Please specify if you have any physical disabilities or limitations';
-          console.log('❌ hasPhysicalDisabilities validation failed:', data.hasPhysicalDisabilities);
-        }
-        
-        // Required off days - handle both string and number values
-        const requiredOffDaysValue = data.requiredOffDays;
-        if (requiredOffDaysValue === '' || requiredOffDaysValue === null || requiredOffDaysValue === undefined) {
-          errors.requiredOffDays = 'Please specify how many off days you require per week';
-          console.log('❌ requiredOffDays validation failed:', { value: requiredOffDaysValue, type: typeof requiredOffDaysValue });
         }
         
         // Conditional validation for details when user answers "yes"
         if (data.hasAllergies === 'yes' && (!data.allergiesDetails || data.allergiesDetails.trim() === '')) {
           errors.allergiesDetails = 'Please provide details about your allergies';
-          console.log('❌ allergiesDetails validation failed');
         }
         
         if (data.hasPastIllness === 'yes' && (!data.illnessDetails || data.illnessDetails.trim() === '')) {
           errors.illnessDetails = 'Please provide details about your medical history';
-          console.log('❌ illnessDetails validation failed');
         }
         
         if (data.hasPhysicalDisabilities === 'yes' && (!data.disabilitiesDetails || data.disabilitiesDetails.trim() === '')) {
           errors.disabilitiesDetails = 'Please provide details about your physical limitations';
-          console.log('❌ disabilitiesDetails validation failed');
         }
-        
-        console.log('🔍 MEDICAL VALIDATION - Final errors:', errors);
-        console.log('🔍 MEDICAL VALIDATION - Is complete:', Object.keys(errors).length === 0);
         
         return errors;
       }
