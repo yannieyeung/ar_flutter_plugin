@@ -11,7 +11,20 @@ import {
 import { clientFeatureComputationService } from '../lib/feature-computation-client';
 
 // Enhanced Medical & Health Information Step
-const MedicalInfoStep = ({ data, onChange, errors }) => (
+const MedicalInfoStep = ({ data, onChange, errors }) => {
+  console.log('🏥 MEDICAL STEP RENDER - Data received:', {
+    dataKeys: Object.keys(data || {}),
+    medicalFields: {
+      hasAllergies: data?.hasAllergies,
+      hasPastIllness: data?.hasPastIllness,
+      hasPhysicalDisabilities: data?.hasPhysicalDisabilities,
+      requiredOffDays: data?.requiredOffDays
+    },
+    errorsKeys: Object.keys(errors || {}),
+    timestamp: new Date().toLocaleTimeString()
+  });
+
+  return (
   <div className="space-y-6">
     <div className="text-center mb-8">
       <h2 className="text-xl font-semibold text-gray-900 mb-2">Medical History & Health Information</h2>
@@ -31,7 +44,12 @@ const MedicalInfoStep = ({ data, onChange, errors }) => (
               name="hasAllergies"
               value="yes"
               checked={data.hasAllergies === 'yes'}
-              onChange={(e) => onChange({ ...data, hasAllergies: e.target.value })}
+              onChange={(e) => {
+                console.log('🔄 MEDICAL FIELD CHANGE - hasAllergies:', e.target.value);
+                const newData = { ...data, hasAllergies: e.target.value };
+                console.log('🔄 MEDICAL FIELD CHANGE - New data object:', newData);
+                onChange(newData);
+              }}
               className="mr-2"
             />
             Yes
@@ -160,7 +178,8 @@ const MedicalInfoStep = ({ data, onChange, errors }) => (
 
     </div>
   </div>
-);
+  );
+};
 
 // Enhanced Experience & Skills Step
 const ExperienceStep = ({ data, onChange, errors }) => {
