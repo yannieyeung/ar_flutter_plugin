@@ -1534,39 +1534,61 @@ const MultiStepHelperRegistration = ({ onSubmit, isLoading }) => {
       title: 'Medical',
       component: MedicalInfoStep,
       validate: (data) => {
+        console.log('🔍 MEDICAL VALIDATION - Full data object keys:', Object.keys(data));
+        console.log('🔍 MEDICAL VALIDATION - Medical-specific data:', {
+          hasAllergies: data.hasAllergies,
+          hasPastIllness: data.hasPastIllness,
+          hasPhysicalDisabilities: data.hasPhysicalDisabilities,
+          requiredOffDays: data.requiredOffDays,
+          requiredOffDaysType: typeof data.requiredOffDays,
+          allergiesDetails: data.allergiesDetails,
+          illnessDetails: data.illnessDetails,
+          disabilitiesDetails: data.disabilitiesDetails
+        });
+        
         const errors = {};
         
         // Required health questions
         if (!data.hasAllergies) {
           errors.hasAllergies = 'Please specify if you have any allergies';
+          console.log('❌ hasAllergies validation failed:', data.hasAllergies);
         }
         
         if (!data.hasPastIllness) {
           errors.hasPastIllness = 'Please specify if you have any past or existing medical conditions';
+          console.log('❌ hasPastIllness validation failed:', data.hasPastIllness);
         }
         
         if (!data.hasPhysicalDisabilities) {
           errors.hasPhysicalDisabilities = 'Please specify if you have any physical disabilities or limitations';
+          console.log('❌ hasPhysicalDisabilities validation failed:', data.hasPhysicalDisabilities);
         }
         
         // Required off days - handle both string and number values
         const requiredOffDaysValue = data.requiredOffDays;
         if (requiredOffDaysValue === '' || requiredOffDaysValue === null || requiredOffDaysValue === undefined) {
           errors.requiredOffDays = 'Please specify how many off days you require per week';
+          console.log('❌ requiredOffDays validation failed:', { value: requiredOffDaysValue, type: typeof requiredOffDaysValue });
         }
         
         // Conditional validation for details when user answers "yes"
         if (data.hasAllergies === 'yes' && (!data.allergiesDetails || data.allergiesDetails.trim() === '')) {
           errors.allergiesDetails = 'Please provide details about your allergies';
+          console.log('❌ allergiesDetails validation failed');
         }
         
         if (data.hasPastIllness === 'yes' && (!data.illnessDetails || data.illnessDetails.trim() === '')) {
           errors.illnessDetails = 'Please provide details about your medical history';
+          console.log('❌ illnessDetails validation failed');
         }
         
         if (data.hasPhysicalDisabilities === 'yes' && (!data.disabilitiesDetails || data.disabilitiesDetails.trim() === '')) {
           errors.disabilitiesDetails = 'Please provide details about your physical limitations';
+          console.log('❌ disabilitiesDetails validation failed');
         }
+        
+        console.log('🔍 MEDICAL VALIDATION - Final errors:', errors);
+        console.log('🔍 MEDICAL VALIDATION - Is complete:', Object.keys(errors).length === 0);
         
         return errors;
       }
