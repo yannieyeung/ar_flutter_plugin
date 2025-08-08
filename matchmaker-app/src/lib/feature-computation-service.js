@@ -176,6 +176,12 @@ class FeatureComputationService {
       const cached = this.getCachedFeatures(helperId);
       if (cached) return cached;
 
+      // Only load Firebase Admin in server environment
+      if (typeof window !== 'undefined') {
+        console.warn('⚠️ Cannot access Firebase Admin from client side');
+        return null;
+      }
+
       // Load from database
       const { adminDb } = await import('./firebase-admin');
       const doc = await adminDb.collection('helper_features').doc(helperId).get();
@@ -200,6 +206,12 @@ class FeatureComputationService {
    */
   async getFeatureVector(helperId) {
     try {
+      // Only load Firebase Admin in server environment
+      if (typeof window !== 'undefined') {
+        console.warn('⚠️ Cannot access Firebase Admin from client side');
+        return null;
+      }
+
       const { adminDb } = await import('./firebase-admin');
       const doc = await adminDb.collection('helper_feature_vectors').doc(helperId).get();
       
@@ -239,6 +251,12 @@ class FeatureComputationService {
 
   async storeFeatures(helperId, features) {
     try {
+      // Only store in server environment
+      if (typeof window !== 'undefined') {
+        console.warn('⚠️ Cannot store features from client side');
+        return;
+      }
+
       const { adminDb } = await import('./firebase-admin');
       
       await adminDb.collection('helper_features').doc(helperId).set({
@@ -256,6 +274,12 @@ class FeatureComputationService {
 
   async storeFeatureVector(helperId, vector) {
     try {
+      // Only store in server environment
+      if (typeof window !== 'undefined') {
+        console.warn('⚠️ Cannot store feature vector from client side');
+        return;
+      }
+
       const { adminDb } = await import('./firebase-admin');
       
       await adminDb.collection('helper_feature_vectors').doc(helperId).set({

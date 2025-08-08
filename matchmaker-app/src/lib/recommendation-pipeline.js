@@ -204,11 +204,14 @@ function normalizeHelperData(helper) {
   const migratedExperience = helper.experience ? migrateExperienceFormat(helper.experience) : {};
   const experienceForML = helper.experienceForML || getStructuredExperienceForML(migratedExperience);
 
-  // Try to get pre-computed ML features for enhanced performance
+  // Try to get pre-computed ML features for enhanced performance (server-side only)
   let precomputedFeatures = null;
   if (helper.uid || helper.id) {
     try {
-      precomputedFeatures = await featureComputationService.getComputedFeatures(helper.uid || helper.id);
+      // Only attempt to load features in server environment
+      if (typeof window === 'undefined') {
+        precomputedFeatures = await featureComputationService.getComputedFeatures(helper.uid || helper.id);
+      }
     } catch (error) {
       console.warn(`⚠️ Could not load pre-computed features for helper ${helper.uid || helper.id}:`, error);
     }

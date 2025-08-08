@@ -8,7 +8,7 @@ import {
   getStructuredExperienceForML,
   validateExperienceData
 } from '../lib/experience-utils';
-import { featureComputationService } from '../lib/feature-computation-service';
+import { clientFeatureComputationService } from '../lib/feature-computation-client';
 
 // Enhanced Medical & Health Information Step
 const MedicalInfoStep = ({ data, onChange, errors }) => (
@@ -178,7 +178,9 @@ const ExperienceStep = ({ data, onChange, errors }) => {
         
         handleExperienceChange.timeoutId = setTimeout(async () => {
           console.log('🔄 Updating helper features due to experience change...');
-          await featureComputationService.updateFeatures(
+          
+          // Use client-safe feature computation service
+          await clientFeatureComputationService.updateFeatures(
             data.uid, 
             { experience: updatedData.experience, experienceForML: updatedData.experienceForML },
             updatedData
