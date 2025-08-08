@@ -21,7 +21,9 @@ const MedicalInfoStep = ({ data, onChange, errors }) => (
     <div className="space-y-6">
       {/* Allergies */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Do you have any allergies?</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Do you have any allergies? <span className="text-red-500">*</span>
+        </label>
         <div className="flex space-x-4 mb-2">
           <label className="flex items-center">
             <input
@@ -46,20 +48,28 @@ const MedicalInfoStep = ({ data, onChange, errors }) => (
             No
           </label>
         </div>
+        {errors.hasAllergies && <p className="text-red-500 text-sm mt-1">{errors.hasAllergies}</p>}
         {data.hasAllergies === 'yes' && (
-          <textarea
-            value={data.allergiesDetails || ''}
-            onChange={(e) => onChange({ ...data, allergiesDetails: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Please describe your allergies (e.g., food allergies, environmental allergies, medications)..."
-            rows="3"
-          />
+          <div className="mt-2">
+            <textarea
+              value={data.allergiesDetails || ''}
+              onChange={(e) => onChange({ ...data, allergiesDetails: e.target.value })}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.allergiesDetails ? 'border-red-300' : 'border-gray-300'
+              }`}
+              placeholder="Please describe your allergies (e.g., food allergies, environmental allergies, medications)..."
+              rows="3"
+            />
+            {errors.allergiesDetails && <p className="text-red-500 text-sm mt-1">{errors.allergiesDetails}</p>}
+          </div>
         )}
       </div>
 
       {/* Past Illness */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Do you have any past or existing medical conditions?</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Do you have any past or existing medical conditions? <span className="text-red-500">*</span>
+        </label>
         <div className="flex space-x-4 mb-2">
           <label className="flex items-center">
             <input
@@ -84,20 +94,28 @@ const MedicalInfoStep = ({ data, onChange, errors }) => (
             No
           </label>
         </div>
+        {errors.hasPastIllness && <p className="text-red-500 text-sm mt-1">{errors.hasPastIllness}</p>}
         {data.hasPastIllness === 'yes' && (
-          <textarea
-            value={data.illnessDetails || ''}
-            onChange={(e) => onChange({ ...data, illnessDetails: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Please describe your medical history..."
-            rows="3"
-          />
+          <div className="mt-2">
+            <textarea
+              value={data.illnessDetails || ''}
+              onChange={(e) => onChange({ ...data, illnessDetails: e.target.value })}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.illnessDetails ? 'border-red-300' : 'border-gray-300'
+              }`}
+              placeholder="Please describe your medical history..."
+              rows="3"
+            />
+            {errors.illnessDetails && <p className="text-red-500 text-sm mt-1">{errors.illnessDetails}</p>}
+          </div>
         )}
       </div>
 
       {/* Physical Disabilities */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Do you have any physical disabilities or limitations?</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Do you have any physical disabilities or limitations? <span className="text-red-500">*</span>
+        </label>
         <div className="flex space-x-4 mb-2">
           <label className="flex items-center">
             <input
@@ -122,14 +140,20 @@ const MedicalInfoStep = ({ data, onChange, errors }) => (
             No
           </label>
         </div>
+        {errors.hasPhysicalDisabilities && <p className="text-red-500 text-sm mt-1">{errors.hasPhysicalDisabilities}</p>}
         {data.hasPhysicalDisabilities === 'yes' && (
-          <textarea
-            value={data.disabilitiesDetails || ''}
-            onChange={(e) => onChange({ ...data, disabilitiesDetails: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Please describe any physical limitations that might affect your work..."
-            rows="3"
-          />
+          <div className="mt-2">
+            <textarea
+              value={data.disabilitiesDetails || ''}
+              onChange={(e) => onChange({ ...data, disabilitiesDetails: e.target.value })}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.disabilitiesDetails ? 'border-red-300' : 'border-gray-300'
+              }`}
+              placeholder="Please describe any physical limitations that might affect your work..."
+              rows="3"
+            />
+            {errors.disabilitiesDetails && <p className="text-red-500 text-sm mt-1">{errors.disabilitiesDetails}</p>}
+          </div>
         )}
       </div>
 
@@ -1511,9 +1535,38 @@ const MultiStepHelperRegistration = ({ onSubmit, isLoading }) => {
       component: MedicalInfoStep,
       validate: (data) => {
         const errors = {};
+        
+        // Required health questions
+        if (!data.hasAllergies) {
+          errors.hasAllergies = 'Please specify if you have any allergies';
+        }
+        
+        if (!data.hasPastIllness) {
+          errors.hasPastIllness = 'Please specify if you have any past or existing medical conditions';
+        }
+        
+        if (!data.hasPhysicalDisabilities) {
+          errors.hasPhysicalDisabilities = 'Please specify if you have any physical disabilities or limitations';
+        }
+        
+        // Required off days
         if (!data.requiredOffDays && data.requiredOffDays !== 0) {
           errors.requiredOffDays = 'Please specify how many off days you require per week';
         }
+        
+        // Conditional validation for details when user answers "yes"
+        if (data.hasAllergies === 'yes' && (!data.allergiesDetails || data.allergiesDetails.trim() === '')) {
+          errors.allergiesDetails = 'Please provide details about your allergies';
+        }
+        
+        if (data.hasPastIllness === 'yes' && (!data.illnessDetails || data.illnessDetails.trim() === '')) {
+          errors.illnessDetails = 'Please provide details about your medical history';
+        }
+        
+        if (data.hasPhysicalDisabilities === 'yes' && (!data.disabilitiesDetails || data.disabilitiesDetails.trim() === '')) {
+          errors.disabilitiesDetails = 'Please provide details about your physical limitations';
+        }
+        
         return errors;
       }
     },
