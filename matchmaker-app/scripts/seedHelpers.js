@@ -198,14 +198,21 @@ function generateHelperData(index) {
     // languagesSpoken is handled in detailed experience for experienced helpers
     languagesSpoken: hasExperience ? [] : LANGUAGES.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 3) + 1).join(', '),
     
-    // Medical Information
-    hasAllergies: Math.random() > 0.8 ? 'yes' : 'no', // 20% have allergies
-    allergiesDetails: Math.random() > 0.8 ? getRandomAllergy() : '',
-    hasPastIllness: Math.random() > 0.9 ? 'yes' : 'no', // 10% have past illness
-    illnessDetails: Math.random() > 0.9 ? 'Minor health conditions, fully recovered' : '',
-    hasPhysicalDisabilities: 'no', // Assume no disabilities for seed data
-    disabilityDetails: '',
-    disabilitiesDetails: '', // Match form field name
+    // Medical Information (matches medical step form structure)
+    ...(() => {
+      const hasAllergies = Math.random() > 0.8 ? 'yes' : 'no'; // 20% have allergies
+      const hasPastIllness = Math.random() > 0.9 ? 'yes' : 'no'; // 10% have past illness
+      const hasPhysicalDisabilities = Math.random() > 0.95 ? 'yes' : 'no'; // 5% have physical disabilities
+      
+      return {
+        hasAllergies,
+        allergiesDetails: hasAllergies === 'yes' ? getRandomAllergy() : '',
+        hasPastIllness,
+        illnessDetails: hasPastIllness === 'yes' ? 'Minor health conditions, fully recovered' : '',
+        hasPhysicalDisabilities,
+        disabilitiesDetails: hasPhysicalDisabilities === 'yes' ? 'Minor mobility limitations, does not affect work performance' : ''
+      };
+    })(),
     
     // Food and Dietary Preferences (match form structure - array format)
     foodHandlingPreferences: (() => {
@@ -220,7 +227,6 @@ function generateHelperData(index) {
     })(),
     
     // Work Preferences
-    requiredOffDays: Math.floor(Math.random() * 2) + 1, // 1-2 days off per week
     preferences: {
       preferredWorkingHours: ['Full-time', 'Part-time', 'Live-in'][Math.floor(Math.random() * 3)],
       preferredFamilySize: ['Small (1-3 members)', 'Medium (4-6 members)', 'Large (7+ members)'][Math.floor(Math.random() * 3)],

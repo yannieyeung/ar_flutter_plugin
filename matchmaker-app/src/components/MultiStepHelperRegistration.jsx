@@ -1850,7 +1850,6 @@ const MultiStepHelperRegistration = ({ onSubmit, isLoading }) => {
         hasAllergies: data.hasAllergies === 'yes',
         hasMedicalIssues: data.hasPastIllness === 'yes',
         hasPhysicalDisabilities: data.hasPhysicalDisabilities === 'yes',
-        requiredOffDays: parseInt(data.requiredOffDays) || 0,
         foodRestrictions: (data.foodHandlingPreferences || []).length,
         healthScore: calculateHealthScore(data)
       },

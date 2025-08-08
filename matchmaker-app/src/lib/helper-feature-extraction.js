@@ -205,6 +205,7 @@ function extractPersonalFeatures(helper) {
     // Health & Medical
     hasHealthClearance: helper.hasHealthClearance ? 1 : 0,
     hasAllergies: helper.hasAllergies === 'yes' ? 1 : 0,
+    hasPastIllness: helper.hasPastIllness === 'yes' ? 1 : 0,
     hasPhysicalLimitations: helper.hasPhysicalDisabilities === 'yes' ? 1 : 0,
     
     // Cultural Adaptability
