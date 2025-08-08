@@ -36,22 +36,28 @@ const MultiStepForm = ({
     });
     
     // Only update the current step with the changed fields
-    setFormData(prev => ({
-      ...prev,
+    const updatedFormData = {
+      ...formData,
       [`step_${currentStep}`]: {
         ...currentStepData,
         ...changedFields
       }
-    }));
+    };
+    
+    setFormData(updatedFormData);
+    
+    // Trigger validation for the current step whenever data changes
+    // Pass the updated data directly to avoid state timing issues
+    validateCurrentStepWithData(updatedFormData);
   };
 
-  const validateCurrentStep = () => {
+  const validateCurrentStepWithData = (dataToValidate) => {
     const currentStepComponent = steps[currentStep];
     if (currentStepComponent.validate) {
       // Combine all previous step data for validation context
       const allPreviousData = {};
       for (let i = 0; i <= currentStep; i++) {
-        Object.assign(allPreviousData, formData[`step_${i}`] || {});
+        Object.assign(allPreviousData, dataToValidate[`step_${i}`] || {});
       }
       
       const errors = currentStepComponent.validate(allPreviousData);
@@ -78,6 +84,10 @@ const MultiStepForm = ({
     }));
     
     return true;
+  };
+
+  const validateCurrentStep = () => {
+    return validateCurrentStepWithData(formData);
   };
 
   const validateStep = (stepIndex) => {

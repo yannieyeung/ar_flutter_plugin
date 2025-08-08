@@ -1056,7 +1056,7 @@ const PreferencesStep = ({ data, onChange, errors }) => {
           <p className="text-sm text-gray-600 mb-3">How many off days do you require per week? This helps with job matching</p>
           <select
             value={data.requiredOffDays || ''}
-            onChange={(e) => onChange({ ...data, requiredOffDays: e.target.value })}
+            onChange={(e) => onChange({ ...data, requiredOffDays: e.target.value === '' ? '' : parseInt(e.target.value) })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Select Number</option>
@@ -1549,8 +1549,9 @@ const MultiStepHelperRegistration = ({ onSubmit, isLoading }) => {
           errors.hasPhysicalDisabilities = 'Please specify if you have any physical disabilities or limitations';
         }
         
-        // Required off days
-        if (!data.requiredOffDays && data.requiredOffDays !== 0) {
+        // Required off days - handle both string and number values
+        const requiredOffDaysValue = data.requiredOffDays;
+        if (requiredOffDaysValue === '' || requiredOffDaysValue === null || requiredOffDaysValue === undefined) {
           errors.requiredOffDays = 'Please specify how many off days you require per week';
         }
         
