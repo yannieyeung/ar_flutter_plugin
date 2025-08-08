@@ -10,6 +10,8 @@
     "lint": "next lint",
     "setup-supabase": "node create-supabase-buckets.js",
     "seed:helpers": "node scripts/seedHelpers.js",
+    "seed:complete": "npm run seed:helpers",
+    "seed:validate": "node scripts/validateSeeding.js",
     "compute:features": "node scripts/computeHelperFeatures.js",
     "compute:features:force": "node scripts/computeHelperFeatures.js --force"
   },
