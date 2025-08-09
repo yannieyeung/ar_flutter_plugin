@@ -1,13 +1,17 @@
 import { NextResponse } from 'next/server';
-import { matchingService } from '@/lib/matching-service';
+import { getTopHelpers, userDecisionTracker } from '@/lib/recommendation-pipeline';
+import { headers } from 'next/headers';
 
 /**
  * GET /api/jobs/[jobId]/matches
- * Find matches for a specific job posting
+ * Get enhanced AI-powered matches for a job using the new TensorFlow system
  */
 export async function GET(request, { params }) {
   try {
-    const { jobId } = await params;
+    // Await params for Next.js 15 compatibility
+    const resolvedParams = await params;
+    const { jobId } = resolvedParams;
+    
     const { searchParams } = new URL(request.url);
     
     // Get pagination parameters
@@ -15,199 +19,187 @@ export async function GET(request, { params }) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const offset = (page - 1) * limit;
 
-    // Validate parameters
-    if (!jobId) {
-      return NextResponse.json(
-        { error: 'Job ID is required' },
-        { status: 400 }
-      );
+    // Get user ID from request headers or auth context - await headers for Next.js 15
+    const headersList = await headers();
+    const userId = headersList.get('x-user-id') || searchParams.get('userId');
+
+    console.log(`🎯 Enhanced matching request for job ${jobId}, page ${page}, limit ${limit}`);
+
+    // Get matches using the enhanced recommendation pipeline
+    const result = await getTopHelpers(jobId, limit + offset, userId);
+    
+    // Apply pagination to the results
+    const paginatedMatches = result.matches.slice(offset, offset + limit);
+    
+    // Track that user viewed the matches
+    if (userId && paginatedMatches.length > 0) {
+      try {
+        // Track viewing of the match results (async, don't wait)
+        paginatedMatches.forEach(async (match) => {
+          try {
+            const helperId = match.helper?.id || match.helper?.uid;
+            if (helperId) {
+              await userDecisionTracker.trackDecision(
+                userId,
+                helperId,
+                jobId,
+                'viewed',
+                match.helper,
+                result.jobInfo
+              );
+            }
+          } catch (trackingError) {
+            console.error('Error tracking view decision:', trackingError);
+            // Don't fail the request for tracking errors
+          }
+        });
+      } catch (error) {
+        console.error('Error in batch tracking:', error);
+      }
     }
 
-    if (limit > 50) {
-      return NextResponse.json(
-        { error: 'Limit cannot exceed 50' },
-        { status: 400 }
-      );
-    }
-
-    // Get all active helpers from the database
-    const helpers = await getAllActiveHelpers();
-    console.log(`📊 Retrieved ${helpers.length} helpers for matching`);
-    
-    if (helpers.length === 0) {
-      console.log('⚠️ No helpers found in database');
-      return NextResponse.json({
-        matches: [],
-        totalMatches: 0,
-        hasMore: false,
-        page,
-        limit,
-        totalPages: 0,
-        message: 'No active helpers found in the database'
-      });
-    }
-
-    // Find matches using the matching service
-    console.log(`🎯 Starting matching process for job ${jobId}`);
-    const result = await matchingService.findMatches(jobId, helpers, limit, offset);
-    console.log(`✅ Matching completed: ${result.matches.length} matches found`);
-    
-    // Calculate pagination info
-    const totalPages = Math.ceil(result.totalMatches / limit);
-    
-    return NextResponse.json({
-      matches: result.matches.map(match => ({
+    // Format response
+    const response = {
+      success: true,
+      matches: paginatedMatches.map(match => ({
         helper: {
-          id: match.helper.id,
-          fullName: match.helper.fullName || match.helper.name,
-          age: matchingService.calculateAge(match.helper.dateOfBirth),
+          id: match.helper.id || match.helper.uid,
+          fullName: match.helper.fullName,
+          age: match.helper.age,
           nationality: match.helper.nationality,
-          religion: match.helper.religion,
-          experience: match.helper.experience,
+          experienceYears: match.helper.experienceYears,
+          languages: match.helper.languages,
           relevantSkills: match.helper.relevantSkills,
           isVerified: match.helper.isVerified,
           profileCompleteness: match.helper.profileCompleteness,
-          profilePicture: match.helper.profilePicture,
-          // Add other safe fields that should be visible to employers
+          location: match.helper.location
         },
-        similarity: Math.round(match.similarity * 100), // Convert to percentage
-        matchReasons: match.matchReasons,
-        matchScore: match.similarity,
-        scoreBreakdown: match.scoreBreakdown ? {
+        score: match.score,
+        baseScore: match.baseScore || match.score,
+        personalizedScore: match.personalizedScore,
+        compensationScore: match.compensationScore || 0,
+        finalScore: match.finalScore || match.score,
+        isPersonalized: match.isPersonalized || false,
+        matchReasons: match.matchReasons || [],
+        appliedRules: match.appliedRules || [],
+        scoreBreakdown: {
           skills: {
-            score: Math.round(match.scoreBreakdown.skills.score * 100),
-            weight: Math.round(match.scoreBreakdown.skills.weight * 100),
-            details: match.scoreBreakdown.skills.details
+            score: Math.round((match.scoreBreakdown?.skills?.score || 0) * 100),
+            details: match.scoreBreakdown?.skills?.details || ''
           },
           experience: {
-            score: Math.round(match.scoreBreakdown.experience.score * 100),
-            weight: Math.round(match.scoreBreakdown.experience.weight * 100),
-            details: match.scoreBreakdown.experience.details
+            score: Math.round((match.scoreBreakdown?.experience?.score || 0) * 100),
+            details: match.scoreBreakdown?.experience?.details || ''
           },
-          location: {
-            score: Math.round(match.scoreBreakdown.location.score * 100),
-            weight: Math.round(match.scoreBreakdown.location.weight * 100),
-            details: match.scoreBreakdown.location.details
+          preferences: {
+            score: Math.round((match.scoreBreakdown?.preferences?.score || 0) * 100),
+            details: match.scoreBreakdown?.preferences?.details || ''
           },
-          nationality: {
-            score: Math.round(match.scoreBreakdown.nationality.score * 100),
-            weight: Math.round(match.scoreBreakdown.nationality.weight * 100),
-            details: match.scoreBreakdown.nationality.details
+          workConditions: {
+            score: Math.round((match.scoreBreakdown?.workConditions?.score || 0) * 100),
+            details: match.scoreBreakdown?.workConditions?.details || ''
           },
-          age: {
-            score: Math.round(match.scoreBreakdown.age.score * 100),
-            weight: Math.round(match.scoreBreakdown.age.weight * 100),
-            details: match.scoreBreakdown.age.details
-          },
-          religion: {
-            score: Math.round(match.scoreBreakdown.religion.score * 100),
-            weight: Math.round(match.scoreBreakdown.religion.weight * 100),
-            details: match.scoreBreakdown.religion.details
+          profile: {
+            score: Math.round((match.scoreBreakdown?.profile?.score || 0) * 100),
+            details: match.scoreBreakdown?.profile?.details || ''
           }
-        } : null
+        },
+        matchDetails: match.matchDetails
       })),
-      totalMatches: result.totalMatches,
-      hasMore: result.hasMore,
-      page,
-      limit,
-      totalPages
-    });
+      pagination: {
+        currentPage: page,
+        totalMatches: result.totalMatches,
+        hasMore: result.hasMore,
+        totalPages: Math.ceil(result.totalMatches / limit),
+        limit: limit
+      },
+      jobInfo: result.jobInfo,
+      scoringInfo: result.scoringInfo,
+      enhancedMatching: true, // Indicator that enhanced matching was used
+      timestamp: new Date().toISOString()
+    };
+
+    console.log(`✅ Enhanced matching completed: ${paginatedMatches.length} matches returned`);
+
+    return NextResponse.json(response);
 
   } catch (error) {
-    console.error('❌ Error finding matches:', error);
-    console.error('❌ Error stack:', error.stack);
+    console.error('❌ Enhanced matching API error:', error);
     
-    // Return appropriate error response
-    if (error.message === 'Job not found') {
-      return NextResponse.json(
-        { 
-          error: 'Job not found',
-          message: `No job found with ID: ${jobId}. The job may have been deleted or the ID is incorrect.`,
-          suggestion: 'Please check the job ID or visit /api/debug/jobs to see available jobs.'
-        },
-        { status: 404 }
-      );
-    }
-    
-    return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      success: false,
+      error: error.message,
+      matches: [],
+      pagination: {
+        currentPage: 1,
+        totalMatches: 0,
+        hasMore: false,
+        totalPages: 0,
+        limit: 10
+      },
+      enhancedMatching: false,
+      timestamp: new Date().toISOString()
+    }, { status: 500 });
   }
 }
 
 /**
- * Get all active helpers from the database
+ * POST /api/jobs/[jobId]/matches
+ * Track user interactions with helper matches
  */
-async function getAllActiveHelpers() {
+export async function POST(request, { params }) {
   try {
-    console.log('🔍 Fetching active helpers...');
+    // Await params for Next.js 15 compatibility
+    const resolvedParams = await params;
+    const { jobId } = resolvedParams;
     
-         // Try to import Firebase admin
-     let db;
-     try {
-       const { adminDb } = await import('@/lib/firebase-admin');
-       db = adminDb;
-       console.log('✅ Firebase admin imported successfully');
-    } catch (firebaseError) {
-      console.error('❌ Firebase admin import failed:', firebaseError.message);
-      // Return mock data for testing if Firebase is not configured
-      console.log('🧪 Using mock helper data for testing');
-      return [
-        {
-          id: 'mock-helper-1',
-          fullName: 'Maria Santos',
-          dateOfBirth: '1990-01-01',
-          nationality: 'Philippines',
-          religion: 'Christianity',
-          relevantSkills: 'Cooking, childcare, cleaning, housekeeping',
-          hasBeenHelperBefore: 'yes',
-          experience: { totalYears: 5 },
-          isActive: true,
-          isVerified: true,
-          profileCompleteness: 90,
-          userType: 'individual_helper',
-          isRegistrationComplete: true
-        },
-        {
-          id: 'mock-helper-2',
-          fullName: 'Siti Nurhaliza',
-          dateOfBirth: '1985-05-15',
-          nationality: 'Indonesia',
-          religion: 'Islam',
-          relevantSkills: 'Cleaning, laundry, elderly care, pet care',
-          hasBeenHelperBefore: 'yes',
-          experience: { totalYears: 3 },
-          isActive: true,
-          isVerified: false,
-          profileCompleteness: 75,
-          userType: 'individual_helper',
-          isRegistrationComplete: true
-        }
-      ];
+    const body = await request.json();
+    const { helperId, action, userId, helperData, jobData } = body;
+
+    if (!helperId || !action || !userId) {
+      return NextResponse.json({
+        success: false,
+        error: 'Missing required fields: helperId, action, userId'
+      }, { status: 400 });
     }
-    
-    const snapshot = await db.collection('users')
-      .where('userType', '==', 'individual_helper')
-      .where('isActive', '==', true)
-      .where('isRegistrationComplete', '==', true)
-      .get();
 
-    console.log(`📊 Found ${snapshot.size} helper documents`);
+    console.log(`📊 Tracking user interaction: ${action} on helper ${helperId} for job ${jobId}`);
 
-    const helpers = [];
-    snapshot.forEach(doc => {
-      helpers.push({
-        id: doc.id,
-        ...doc.data()
-      });
+    // Track the user decision
+    const decision = await userDecisionTracker.trackDecision(
+      userId,
+      helperId,
+      jobId,
+      action,
+      helperData || {},
+      jobData || {}
+    );
+
+    // Check if user needs model retraining
+    let needsRetraining = false;
+    try {
+      const { mlPersonalizationManager } = await import('@/lib/ml-personalization');
+      await mlPersonalizationManager.initialize();
+      needsRetraining = await mlPersonalizationManager.shouldRetrain(userId);
+    } catch (mlError) {
+      console.error('Error checking retraining need:', mlError);
+    }
+
+    return NextResponse.json({
+      success: true,
+      decision,
+      needsRetraining,
+      message: `Successfully tracked ${action} action`,
+      timestamp: new Date().toISOString()
     });
 
-    console.log(`✅ Processed ${helpers.length} helpers`);
-    return helpers;
   } catch (error) {
-    console.error('❌ Error fetching helpers:', error);
-    console.error('❌ Helper fetch error stack:', error.stack);
-    throw new Error(`Failed to fetch helpers: ${error.message}`);
+    console.error('❌ Error tracking user interaction:', error);
+    
+    return NextResponse.json({
+      success: false,
+      error: error.message,
+      timestamp: new Date().toISOString()
+    }, { status: 500 });
   }
 }

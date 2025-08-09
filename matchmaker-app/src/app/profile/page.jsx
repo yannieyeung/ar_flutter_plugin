@@ -9,7 +9,13 @@ import { ClientPhotoService } from '@/lib/client-photo-service';
 import Link from 'next/link';
 
 // Import user-type-specific profile sections
-import { HelperPersonalInfo, HelperMedicalInfo } from '@/components/profile-sections/HelperProfileSections';
+import { 
+  HelperPersonalInfo, 
+  HelperMedicalInfo, 
+  HelperExperienceInfo, 
+  HelperPreferencesInfo, 
+  HelperAvailabilityInfo 
+} from '@/components/profile-sections/HelperProfileSections';
 import { AgencyBusinessInfo, AgencyLicenseInfo, AgencyServicesInfo, AgencyFeesInfo } from '@/components/profile-sections/AgencyProfileSections';
 import { EmployerPersonalInfo, EmployerHouseholdInfo, EmployerPreferences } from '@/components/profile-sections/EmployerProfileSections';
 import { ProfilePhotosSection } from '@/components/profile-sections/SharedProfileSections';
@@ -37,38 +43,74 @@ export default function ProfilePage() {
     if (user.userType === 'individual_helper') {
       return {
         ...baseData,
+        // Personal Information
+        contactNumber: user.contactNumber || '',
         educationLevel: user.educationLevel || '',
         maritalStatus: user.maritalStatus || '',
         nationality: user.nationality || '',
         religion: user.religion || '',
-        relevantSkills: user.relevantSkills || '',
         dateOfBirth: user.dateOfBirth || '',
-        experience: user.experience || {},
-        emergencyContact: user.emergencyContact || '',
-        previousWork: user.previousWork || '',
-        languages: Array.isArray(user.languages) ? user.languages : 
-                   (typeof user.languages === 'string' && user.languages) ? 
-                   user.languages.split(',').map(lang => lang.trim()).filter(lang => lang) : [],
-        availability: user.availability || '',
         countryOfBirth: user.countryOfBirth || '',
         cityOfBirth: user.cityOfBirth || '',
         height: user.height || '',
         weight: user.weight || '',
         numberOfSiblings: user.numberOfSiblings || '',
         numberOfChildren: user.numberOfChildren || '',
+        residentialAddress: user.residentialAddress || '',
+        emergencyContact: user.emergencyContact || '',
         repatriationPort: user.repatriationPort || '',
         hasBeenHelperBefore: user.hasBeenHelperBefore || '',
+        
+        // Languages
+        languages: Array.isArray(user.languages) ? user.languages : 
+                   (typeof user.languages === 'string' && user.languages) ? 
+                   user.languages.split(',').map(lang => lang.trim()).filter(lang => lang) : [],
+        
+        // Medical Information
         hasAllergies: user.hasAllergies || '',
         allergiesDetails: user.allergiesDetails || '',
         hasPastIllness: user.hasPastIllness || '',
-        pastIllnessDetails: user.pastIllnessDetails || '',
+        illnessDetails: user.illnessDetails || user.pastIllnessDetails || '',
         hasPhysicalDisabilities: user.hasPhysicalDisabilities || '',
-        physicalDisabilitiesDetails: user.physicalDisabilitiesDetails || '',
-        hasDietaryRestrictions: user.hasDietaryRestrictions || '',
-        dietaryRestrictionsDetails: user.dietaryRestrictionsDetails || '',
+        disabilitiesDetails: user.disabilitiesDetails || user.physicalDisabilitiesDetails || '',
+        
+        // Experience & Skills
+        experience: user.experience || {},
+        relevantSkills: user.relevantSkills || '',
+        previousWork: user.previousWork || '',
+        
+        // Preferences
         preferences: user.preferences || {},
-        interview: user.interview || {},
-        readiness: user.readiness || {}
+        
+        // Availability & Readiness  
+        expectations: {
+          salary: {
+            minimumAmount: user.expectations?.salary?.minimumAmount || user.salaryProfile?.minimumSalary || '',
+            preferredAmount: user.expectations?.salary?.preferredAmount || user.salaryProfile?.preferredSalary || '',
+            negotiable: user.expectations?.salary?.negotiable || user.salaryProfile?.salaryNegotiable || false,
+            performanceBonusExpected: user.expectations?.salary?.performanceBonusExpected || user.salaryProfile?.wantsBonus || false
+          }
+        },
+        readiness: {
+          hasValidPassport: user.readiness?.hasValidPassport || (user.availabilityProfile?.hasValidPassport ? 'yes' : '') || '',
+          passportExpiry: user.readiness?.passportExpiry || '',
+          canStartWork: user.readiness?.canStartWork || 
+                       (user.availabilityProfile?.immediatelyAvailable ? 'immediately' : 
+                        user.availabilityProfile?.withinMonth ? 'within_month' : '') || '',
+          startDate: user.readiness?.startDate || '',
+          visaStatus: user.readiness?.visaStatus || user.availabilityProfile?.visaStatus || ''
+        },
+        interview: {
+          availability: user.interview?.availability || '',
+          availabilityDate: user.interview?.availabilityDate || '',
+          means: user.interview?.means || ''
+        },
+        otherRemarks: user.otherRemarks || '',
+        
+        // Legacy fields for backward compatibility
+        availability: user.availability || '',
+        hasDietaryRestrictions: user.hasDietaryRestrictions || '',
+        dietaryRestrictionsDetails: user.dietaryRestrictionsDetails || ''
       };
     } else if (user.userType === 'agency') {
       return {
@@ -132,6 +174,30 @@ export default function ProfilePage() {
                    editData.languages.filter(lang => lang.trim()).join(', ') : 
                    editData.languages
       };
+
+      // Also update salaryProfile for backward compatibility
+      if (editData.expectations?.salary) {
+        dataToSave.salaryProfile = {
+          ...dataToSave.salaryProfile,
+          minimumSalary: editData.expectations.salary.minimumAmount,
+          preferredSalary: editData.expectations.salary.preferredAmount,
+          salaryNegotiable: editData.expectations.salary.negotiable,
+          wantsBonus: editData.expectations.salary.performanceBonusExpected
+        };
+      }
+
+      // Also update availabilityProfile for backward compatibility
+      if (editData.readiness) {
+        dataToSave.availabilityProfile = {
+          ...dataToSave.availabilityProfile,
+          immediatelyAvailable: editData.readiness.canStartWork === 'immediately',
+          withinMonth: editData.readiness.canStartWork === 'within_month',
+          hasValidPassport: editData.readiness.hasValidPassport === 'yes',
+          visaStatus: editData.readiness.visaStatus,
+          workReady: editData.readiness.hasValidPassport === 'yes' && 
+                    (editData.readiness.canStartWork === 'immediately' || editData.readiness.canStartWork === 'within_month')
+        };
+      }
       
       await ClientUserService.updateUser(user.uid, dataToSave);
       await refreshUser();
@@ -466,6 +532,24 @@ export default function ProfilePage() {
                       calculateAge={calculateAge}
                     />
                     <HelperMedicalInfo 
+                      user={user}
+                      isEditing={isEditing}
+                      editData={editData}
+                      setEditData={setEditData}
+                    />
+                    <HelperExperienceInfo 
+                      user={user}
+                      isEditing={isEditing}
+                      editData={editData}
+                      setEditData={setEditData}
+                    />
+                    <HelperPreferencesInfo 
+                      user={user}
+                      isEditing={isEditing}
+                      editData={editData}
+                      setEditData={setEditData}
+                    />
+                    <HelperAvailabilityInfo 
                       user={user}
                       isEditing={isEditing}
                       editData={editData}

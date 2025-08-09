@@ -1,0 +1,162 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users collection - users can read/write their own document
+    match /users/{userId} {
+      // Users can read and write their own document
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Anyone authenticated can read basic profile info (for matching/listings)
+      allow read: if request.auth != null && resource.data.keys().hasAny(['name', 'userType', 'profilePicture']);
+    }
+    
+    // Job postings collection (new naming)
+    match /job_postings/{jobId} {
+      // Anyone authenticated can read job postings
+      allow read: if request.auth != null;
+      
+      // Only job owners can create/update/delete their jobs
+      allow create: if request.auth != null 
+        && request.auth.uid == request.resource.data.employerId;
+      
+      allow update, delete: if request.auth != null 
+        && request.auth.uid == resource.data.employerId;
+    }
+    
+    // Legacy jobs collection (for backward compatibility)
+    match /jobs/{jobId} {
+      // Anyone authenticated can read job postings
+      allow read: if request.auth != null;
+      
+      // Only job owners can create/update/delete their jobs
+      allow create: if request.auth != null 
+        && request.auth.uid == request.resource.data.employerId;
+      
+      allow update, delete: if request.auth != null 
+        && request.auth.uid == resource.data.employerId;
+    }
+    
+    // Applications collection
+    match /applications/{applicationId} {
+      // Applicants and employers involved can read applications
+      allow read: if request.auth != null 
+        && (request.auth.uid == resource.data.applicantId 
+            || request.auth.uid == resource.data.employerId);
+      
+      // Applicants can create applications
+      allow create: if request.auth != null 
+        && request.auth.uid == request.resource.data.applicantId;
+      
+      // Both parties can update application status
+      allow update: if request.auth != null 
+        && (request.auth.uid == resource.data.applicantId 
+            || request.auth.uid == resource.data.employerId);
+    }
+    
+    // Helpers collection (for helper profiles)
+    match /helpers/{helperId} {
+      // Anyone authenticated can read helper profiles (for matching)
+      allow read: if request.auth != null;
+      
+      // Helpers can create/update their own profiles
+      allow create, update: if request.auth != null 
+        && request.auth.uid == helperId;
+    }
+
+    // 🔒 USER PHOTOS COLLECTION - FIXES PERMISSION ERROR
+    match /user_photos/{photoId} {
+      // Users can read, write, and delete their own photos
+      allow read, write, delete: if request.auth != null && 
+                                   request.auth.uid == resource.data.userId;
+      
+      // Users can create new photos for themselves
+      allow create: if request.auth != null && 
+                      request.auth.uid == request.resource.data.userId;
+    }
+
+    // User decisions collection - for ML training
+    match /user_decisions/{decisionId} {
+      allow create: if request.auth != null && 
+                      request.auth.uid == request.resource.data.userId;
+      allow read: if request.auth != null && 
+                    request.auth.uid == resource.data.userId;
+      allow update, delete: if false; // Decisions are immutable once created
+    }
+
+    // Recommendations collection - generated matches
+    match /recommendations/{jobId} {
+      allow read: if request.auth != null && 
+                    request.auth.uid == resource.data.employerId;
+      allow write: if false; // Only server can write recommendations
+    }
+
+    // Recommendation requests collection - triggers for generating matches
+    match /recommendation_requests/{jobId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && 
+                      request.auth.uid == request.resource.data.employerId;
+      allow update: if false; // Only server can update status
+    }
+
+    // ML retraining requests collection
+    match /ml_retraining_requests/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && 
+                      request.auth.uid == request.resource.data.userId;
+      allow update: if false; // Only server can update status
+    }
+
+    // ML training data collection - prepared training datasets
+    match /ml_training_data/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false; // Only server can write training data
+    }
+
+    // User preferences collection - for storing custom compensation rules
+    match /user_preferences/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Helper favorites collection - for tracking user preferences
+    match /helper_favorites/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Match feedback collection - for improving recommendations
+    match /match_feedback/{feedbackId} {
+      allow create: if request.auth != null && 
+                      request.auth.uid == request.resource.data.employerId;
+      allow read: if request.auth != null && 
+                    request.auth.uid == resource.data.employerId;
+      allow update: if request.auth != null && 
+                      request.auth.uid == resource.data.employerId;
+    }
+
+    // Helper features collection - for ML feature storage
+    match /helper_features/{helperId} {
+      allow read: if request.auth != null && request.auth.uid == helperId;
+      allow write: if false; // Only server can write features
+    }
+
+    // Helper feature vectors collection - for ML model training
+    match /helper_feature_vectors/{helperId} {
+      allow read: if request.auth != null && request.auth.uid == helperId;
+      allow write: if false; // Only server can write feature vectors
+    }
+
+    // Analytics collection - aggregated data for insights
+    match /analytics/{document=**} {
+      allow read: if request.auth != null && 
+                    request.auth.token.admin == true;
+      allow write: if false; // Only server can write analytics
+    }
+
+    // System configuration collection
+    match /system_config/{configId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+                     request.auth.token.admin == true;
+    }
+  }
+}
