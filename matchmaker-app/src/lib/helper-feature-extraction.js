@@ -186,8 +186,14 @@ function extractWorkPreferenceFeatures(helper) {
     willingCareDisabled: getWillingnessScore(helper.carePreferences?.careOfDisabled),
     willingCareElderly: getWillingnessScore(helper.carePreferences?.careOfOldAge),
     
-    // Availability
-    canStartImmediately: helper.availability?.immediate ? 1 : 0,
+    // Availability (check both new and legacy structures)
+    canStartImmediately: (helper.readiness?.canStartWork === 'immediately' || 
+                          helper.availabilityProfile?.immediatelyAvailable ||
+                          helper.availability?.immediate) ? 1 : 0,
+    withinMonth: (helper.readiness?.canStartWork === 'within_month' ||
+                  helper.availabilityProfile?.withinMonth) ? 1 : 0,
+    hasValidPassport: (helper.readiness?.hasValidPassport === 'yes' ||
+                       helper.availabilityProfile?.hasValidPassport) ? 1 : 0,
     noticePeriod: Math.min((helper.availability?.noticePeriod || 0) / 30, 1), // Normalize days to 0-1
     
     // Work Intensity Tolerance

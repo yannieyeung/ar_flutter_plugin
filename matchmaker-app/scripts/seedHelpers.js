@@ -145,8 +145,24 @@ function generateHelperData(index) {
   
   // Generate contact number based on country
   const contactNumber = generatePhoneNumber(country);
+
+  // Pre-generate data for ML profiles
+  const salaryExpectations = generateSalaryExpectations();
+  const readinessData = {
+    hasValidPassport: true,
+    hasWorkPermit: Math.random() > 0.5,
+    needsVisaSponsorship: Math.random() > 0.6,
+    canRelocate: true,
+    ...generateEnhancedReadiness()
+  };
+  const interviewData = {
+    availableForInterview: true,
+    preferredInterviewTime: ['Morning', 'Afternoon', 'Evening'][Math.floor(Math.random() * 3)],
+    canStartWork: getRandomStartDate(),
+    ...generateEnhancedInterview()
+  };
   
-  return {
+  const helperData = {
     userType: 'individual_helper',
     
     // Personal Information
@@ -238,22 +254,11 @@ function generateHelperData(index) {
     },
     
     // Salary Expectations
-    expectations: generateSalaryExpectations(),
+    expectations: salaryExpectations,
     
     // Availability & Interview
-    interview: {
-      availableForInterview: true,
-      preferredInterviewTime: ['Morning', 'Afternoon', 'Evening'][Math.floor(Math.random() * 3)],
-      canStartWork: getRandomStartDate(),
-      ...generateEnhancedInterview()
-    },
-    readiness: {
-      hasValidPassport: true,
-      hasWorkPermit: Math.random() > 0.5,
-      needsVisaSponsorship: Math.random() > 0.6,
-      canRelocate: true,
-      ...generateEnhancedReadiness()
-    },
+    interview: interviewData,
+    readiness: readinessData,
     otherRemarks: getRandomRemarks(),
     otherMedicalRemarks: Math.random() > 0.8 ? getRandomRemarks() : '',
     
@@ -265,7 +270,7 @@ function generateHelperData(index) {
       workPreferences: generateWorkPreferencesVector(),
       lastUpdated: new Date().toISOString()
     },
-    
+
     // Registration and Profile Status
     isRegistrationComplete: true,
     registrationCompletedAt: new Date().toISOString(),
@@ -323,6 +328,29 @@ function generateHelperData(index) {
     identityDocuments: [],
     experienceProof: []
   };
+
+  // Add ML compatibility profiles
+  helperData.salaryProfile = {
+    minimumSalary: parseFloat(salaryExpectations.salary.minimumAmount) || 0,
+    preferredSalary: parseFloat(salaryExpectations.salary.preferredAmount) || 0,
+    salaryNegotiable: salaryExpectations.salary.negotiable || false,
+    wantsBonus: salaryExpectations.salary.performanceBonusExpected || false,
+    salaryFlexibilityScore: salaryExpectations.salary.negotiable ? 8 : 5
+  };
+
+  helperData.availabilityProfile = {
+    immediatelyAvailable: readinessData.canStartWork === 'immediately',
+    withinMonth: readinessData.canStartWork === 'within_month',
+    hasValidPassport: readinessData.hasValidPassport === 'yes',
+    visaStatus: readinessData.visaStatus || '',
+    interviewFlexibility: interviewData.availability === 'immediate' ? 10 : 
+                          interviewData.availability === 'weekdays_only' ? 6 :
+                          interviewData.availability === 'weekends_only' ? 4 : 3,
+    workReady: readinessData.hasValidPassport === 'yes' && 
+               (readinessData.canStartWork === 'immediately' || readinessData.canStartWork === 'within_month')
+  };
+
+  return helperData;
 }
 
 // Helper functions for generating realistic data
