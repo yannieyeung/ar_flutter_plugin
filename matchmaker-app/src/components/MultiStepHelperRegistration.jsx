@@ -979,6 +979,31 @@ const PreferencesStep = ({ data, onChange, errors }) => {
               ))}
             </div>
           </div>
+          {/* Required Off Days */}
+          <div className="border rounded-lg p-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Required Off Days <span className="text-red-500">*</span></label>
+            <p className="text-xs text-gray-600 mb-3">How many off days do you require per week?</p>
+            <select
+              value={data.preferences?.workEnvironment?.requiredOffDays || ''}
+              onChange={(e) => onChange({ 
+                ...data, 
+                preferences: { 
+                  ...data.preferences, 
+                  workEnvironment: { 
+                    ...data.preferences?.workEnvironment,
+                    requiredOffDays: e.target.value === '' ? '' : parseInt(e.target.value)
+                  }
+                }
+              })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select Number</option>
+              {[0, 1, 2, 3, 4].map(num => (
+                <option key={num} value={num}>{num} day{num !== 1 ? 's' : ''} per week</option>
+              ))}
+            </select>
+            {errors.requiredOffDays && <p className="text-red-500 text-sm mt-1">{errors.requiredOffDays}</p>}
+          </div>
         </div>
 
         {/* Preferred Countries */}
@@ -1617,6 +1642,12 @@ const MultiStepHelperRegistration = ({ onSubmit, isLoading }) => {
           errors.petPreference = 'Please specify your preference about working with pets';
         }
         
+        // Require required off days to be specified
+        const requiredOffDaysValue = data.preferences?.workEnvironment?.requiredOffDays;
+        if (requiredOffDaysValue === '' || requiredOffDaysValue === null || requiredOffDaysValue === undefined) {
+          errors.requiredOffDays = 'Please specify how many off days you require per week';
+        }
+        
         // Require at least one preferred country
         if (!data.preferences?.location?.preferredCountries || 
             data.preferences.location.preferredCountries.length === 0) {
@@ -1854,6 +1885,14 @@ const MultiStepHelperRegistration = ({ onSubmit, isLoading }) => {
         healthScore: calculateHealthScore(data)
       },
       
+      // Work preferences profile
+      workPreferencesProfile: {
+        requiredOffDays: parseInt(data.preferences?.workEnvironment?.requiredOffDays) || 0,
+        liveInPreference: data.preferences?.workEnvironment?.liveInPreference || '',
+        petFriendly: data.preferences?.workEnvironment?.petFriendly || '',
+        workFlexibilityScore: calculateWorkFlexibilityScore(data.preferences?.workEnvironment)
+      },
+      
       // Salary expectations
       salaryProfile: {
         minimumSalary: parseFloat(data.expectations?.salary?.minimumAmount) || 0,
@@ -1903,6 +1942,27 @@ const MultiStepHelperRegistration = ({ onSubmit, isLoading }) => {
     if (data.hasPhysicalDisabilities === 'yes') score -= 3;
     if ((data.foodHandlingPreferences || []).length > 2) score -= 1;
     return Math.max(0, score);
+  };
+
+  const calculateWorkFlexibilityScore = (workEnvironment) => {
+    if (!workEnvironment) return 5;
+    let score = 5; // Base score
+    
+    // Live-in arrangement flexibility
+    if (workEnvironment.liveInPreference === 'either') score += 2;
+    else if (workEnvironment.liveInPreference === 'live_out_only') score += 1;
+    
+    // Pet tolerance
+    if (workEnvironment.petFriendly === 'love_pets') score += 2;
+    else if (workEnvironment.petFriendly === 'comfortable') score += 1;
+    
+    // Off days requirement (fewer required days = more flexible)
+    const offDays = parseInt(workEnvironment.requiredOffDays) || 0;
+    if (offDays === 0) score += 2;
+    else if (offDays === 1) score += 1;
+    else if (offDays >= 3) score -= 1;
+    
+    return Math.min(10, Math.max(0, score));
   };
 
   const calculateSalaryFlexibility = (salary) => {

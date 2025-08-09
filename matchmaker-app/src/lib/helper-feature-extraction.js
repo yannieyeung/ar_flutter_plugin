@@ -164,11 +164,21 @@ function extractWorkPreferenceFeatures(helper) {
     hasOwnTransport: helper.hasOwnTransport ? 1 : 0,
     flexibleSchedule: helper.flexibleSchedule ? 1 : 0,
     
-    // Work Environment Preferences
-    prefersLiveIn: helper.workPreferences?.liveIn ? 1 : 0,
-    prefersLiveOut: helper.workPreferences?.liveOut ? 1 : 0,
-    comfortableWithPets: helper.workPreferences?.comfortableWithPets ? 1 : 0,
+    // Work Environment Preferences (from preferences.workEnvironment or legacy workPreferences)
+    prefersLiveIn: (helper.preferences?.workEnvironment?.liveInPreference === 'live_in_only') ? 1 : 
+                  (helper.workPreferences?.liveIn ? 1 : 0),
+    prefersLiveOut: (helper.preferences?.workEnvironment?.liveInPreference === 'live_out_only') ? 1 : 
+                   (helper.workPreferences?.liveOut ? 1 : 0),
+    flexibleLiveInOut: (helper.preferences?.workEnvironment?.liveInPreference === 'either') ? 1 : 0,
+    comfortableWithPets: (helper.preferences?.workEnvironment?.petFriendly === 'love_pets' || 
+                         helper.preferences?.workEnvironment?.petFriendly === 'comfortable') ? 1 : 
+                        (helper.workPreferences?.comfortableWithPets ? 1 : 0),
+    lovesPets: (helper.preferences?.workEnvironment?.petFriendly === 'love_pets') ? 1 : 0,
     comfortableWithCameras: helper.workPreferences?.comfortableWithCameras ? 1 : 0,
+    
+    // Work Schedule Preferences
+    requiredOffDays: Math.min((helper.preferences?.workEnvironment?.requiredOffDays || 0) / 4, 1), // Normalize to 0-1
+    lowMaintenanceSchedule: (helper.preferences?.workEnvironment?.requiredOffDays || 0) <= 1 ? 1 : 0,
     
     // Care Type Willingness (from helper preferences)
     willingCareInfant: getWillingnessScore(helper.carePreferences?.careOfInfant),

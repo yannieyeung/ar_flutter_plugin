@@ -669,7 +669,8 @@ function generateDetailedPreferences() {
   // Work environment preferences
   preferences.workEnvironment = {
     liveInPreference: ['live_in_only', 'live_out_only', 'either'][Math.floor(Math.random() * 3)],
-    petFriendly: ['love_pets', 'comfortable', 'no_pets'][Math.floor(Math.random() * 3)]
+    petFriendly: ['love_pets', 'comfortable', 'no_pets'][Math.floor(Math.random() * 3)],
+    requiredOffDays: Math.floor(Math.random() * 2) + 1 // 1-2 days off per week
   };
 
   // Location preferences
