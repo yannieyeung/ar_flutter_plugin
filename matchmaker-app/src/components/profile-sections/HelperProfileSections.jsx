@@ -1,91 +1,142 @@
 import React from 'react';
 
 export const HelperPersonalInfo = ({ user, isEditing, editData, setEditData, handleLanguageChange, addLanguage, removeLanguage, formatDate, calculateAge }) => (
-  <div className="bg-white overflow-hidden shadow rounded-lg">
-    <div className="px-4 py-5 sm:p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg leading-6 font-medium text-gray-900">Personal Information</h3>
+  <div className="bg-white overflow-hidden shadow-lg rounded-2xl border border-slate-200">
+    <div className="px-6 py-6">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-xl font-semibold text-slate-900 flex items-center">
+          <svg className="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          Personal Information
+        </h3>
       </div>
+      
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         {/* Full Name */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Full Name</label>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Full Name</label>
           {isEditing ? (
             <input
               type="text"
-              value={editData.fullName}
+              value={editData.fullName || ''}
               onChange={(e) => setEditData({...editData, fullName: e.target.value})}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
           ) : (
-            <p className="mt-1 text-sm text-gray-900">{user?.fullName || 'Not provided'}</p>
+            <p className="text-slate-900 font-medium">{user?.fullName || 'Not provided'}</p>
           )}
         </div>
 
         {/* Contact Number */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Contact Number</label>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Contact Number</label>
           {isEditing ? (
             <input
               type="text"
-              value={editData.contactNumber}
+              value={editData.contactNumber || ''}
               onChange={(e) => setEditData({...editData, contactNumber: e.target.value})}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
           ) : (
-            <p className="mt-1 text-sm text-gray-900">{user?.contactNumber || 'Not provided'}</p>
+            <p className="text-slate-900">{user?.contactNumber || 'Not provided'}</p>
           )}
         </div>
 
         {/* Email/Phone */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Email/Phone</label>
-          <p className="mt-1 text-sm text-gray-900">{user?.email || user?.phoneNumber || 'Not provided'}</p>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Email/Phone</label>
+          <p className="text-slate-900">{user?.email || user?.phoneNumber || 'Not provided'}</p>
         </div>
 
         {/* Date of Birth */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Date of Birth</label>
           {isEditing ? (
             <input
               type="date"
-              value={editData.dateOfBirth}
+              value={editData.dateOfBirth || ''}
               onChange={(e) => setEditData({...editData, dateOfBirth: e.target.value})}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
           ) : (
-            <p className="mt-1 text-sm text-gray-900">
-              {formatDate(user?.dateOfBirth)} 
+            <div>
+              <p className="text-slate-900">{formatDate(user?.dateOfBirth)}</p>
               {user?.dateOfBirth && (
-                <span className="text-gray-500 ml-2">({calculateAge(user.dateOfBirth)} years old)</span>
+                <p className="text-slate-500 text-sm">Age: {calculateAge(user.dateOfBirth)} years old</p>
               )}
-            </p>
+            </div>
           )}
         </div>
 
         {/* Nationality */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Nationality</label>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Nationality</label>
           {isEditing ? (
             <input
               type="text"
-              value={editData.nationality}
+              value={editData.nationality || ''}
               onChange={(e) => setEditData({...editData, nationality: e.target.value})}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
           ) : (
-            <p className="mt-1 text-sm text-gray-900">{user?.nationality || 'Not provided'}</p>
+            <p className="text-slate-900">{user?.nationality || 'Not provided'}</p>
+          )}
+        </div>
+
+        {/* Country of Birth */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Country of Birth</label>
+          {isEditing ? (
+            <input
+              type="text"
+              value={editData.countryOfBirth || ''}
+              onChange={(e) => setEditData({...editData, countryOfBirth: e.target.value})}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            />
+          ) : (
+            <p className="text-slate-900">{user?.countryOfBirth || 'Not provided'}</p>
+          )}
+        </div>
+
+        {/* City of Birth */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">City of Birth</label>
+          {isEditing ? (
+            <input
+              type="text"
+              value={editData.cityOfBirth || ''}
+              onChange={(e) => setEditData({...editData, cityOfBirth: e.target.value})}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            />
+          ) : (
+            <p className="text-slate-900">{user?.cityOfBirth || 'Not provided'}</p>
+          )}
+        </div>
+
+        {/* Religion */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Religion</label>
+          {isEditing ? (
+            <input
+              type="text"
+              value={editData.religion || ''}
+              onChange={(e) => setEditData({...editData, religion: e.target.value})}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            />
+          ) : (
+            <p className="text-slate-900">{user?.religion || 'Not provided'}</p>
           )}
         </div>
 
         {/* Education Level */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Education Level</label>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Education Level</label>
           {isEditing ? (
             <select
-              value={editData.educationLevel}
+              value={editData.educationLevel || ''}
               onChange={(e) => setEditData({...editData, educationLevel: e.target.value})}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             >
               <option value="">Select education level</option>
               <option value="primary_school">Primary School</option>
@@ -95,7 +146,7 @@ export const HelperPersonalInfo = ({ user, isEditing, editData, setEditData, han
               <option value="postgraduate">Postgraduate</option>
             </select>
           ) : (
-            <p className="mt-1 text-sm text-gray-900 capitalize">
+            <p className="text-slate-900 capitalize">
               {user?.educationLevel?.replace('_', ' ') || 'Not provided'}
             </p>
           )}
@@ -103,12 +154,12 @@ export const HelperPersonalInfo = ({ user, isEditing, editData, setEditData, han
 
         {/* Marital Status */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Marital Status</label>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Marital Status</label>
           {isEditing ? (
             <select
-              value={editData.maritalStatus}
+              value={editData.maritalStatus || ''}
               onChange={(e) => setEditData({...editData, maritalStatus: e.target.value})}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             >
               <option value="">Select marital status</option>
               <option value="single">Single</option>
@@ -117,99 +168,52 @@ export const HelperPersonalInfo = ({ user, isEditing, editData, setEditData, han
               <option value="widowed">Widowed</option>
             </select>
           ) : (
-            <p className="mt-1 text-sm text-gray-900 capitalize">
-              {user?.maritalStatus || 'Not provided'}
-            </p>
-          )}
-        </div>
-
-        {/* Religion */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Religion</label>
-          {isEditing ? (
-            <input
-              type="text"
-              value={editData.religion}
-              onChange={(e) => setEditData({...editData, religion: e.target.value})}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-          ) : (
-            <p className="mt-1 text-sm text-gray-900">{user?.religion || 'Not provided'}</p>
-          )}
-        </div>
-
-        {/* Country of Birth */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Country of Birth</label>
-          {isEditing ? (
-            <input
-              type="text"
-              value={editData.countryOfBirth}
-              onChange={(e) => setEditData({...editData, countryOfBirth: e.target.value})}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-          ) : (
-            <p className="mt-1 text-sm text-gray-900">{user?.countryOfBirth || 'Not provided'}</p>
-          )}
-        </div>
-
-        {/* City of Birth */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">City of Birth</label>
-          {isEditing ? (
-            <input
-              type="text"
-              value={editData.cityOfBirth}
-              onChange={(e) => setEditData({...editData, cityOfBirth: e.target.value})}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-          ) : (
-            <p className="mt-1 text-sm text-gray-900">{user?.cityOfBirth || 'Not provided'}</p>
+            <p className="text-slate-900 capitalize">{user?.maritalStatus || 'Not provided'}</p>
           )}
         </div>
 
         {/* Height */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Height (cm)</label>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Height (cm)</label>
           {isEditing ? (
             <input
               type="number"
-              value={editData.height}
+              value={editData.height || ''}
               onChange={(e) => setEditData({...editData, height: e.target.value})}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               min="120"
               max="220"
             />
           ) : (
-            <p className="mt-1 text-sm text-gray-900">{user?.height ? `${user.height} cm` : 'Not provided'}</p>
+            <p className="text-slate-900">{user?.height ? `${user.height} cm` : 'Not provided'}</p>
           )}
         </div>
 
         {/* Weight */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Weight (kg)</label>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Weight (kg)</label>
           {isEditing ? (
             <input
               type="number"
-              value={editData.weight}
+              value={editData.weight || ''}
               onChange={(e) => setEditData({...editData, weight: e.target.value})}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               min="30"
               max="200"
             />
           ) : (
-            <p className="mt-1 text-sm text-gray-900">{user?.weight ? `${user.weight} kg` : 'Not provided'}</p>
+            <p className="text-slate-900">{user?.weight ? `${user.weight} kg` : 'Not provided'}</p>
           )}
         </div>
 
         {/* Number of Siblings */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Number of Siblings</label>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Number of Siblings</label>
           {isEditing ? (
             <select
-              value={editData.numberOfSiblings}
+              value={editData.numberOfSiblings || ''}
               onChange={(e) => setEditData({...editData, numberOfSiblings: e.target.value})}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             >
               <option value="">Select number</option>
               {[...Array(11)].map((_, i) => (
@@ -217,18 +221,18 @@ export const HelperPersonalInfo = ({ user, isEditing, editData, setEditData, han
               ))}
             </select>
           ) : (
-            <p className="mt-1 text-sm text-gray-900">{user?.numberOfSiblings || 'Not provided'}</p>
+            <p className="text-slate-900">{user?.numberOfSiblings || 'Not provided'}</p>
           )}
         </div>
 
         {/* Number of Children */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Number of Children</label>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Number of Children</label>
           {isEditing ? (
             <select
-              value={editData.numberOfChildren}
+              value={editData.numberOfChildren || ''}
               onChange={(e) => setEditData({...editData, numberOfChildren: e.target.value})}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             >
               <option value="">Select number</option>
               {[...Array(11)].map((_, i) => (
@@ -236,74 +240,110 @@ export const HelperPersonalInfo = ({ user, isEditing, editData, setEditData, han
               ))}
             </select>
           ) : (
-            <p className="mt-1 text-sm text-gray-900">{user?.numberOfChildren || 'Not provided'}</p>
+            <p className="text-slate-900">{user?.numberOfChildren || 'Not provided'}</p>
+          )}
+        </div>
+
+        {/* Helper Experience Status */}
+        <div className="sm:col-span-2">
+          <label className="block text-sm font-medium text-slate-700 mb-2">Previous Helper Experience</label>
+          {isEditing ? (
+            <div className="flex space-x-6">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="hasBeenHelperBefore"
+                  value="yes"
+                  checked={editData.hasBeenHelperBefore === 'yes'}
+                  onChange={(e) => setEditData({...editData, hasBeenHelperBefore: e.target.value})}
+                  className="mr-2 text-blue-600"
+                />
+                Yes, I have experience
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="hasBeenHelperBefore"
+                  value="no"
+                  checked={editData.hasBeenHelperBefore === 'no'}
+                  onChange={(e) => setEditData({...editData, hasBeenHelperBefore: e.target.value})}
+                  className="mr-2 text-blue-600"
+                />
+                No, I'm new to this
+              </label>
+            </div>
+          ) : (
+            <p className="text-slate-900">
+              {user?.hasBeenHelperBefore === 'yes' ? 'Yes, I have experience' : 
+               user?.hasBeenHelperBefore === 'no' ? 'No, I\'m new to this' : 'Not provided'}
+            </p>
           )}
         </div>
 
         {/* Residential Address */}
         <div className="sm:col-span-2">
-          <label className="block text-sm font-medium text-gray-700">Residential Address</label>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Residential Address</label>
           {isEditing ? (
             <textarea
-              value={editData.residentialAddress}
+              value={editData.residentialAddress || ''}
               onChange={(e) => setEditData({...editData, residentialAddress: e.target.value})}
               rows={3}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
           ) : (
-            <p className="mt-1 text-sm text-gray-900">{user?.residentialAddress || 'Not provided'}</p>
+            <p className="text-slate-900">{user?.residentialAddress || 'Not provided'}</p>
+          )}
+        </div>
+
+        {/* Emergency Contact */}
+        <div className="sm:col-span-2">
+          <label className="block text-sm font-medium text-slate-700 mb-2">Emergency Contact</label>
+          {isEditing ? (
+            <input
+              type="text"
+              value={editData.emergencyContact || ''}
+              onChange={(e) => setEditData({...editData, emergencyContact: e.target.value})}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              placeholder="Name and phone number"
+            />
+          ) : (
+            <p className="text-slate-900">{user?.emergencyContact || 'Not provided'}</p>
           )}
         </div>
 
         {/* Repatriation Port */}
         <div className="sm:col-span-2">
-          <label className="block text-sm font-medium text-gray-700">Repatriation Port/Airport</label>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Repatriation Port/Airport</label>
           {isEditing ? (
             <input
               type="text"
-              value={editData.repatriationPort}
+              value={editData.repatriationPort || ''}
               onChange={(e) => setEditData({...editData, repatriationPort: e.target.value})}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
           ) : (
-            <p className="mt-1 text-sm text-gray-900">{user?.repatriationPort || 'Not provided'}</p>
+            <p className="text-slate-900">{user?.repatriationPort || 'Not provided'}</p>
           )}
         </div>
 
-        {/* Emergency Contact */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Emergency Contact</label>
-          {isEditing ? (
-            <input
-              type="text"
-              value={editData.emergencyContact}
-              onChange={(e) => setEditData({...editData, emergencyContact: e.target.value})}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="Name and phone number"
-            />
-          ) : (
-            <p className="mt-1 text-sm text-gray-900">{user?.emergencyContact || 'Not provided'}</p>
-          )}
-        </div>
-
-                {/* Languages */}
+        {/* Languages */}
         <div className="sm:col-span-2">
-          <label className="block text-sm font-medium text-gray-700">Languages</label>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Languages Spoken</label>
           {isEditing ? (
-            <div className="mt-1 space-y-2">
-              {editData.languages.map((language, index) => (
+            <div className="space-y-2">
+              {editData.languages && editData.languages.map((language, index) => (
                 <div key={index} className="flex items-center space-x-2">
                   <input
                     type="text"
                     value={language}
                     onChange={(e) => handleLanguageChange(index, e.target.value)}
-                    className="flex-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    className="flex-1 px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                     placeholder="Language"
                   />
                   <button
                     type="button"
                     onClick={() => removeLanguage(index)}
-                    className="text-red-600 hover:text-red-800"
+                    className="px-3 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
                   >
                     Remove
                   </button>
@@ -312,111 +352,25 @@ export const HelperPersonalInfo = ({ user, isEditing, editData, setEditData, han
               <button
                 type="button"
                 onClick={addLanguage}
-                className="text-indigo-600 hover:text-indigo-800 text-sm"
+                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
               >
                 + Add Language
               </button>
             </div>
           ) : (
-            <div className="mt-1 flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2">
               {(() => {
                 const languages = Array.isArray(user?.languages) ? user.languages : 
                                  (typeof user?.languages === 'string' && user.languages) ? 
                                  user.languages.split(',').map(lang => lang.trim()).filter(lang => lang) : [];
                 
                 return languages.length > 0 ? languages.map((language, index) => (
-                  <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
                     {language}
                   </span>
-                )) : <p className="text-sm text-gray-900">Not provided</p>;
+                )) : <p className="text-slate-900">Not provided</p>;
               })()}
             </div>
-          )}
-        </div>
-
-        {/* Helper Experience */}
-        <div className="sm:col-span-2">
-          <label className="block text-sm font-medium text-gray-700">Previous Helper Experience</label>
-          <div className="mt-1">
-            {isEditing ? (
-              <div className="flex space-x-6">
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="hasBeenHelperBefore"
-                    value="yes"
-                    checked={editData.hasBeenHelperBefore === 'yes'}
-                    onChange={(e) => setEditData({...editData, hasBeenHelperBefore: e.target.value})}
-                    className="mr-2"
-                  />
-                  Yes, I have experience
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="hasBeenHelperBefore"
-                    value="no"
-                    checked={editData.hasBeenHelperBefore === 'no'}
-                    onChange={(e) => setEditData({...editData, hasBeenHelperBefore: e.target.value})}
-                    className="mr-2"
-                  />
-                  No, I'm new to this
-                </label>
-              </div>
-            ) : (
-              <p className="text-sm text-gray-900">
-                {user?.hasBeenHelperBefore === 'yes' ? 'Yes, I have experience' : 
-                 user?.hasBeenHelperBefore === 'no' ? 'No, I\'m new to this' : 'Not provided'}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Availability */}
-        <div className="sm:col-span-2">
-          <label className="block text-sm font-medium text-gray-700">Availability</label>
-          {isEditing ? (
-            <textarea
-              value={editData.availability}
-              onChange={(e) => setEditData({...editData, availability: e.target.value})}
-              rows={2}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="Days and hours available"
-            />
-          ) : (
-            <p className="mt-1 text-sm text-gray-900">{user?.availability || 'Not provided'}</p>
-          )}
-        </div>
-
-        {/* Skills & Experience */}
-        <div className="sm:col-span-2">
-          <label className="block text-sm font-medium text-gray-700">Skills & Experience</label>
-          {isEditing ? (
-            <textarea
-              value={editData.relevantSkills}
-              onChange={(e) => setEditData({...editData, relevantSkills: e.target.value})}
-              rows={4}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="Describe your relevant skills and experience..."
-            />
-          ) : (
-            <p className="mt-1 text-sm text-gray-900">{user?.relevantSkills || 'Not provided'}</p>
-          )}
-        </div>
-
-        {/* Previous Work */}
-        <div className="sm:col-span-2">
-          <label className="block text-sm font-medium text-gray-700">Previous Work Experience</label>
-          {isEditing ? (
-            <textarea
-              value={editData.previousWork}
-              onChange={(e) => setEditData({...editData, previousWork: e.target.value})}
-              rows={3}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="Describe your previous work experience..."
-            />
-          ) : (
-            <p className="mt-1 text-sm text-gray-900">{user?.previousWork || 'Not provided'}</p>
           )}
         </div>
       </div>
@@ -425,223 +379,707 @@ export const HelperPersonalInfo = ({ user, isEditing, editData, setEditData, han
 );
 
 export const HelperMedicalInfo = ({ user, isEditing, editData, setEditData }) => (
-  <div className="bg-white overflow-hidden shadow rounded-lg">
-    <div className="px-4 py-5 sm:p-6">
-      <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Medical Information</h3>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-        
+  <div className="bg-white overflow-hidden shadow-lg rounded-2xl border border-slate-200">
+    <div className="px-6 py-6">
+      <h3 className="text-xl font-semibold text-slate-900 mb-6 flex items-center">
+        <svg className="w-6 h-6 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        Medical Information
+      </h3>
+      
+      <div className="space-y-6">
         {/* Allergies */}
-        <div className="sm:col-span-2">
-          <label className="block text-sm font-medium text-gray-700">Do you have any allergies?</label>
-          <div className="mt-1">
-            {isEditing ? (
-              <div className="space-y-2">
-                <div className="flex space-x-4">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="hasAllergies"
-                      value="yes"
-                      checked={editData.hasAllergies === 'yes'}
-                      onChange={(e) => setEditData({...editData, hasAllergies: e.target.value})}
-                      className="mr-2"
-                    />
-                    Yes
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="hasAllergies"
-                      value="no"
-                      checked={editData.hasAllergies === 'no'}
-                      onChange={(e) => setEditData({...editData, hasAllergies: e.target.value})}
-                      className="mr-2"
-                    />
-                    No
-                  </label>
-                </div>
-                {editData.hasAllergies === 'yes' && (
-                  <textarea
-                    value={editData.allergiesDetails}
-                    onChange={(e) => setEditData({...editData, allergiesDetails: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Please describe your allergies..."
-                    rows="2"
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-3">Do you have any allergies?</label>
+          {isEditing ? (
+            <div className="space-y-3">
+              <div className="flex space-x-4">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="hasAllergies"
+                    value="yes"
+                    checked={editData.hasAllergies === 'yes'}
+                    onChange={(e) => setEditData({...editData, hasAllergies: e.target.value})}
+                    className="mr-2 text-blue-600"
                   />
-                )}
+                  Yes
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="hasAllergies"
+                    value="no"
+                    checked={editData.hasAllergies === 'no'}
+                    onChange={(e) => setEditData({...editData, hasAllergies: e.target.value})}
+                    className="mr-2 text-blue-600"
+                  />
+                  No
+                </label>
               </div>
-            ) : (
-              <div>
-                <p className="text-sm text-gray-900">
-                  {user?.hasAllergies === 'yes' ? 'Yes' : user?.hasAllergies === 'no' ? 'No' : 'Not provided'}
-                </p>
-                {user?.hasAllergies === 'yes' && user?.allergiesDetails && (
-                  <p className="text-sm text-gray-600 mt-1">{user.allergiesDetails}</p>
-                )}
-              </div>
-            )}
-          </div>
+              {editData.hasAllergies === 'yes' && (
+                <textarea
+                  value={editData.allergiesDetails || ''}
+                  onChange={(e) => setEditData({...editData, allergiesDetails: e.target.value})}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  placeholder="Please describe your allergies..."
+                  rows="3"
+                />
+              )}
+            </div>
+          ) : (
+            <div>
+              <p className="text-slate-900 font-medium">
+                {user?.hasAllergies === 'yes' ? 'Yes' : user?.hasAllergies === 'no' ? 'No' : 'Not provided'}
+              </p>
+              {user?.hasAllergies === 'yes' && user?.allergiesDetails && (
+                <p className="text-slate-600 mt-2 bg-slate-50 p-3 rounded-lg">{user.allergiesDetails}</p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Past Illness */}
-        <div className="sm:col-span-2">
-          <label className="block text-sm font-medium text-gray-700">Any past serious illness or surgery?</label>
-          <div className="mt-1">
-            {isEditing ? (
-              <div className="space-y-2">
-                <div className="flex space-x-4">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="hasPastIllness"
-                      value="yes"
-                      checked={editData.hasPastIllness === 'yes'}
-                      onChange={(e) => setEditData({...editData, hasPastIllness: e.target.value})}
-                      className="mr-2"
-                    />
-                    Yes
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="hasPastIllness"
-                      value="no"
-                      checked={editData.hasPastIllness === 'no'}
-                      onChange={(e) => setEditData({...editData, hasPastIllness: e.target.value})}
-                      className="mr-2"
-                    />
-                    No
-                  </label>
-                </div>
-                {editData.hasPastIllness === 'yes' && (
-                  <textarea
-                    value={editData.pastIllnessDetails}
-                    onChange={(e) => setEditData({...editData, pastIllnessDetails: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Please describe..."
-                    rows="2"
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-3">Any past serious illness or surgery?</label>
+          {isEditing ? (
+            <div className="space-y-3">
+              <div className="flex space-x-4">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="hasPastIllness"
+                    value="yes"
+                    checked={editData.hasPastIllness === 'yes'}
+                    onChange={(e) => setEditData({...editData, hasPastIllness: e.target.value})}
+                    className="mr-2 text-blue-600"
                   />
-                )}
+                  Yes
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="hasPastIllness"
+                    value="no"
+                    checked={editData.hasPastIllness === 'no'}
+                    onChange={(e) => setEditData({...editData, hasPastIllness: e.target.value})}
+                    className="mr-2 text-blue-600"
+                  />
+                  No
+                </label>
               </div>
-            ) : (
-              <div>
-                <p className="text-sm text-gray-900">
-                  {user?.hasPastIllness === 'yes' ? 'Yes' : user?.hasPastIllness === 'no' ? 'No' : 'Not provided'}
-                </p>
-                {user?.hasPastIllness === 'yes' && user?.pastIllnessDetails && (
-                  <p className="text-sm text-gray-600 mt-1">{user.pastIllnessDetails}</p>
-                )}
-              </div>
-            )}
-          </div>
+              {editData.hasPastIllness === 'yes' && (
+                <textarea
+                  value={editData.illnessDetails || ''}
+                  onChange={(e) => setEditData({...editData, illnessDetails: e.target.value})}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  placeholder="Please describe..."
+                  rows="3"
+                />
+              )}
+            </div>
+          ) : (
+            <div>
+              <p className="text-slate-900 font-medium">
+                {user?.hasPastIllness === 'yes' ? 'Yes' : user?.hasPastIllness === 'no' ? 'No' : 'Not provided'}
+              </p>
+              {user?.hasPastIllness === 'yes' && (user?.illnessDetails || user?.pastIllnessDetails) && (
+                <p className="text-slate-600 mt-2 bg-slate-50 p-3 rounded-lg">{user.illnessDetails || user.pastIllnessDetails}</p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Physical Disabilities */}
-        <div className="sm:col-span-2">
-          <label className="block text-sm font-medium text-gray-700">Any physical disabilities?</label>
-          <div className="mt-1">
-            {isEditing ? (
-              <div className="space-y-2">
-                <div className="flex space-x-4">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="hasPhysicalDisabilities"
-                      value="yes"
-                      checked={editData.hasPhysicalDisabilities === 'yes'}
-                      onChange={(e) => setEditData({...editData, hasPhysicalDisabilities: e.target.value})}
-                      className="mr-2"
-                    />
-                    Yes
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="hasPhysicalDisabilities"
-                      value="no"
-                      checked={editData.hasPhysicalDisabilities === 'no'}
-                      onChange={(e) => setEditData({...editData, hasPhysicalDisabilities: e.target.value})}
-                      className="mr-2"
-                    />
-                    No
-                  </label>
-                </div>
-                {editData.hasPhysicalDisabilities === 'yes' && (
-                  <textarea
-                    value={editData.physicalDisabilitiesDetails}
-                    onChange={(e) => setEditData({...editData, physicalDisabilitiesDetails: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Please describe..."
-                    rows="2"
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-3">Any physical disabilities?</label>
+          {isEditing ? (
+            <div className="space-y-3">
+              <div className="flex space-x-4">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="hasPhysicalDisabilities"
+                    value="yes"
+                    checked={editData.hasPhysicalDisabilities === 'yes'}
+                    onChange={(e) => setEditData({...editData, hasPhysicalDisabilities: e.target.value})}
+                    className="mr-2 text-blue-600"
                   />
-                )}
-              </div>
-            ) : (
-              <div>
-                <p className="text-sm text-gray-900">
-                  {user?.hasPhysicalDisabilities === 'yes' ? 'Yes' : user?.hasPhysicalDisabilities === 'no' ? 'No' : 'Not provided'}
-                </p>
-                {user?.hasPhysicalDisabilities === 'yes' && user?.physicalDisabilitiesDetails && (
-                  <p className="text-sm text-gray-600 mt-1">{user.physicalDisabilitiesDetails}</p>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Dietary Restrictions */}
-        <div className="sm:col-span-2">
-          <label className="block text-sm font-medium text-gray-700">Any dietary restrictions?</label>
-          <div className="mt-1">
-            {isEditing ? (
-              <div className="space-y-2">
-                <div className="flex space-x-4">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="hasDietaryRestrictions"
-                      value="yes"
-                      checked={editData.hasDietaryRestrictions === 'yes'}
-                      onChange={(e) => setEditData({...editData, hasDietaryRestrictions: e.target.value})}
-                      className="mr-2"
-                    />
-                    Yes
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="hasDietaryRestrictions"
-                      value="no"
-                      checked={editData.hasDietaryRestrictions === 'no'}
-                      onChange={(e) => setEditData({...editData, hasDietaryRestrictions: e.target.value})}
-                      className="mr-2"
-                    />
-                    No
-                  </label>
-                </div>
-                {editData.hasDietaryRestrictions === 'yes' && (
-                  <textarea
-                    value={editData.dietaryRestrictionsDetails}
-                    onChange={(e) => setEditData({...editData, dietaryRestrictionsDetails: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Please describe..."
-                    rows="2"
+                  Yes
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="hasPhysicalDisabilities"
+                    value="no"
+                    checked={editData.hasPhysicalDisabilities === 'no'}
+                    onChange={(e) => setEditData({...editData, hasPhysicalDisabilities: e.target.value})}
+                    className="mr-2 text-blue-600"
                   />
-                )}
+                  No
+                </label>
               </div>
-            ) : (
-              <div>
-                <p className="text-sm text-gray-900">
-                  {user?.hasDietaryRestrictions === 'yes' ? 'Yes' : user?.hasDietaryRestrictions === 'no' ? 'No' : 'Not provided'}
-                </p>
-                {user?.hasDietaryRestrictions === 'yes' && user?.dietaryRestrictionsDetails && (
-                  <p className="text-sm text-gray-600 mt-1">{user.dietaryRestrictionsDetails}</p>
-                )}
-              </div>
-            )}
-          </div>
+              {editData.hasPhysicalDisabilities === 'yes' && (
+                <textarea
+                  value={editData.disabilitiesDetails || ''}
+                  onChange={(e) => setEditData({...editData, disabilitiesDetails: e.target.value})}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  placeholder="Please describe..."
+                  rows="3"
+                />
+              )}
+            </div>
+          ) : (
+            <div>
+              <p className="text-slate-900 font-medium">
+                {user?.hasPhysicalDisabilities === 'yes' ? 'Yes' : user?.hasPhysicalDisabilities === 'no' ? 'No' : 'Not provided'}
+              </p>
+              {user?.hasPhysicalDisabilities === 'yes' && (user?.disabilitiesDetails || user?.physicalDisabilitiesDetails) && (
+                <p className="text-slate-600 mt-2 bg-slate-50 p-3 rounded-lg">{user.disabilitiesDetails || user.physicalDisabilitiesDetails}</p>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
   </div>
 );
+
+// NEW: Experience Information Section
+export const HelperExperienceInfo = ({ user, isEditing, editData, setEditData }) => {
+  const handleExperienceChange = (skillType, field, value) => {
+    setEditData(prev => ({
+      ...prev,
+      experience: {
+        ...prev.experience,
+        [skillType]: {
+          ...prev.experience?.[skillType],
+          [field]: value
+        }
+      }
+    }));
+  };
+
+  const skillTypes = [
+    { key: 'careOfInfant', label: 'Care of Infant (0-2 years)' },
+    { key: 'careOfChildren', label: 'Care of Children (3-12 years)' },
+    { key: 'careOfDisabled', label: 'Care of Disabled' },
+    { key: 'careOfOldAge', label: 'Care of Elderly' },
+    { key: 'generalHousework', label: 'General Housework' },
+    { key: 'cooking', label: 'Cooking' }
+  ];
+
+  return (
+    <div className="bg-white overflow-hidden shadow-lg rounded-2xl border border-slate-200">
+      <div className="px-6 py-6">
+        <h3 className="text-xl font-semibold text-slate-900 mb-6 flex items-center">
+          <svg className="w-6 h-6 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 8.172V5L8 4z" />
+          </svg>
+          Experience & Skills
+        </h3>
+        
+        {user?.hasBeenHelperBefore === 'yes' ? (
+          <div className="space-y-6">
+            {skillTypes.map(({ key, label }) => {
+              const experienceData = user?.experience?.[key] || {};
+              const editExperienceData = editData?.experience?.[key] || {};
+              
+              return (
+                <div key={key} className="bg-slate-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-slate-900 mb-3">{label}</h4>
+                  
+                  {isEditing ? (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Has Experience */}
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">Experience</label>
+                        <select
+                          value={editExperienceData.hasExperience || ''}
+                          onChange={(e) => handleExperienceChange(key, 'hasExperience', e.target.value === 'true')}
+                          className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option value="">Select</option>
+                          <option value="true">Yes</option>
+                          <option value="false">No</option>
+                        </select>
+                      </div>
+
+                      {editExperienceData.hasExperience && (
+                        <>
+                          {/* Start Year */}
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">Started Year</label>
+                            <input
+                              type="number"
+                              value={editExperienceData.startYear || ''}
+                              onChange={(e) => handleExperienceChange(key, 'startYear', parseInt(e.target.value) || null)}
+                              className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              min="1990"
+                              max={new Date().getFullYear()}
+                              placeholder="e.g., 2018"
+                            />
+                          </div>
+
+                          {/* End Year */}
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">End Year</label>
+                            <input
+                              type="number"
+                              value={editExperienceData.endYear || ''}
+                              onChange={(e) => handleExperienceChange(key, 'endYear', e.target.value ? parseInt(e.target.value) : null)}
+                              className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              min="1990"
+                              max={new Date().getFullYear()}
+                              placeholder="Leave empty if ongoing"
+                            />
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="text-slate-900">
+                        <span className="font-medium">Experience:</span> {experienceData.hasExperience ? 'Yes' : 'No'}
+                      </p>
+                      {experienceData.hasExperience && (
+                        <>
+                          <p className="text-slate-700">
+                            <span className="font-medium">Period:</span> {experienceData.startYear || 'N/A'} - {experienceData.endYear || 'Ongoing'}
+                          </p>
+                          {experienceData.startYear && (
+                            <p className="text-slate-600 text-sm">
+                              <span className="font-medium">Duration:</span> {
+                                experienceData.endYear 
+                                  ? `${experienceData.endYear - experienceData.startYear} years`
+                                  : `${new Date().getFullYear() - experienceData.startYear} years (ongoing)`
+                              }
+                            </p>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <p className="text-blue-800">No previous helper experience. This is a new helper.</p>
+            {(user?.relevantSkills || user?.previousWork) && (
+              <div className="mt-4 space-y-3">
+                {user?.relevantSkills && (
+                  <div>
+                    <h4 className="font-medium text-slate-900 mb-2">Relevant Skills</h4>
+                    {isEditing ? (
+                      <textarea
+                        value={editData.relevantSkills || ''}
+                        onChange={(e) => setEditData({...editData, relevantSkills: e.target.value})}
+                        rows={3}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    ) : (
+                      <p className="text-slate-700">{user.relevantSkills}</p>
+                    )}
+                  </div>
+                )}
+                {user?.previousWork && (
+                  <div>
+                    <h4 className="font-medium text-slate-900 mb-2">Previous Work Experience</h4>
+                    {isEditing ? (
+                      <textarea
+                        value={editData.previousWork || ''}
+                        onChange={(e) => setEditData({...editData, previousWork: e.target.value})}
+                        rows={3}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    ) : (
+                      <p className="text-slate-700">{user.previousWork}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// NEW: Preferences Information Section  
+export const HelperPreferencesInfo = ({ user, isEditing, editData, setEditData }) => {
+  const handlePreferenceChange = (category, field, value) => {
+    setEditData(prev => ({
+      ...prev,
+      preferences: {
+        ...prev.preferences,
+        [category]: {
+          ...prev.preferences?.[category],
+          [field]: value
+        }
+      }
+    }));
+  };
+
+  const handleLocationPreferenceChange = (field, value) => {
+    setEditData(prev => ({
+      ...prev,
+      preferences: {
+        ...prev.preferences,
+        location: {
+          ...prev.preferences?.location,
+          [field]: value
+        }
+      }
+    }));
+  };
+
+  return (
+    <div className="bg-white overflow-hidden shadow-lg rounded-2xl border border-slate-200">
+      <div className="px-6 py-6">
+        <h3 className="text-xl font-semibold text-slate-900 mb-6 flex items-center">
+          <svg className="w-6 h-6 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+          Job Preferences
+        </h3>
+        
+        <div className="space-y-6">
+          {/* Work Environment Preferences */}
+          <div className="bg-slate-50 p-4 rounded-lg">
+            <h4 className="font-semibold text-slate-900 mb-4">Work Environment</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Live-in Preference */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Living Arrangement</label>
+                {isEditing ? (
+                  <select
+                    value={editData.preferences?.workEnvironment?.liveInPreference || ''}
+                    onChange={(e) => handlePreferenceChange('workEnvironment', 'liveInPreference', e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select preference</option>
+                    <option value="live_in_only">Live-in only</option>
+                    <option value="live_out_only">Live-out only</option>
+                    <option value="either">Either is fine</option>
+                  </select>
+                ) : (
+                  <p className="text-slate-900 capitalize">
+                    {user?.preferences?.workEnvironment?.liveInPreference?.replace('_', ' ') || 'Not specified'}
+                  </p>
+                )}
+              </div>
+
+              {/* Pet Preference */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Working with Pets</label>
+                {isEditing ? (
+                  <select
+                    value={editData.preferences?.workEnvironment?.petFriendly || ''}
+                    onChange={(e) => handlePreferenceChange('workEnvironment', 'petFriendly', e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select preference</option>
+                    <option value="love_pets">I love working with pets</option>
+                    <option value="comfortable">Comfortable with pets</option>
+                    <option value="no_pets">Prefer no pets</option>
+                  </select>
+                ) : (
+                  <p className="text-slate-900">
+                    {user?.preferences?.workEnvironment?.petFriendly === 'love_pets' ? 'I love working with pets' :
+                     user?.preferences?.workEnvironment?.petFriendly === 'comfortable' ? 'Comfortable with pets' :
+                     user?.preferences?.workEnvironment?.petFriendly === 'no_pets' ? 'Prefer no pets' : 'Not specified'}
+                  </p>
+                )}
+              </div>
+
+              {/* Required Off Days */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Required Off Days per Week</label>
+                {isEditing ? (
+                  <select
+                    value={editData.preferences?.workEnvironment?.requiredOffDays || ''}
+                    onChange={(e) => handlePreferenceChange('workEnvironment', 'requiredOffDays', parseInt(e.target.value))}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select number</option>
+                    {[0, 1, 2, 3, 4].map(num => (
+                      <option key={num} value={num}>{num} day{num !== 1 ? 's' : ''} per week</option>
+                    ))}
+                  </select>
+                ) : (
+                  <p className="text-slate-900">
+                    {user?.preferences?.workEnvironment?.requiredOffDays !== undefined 
+                      ? `${user.preferences.workEnvironment.requiredOffDays} day${user.preferences.workEnvironment.requiredOffDays !== 1 ? 's' : ''} per week`
+                      : 'Not specified'}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Preferred Countries */}
+          <div className="bg-slate-50 p-4 rounded-lg">
+            <h4 className="font-semibold text-slate-900 mb-4">Location Preferences</h4>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Preferred Countries to Work In</label>
+              {isEditing ? (
+                <div className="grid grid-cols-3 gap-2">
+                  {['Singapore', 'Hong Kong', 'UAE', 'Saudi Arabia', 'Qatar', 'Kuwait', 'Taiwan', 'Malaysia', 'Others'].map(country => (
+                    <label key={country} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={(editData.preferences?.location?.preferredCountries || []).includes(country)}
+                        onChange={(e) => {
+                          const current = editData.preferences?.location?.preferredCountries || [];
+                          const newCountries = e.target.checked
+                            ? [...current, country]
+                            : current.filter(c => c !== country);
+                          handleLocationPreferenceChange('preferredCountries', newCountries);
+                        }}
+                        className="mr-2 text-blue-600"
+                      />
+                      <span className="text-sm">{country}</span>
+                    </label>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {(user?.preferences?.location?.preferredCountries || []).map((country, index) => (
+                    <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+                      {country}
+                    </span>
+                  ))}
+                  {(!user?.preferences?.location?.preferredCountries || user.preferences.location.preferredCountries.length === 0) && (
+                    <p className="text-slate-900">No preferences specified</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// NEW: Availability & Readiness Section
+export const HelperAvailabilityInfo = ({ user, isEditing, editData, setEditData }) => {
+  const handleExpectationChange = (category, field, value) => {
+    setEditData(prev => ({
+      ...prev,
+      expectations: {
+        ...prev.expectations,
+        [category]: {
+          ...prev.expectations?.[category],
+          [field]: value
+        }
+      }
+    }));
+  };
+
+  const handleReadinessChange = (field, value) => {
+    setEditData(prev => ({
+      ...prev,
+      readiness: {
+        ...prev.readiness,
+        [field]: value
+      }
+    }));
+  };
+
+  const handleInterviewChange = (field, value) => {
+    setEditData(prev => ({
+      ...prev,
+      interview: {
+        ...prev.interview,
+        [field]: value
+      }
+    }));
+  };
+
+  return (
+    <div className="bg-white overflow-hidden shadow-lg rounded-2xl border border-slate-200">
+      <div className="px-6 py-6">
+        <h3 className="text-xl font-semibold text-slate-900 mb-6 flex items-center">
+          <svg className="w-6 h-6 mr-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Availability & Readiness
+        </h3>
+        
+        <div className="space-y-6">
+          {/* Salary Expectations */}
+          <div className="bg-slate-50 p-4 rounded-lg">
+            <h4 className="font-semibold text-slate-900 mb-4">Salary Expectations</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Minimum Salary (SGD)</label>
+                {isEditing ? (
+                  <input
+                    type="number"
+                    value={editData.expectations?.salary?.minimumAmount || ''}
+                    onChange={(e) => handleExpectationChange('salary', 'minimumAmount', parseFloat(e.target.value) || '')}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="e.g., 600"
+                  />
+                ) : (
+                  <p className="text-slate-900">
+                    {user?.expectations?.salary?.minimumAmount ? `SGD ${user.expectations.salary.minimumAmount}` : 'Not specified'}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Preferred Salary (SGD)</label>
+                {isEditing ? (
+                  <input
+                    type="number"
+                    value={editData.expectations?.salary?.preferredAmount || ''}
+                    onChange={(e) => handleExpectationChange('salary', 'preferredAmount', parseFloat(e.target.value) || '')}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="e.g., 700"
+                  />
+                ) : (
+                  <p className="text-slate-900">
+                    {user?.expectations?.salary?.preferredAmount ? `SGD ${user.expectations.salary.preferredAmount}` : 'Not specified'}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Work Readiness */}
+          <div className="bg-slate-50 p-4 rounded-lg">
+            <h4 className="font-semibold text-slate-900 mb-4">Work Readiness</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Passport Status</label>
+                {isEditing ? (
+                  <select
+                    value={editData.readiness?.hasValidPassport || ''}
+                    onChange={(e) => handleReadinessChange('hasValidPassport', e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select status</option>
+                    <option value="yes">Valid passport</option>
+                    <option value="no">Need to apply/renew</option>
+                  </select>
+                ) : (
+                  <p className="text-slate-900">
+                    {user?.readiness?.hasValidPassport === 'yes' ? 'Valid passport' : 
+                     user?.readiness?.hasValidPassport === 'no' ? 'Need to apply/renew' : 'Not specified'}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Can Start Work</label>
+                {isEditing ? (
+                  <select
+                    value={editData.readiness?.canStartWork || ''}
+                    onChange={(e) => handleReadinessChange('canStartWork', e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select timeframe</option>
+                    <option value="immediately">Immediately</option>
+                    <option value="within_month">Within a month</option>
+                    <option value="1_2_months">1-2 months</option>
+                    <option value="3_months_plus">3+ months</option>
+                  </select>
+                ) : (
+                  <p className="text-slate-900">
+                    {user?.readiness?.canStartWork === 'immediately' ? 'Immediately' :
+                     user?.readiness?.canStartWork === 'within_month' ? 'Within a month' :
+                     user?.readiness?.canStartWork === '1_2_months' ? '1-2 months' :
+                     user?.readiness?.canStartWork === '3_months_plus' ? '3+ months' : 'Not specified'}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Visa Status</label>
+                {isEditing ? (
+                  <select
+                    value={editData.readiness?.visaStatus || ''}
+                    onChange={(e) => handleReadinessChange('visaStatus', e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select status</option>
+                    <option value="none_needed">No visa needed</option>
+                    <option value="have_valid">Have valid work permit</option>
+                    <option value="need_to_apply">Need to apply</option>
+                    <option value="employer_assistance">Need employer assistance</option>
+                  </select>
+                ) : (
+                  <p className="text-slate-900">
+                    {user?.readiness?.visaStatus === 'none_needed' ? 'No visa needed' :
+                     user?.readiness?.visaStatus === 'have_valid' ? 'Have valid work permit' :
+                     user?.readiness?.visaStatus === 'need_to_apply' ? 'Need to apply' :
+                     user?.readiness?.visaStatus === 'employer_assistance' ? 'Need employer assistance' : 'Not specified'}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Interview Preferences */}
+          <div className="bg-slate-50 p-4 rounded-lg">
+            <h4 className="font-semibold text-slate-900 mb-4">Interview Preferences</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Interview Availability</label>
+                {isEditing ? (
+                  <select
+                    value={editData.interview?.availability || ''}
+                    onChange={(e) => handleInterviewChange('availability', e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select availability</option>
+                    <option value="weekdays_morning">Weekdays morning</option>
+                    <option value="weekdays_afternoon">Weekdays afternoon</option>
+                    <option value="weekends">Weekends</option>
+                    <option value="anytime">Anytime</option>
+                  </select>
+                ) : (
+                  <p className="text-slate-900">
+                    {user?.interview?.availability === 'weekdays_morning' ? 'Weekdays morning' :
+                     user?.interview?.availability === 'weekdays_afternoon' ? 'Weekdays afternoon' :
+                     user?.interview?.availability === 'weekends' ? 'Weekends' :
+                     user?.interview?.availability === 'anytime' ? 'Anytime' : 'Not specified'}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Preferred Interview Method</label>
+                {isEditing ? (
+                  <select
+                    value={editData.interview?.means || ''}
+                    onChange={(e) => handleInterviewChange('means', e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select method</option>
+                    <option value="video_call">Video call</option>
+                    <option value="phone_call">Phone call</option>
+                    <option value="in_person">In person</option>
+                    <option value="any">Any method</option>
+                  </select>
+                ) : (
+                  <p className="text-slate-900">
+                    {user?.interview?.means === 'video_call' ? 'Video call' :
+                     user?.interview?.means === 'phone_call' ? 'Phone call' :
+                     user?.interview?.means === 'in_person' ? 'In person' :
+                     user?.interview?.means === 'any' ? 'Any method' : 'Not specified'}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
