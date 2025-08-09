@@ -913,112 +913,244 @@ export const HelperAvailabilityInfo = ({ user, isEditing, editData, setEditData 
         
         <div className="space-y-6">
           {/* Salary Expectations */}
-          <div className="bg-slate-50 p-4 rounded-lg">
-            <h4 className="font-semibold text-slate-900 mb-4">Salary Expectations</h4>
+          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+            <h4 className="font-semibold text-green-800 mb-4 flex items-center">
+              💰 Salary Expectations
+            </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Minimum Salary (SGD)</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Minimum Monthly Salary Expected</label>
                 {isEditing ? (
-                  <input
-                    type="number"
-                    value={editData.expectations?.salary?.minimumAmount || ''}
-                    onChange={(e) => handleExpectationChange('salary', 'minimumAmount', parseFloat(e.target.value) || '')}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="e.g., 600"
-                  />
+                  <div className="flex">
+                    <span className="inline-flex items-center px-3 py-2 border border-r-0 border-slate-300 bg-slate-50 text-slate-500 text-sm rounded-l-lg">
+                      SGD $
+                    </span>
+                    <input
+                      type="number"
+                      min="500"
+                      max="3000"
+                      step="50"
+                      value={editData.expectations?.salary?.minimumAmount || ''}
+                      onChange={(e) => handleExpectationChange('salary', 'minimumAmount', e.target.value)}
+                      className="flex-1 px-3 py-2 border border-slate-300 rounded-r-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="800"
+                    />
+                  </div>
                 ) : (
-                  <p className="text-slate-900">
-                    {user?.expectations?.salary?.minimumAmount ? `SGD ${user.expectations.salary.minimumAmount}` : 'Not specified'}
+                  <p className="text-slate-900 font-medium">
+                    {user?.expectations?.salary?.minimumAmount ? `SGD $${user.expectations.salary.minimumAmount}` : 'Not specified'}
                   </p>
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Preferred Salary (SGD)</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Preferred Monthly Salary</label>
                 {isEditing ? (
-                  <input
-                    type="number"
-                    value={editData.expectations?.salary?.preferredAmount || ''}
-                    onChange={(e) => handleExpectationChange('salary', 'preferredAmount', parseFloat(e.target.value) || '')}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="e.g., 700"
-                  />
+                  <div className="flex">
+                    <span className="inline-flex items-center px-3 py-2 border border-r-0 border-slate-300 bg-slate-50 text-slate-500 text-sm rounded-l-lg">
+                      SGD $
+                    </span>
+                    <input
+                      type="number"
+                      min="500"
+                      max="3000"
+                      step="50"
+                      value={editData.expectations?.salary?.preferredAmount || ''}
+                      onChange={(e) => handleExpectationChange('salary', 'preferredAmount', e.target.value)}
+                      className="flex-1 px-3 py-2 border border-slate-300 rounded-r-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="1000"
+                    />
+                  </div>
                 ) : (
-                  <p className="text-slate-900">
-                    {user?.expectations?.salary?.preferredAmount ? `SGD ${user.expectations.salary.preferredAmount}` : 'Not specified'}
+                  <p className="text-slate-900 font-medium">
+                    {user?.expectations?.salary?.preferredAmount ? `SGD $${user.expectations.salary.preferredAmount}` : 'Not specified'}
                   </p>
                 )}
               </div>
             </div>
+            
+            {/* Salary Options */}
+            <div className="mt-4 space-y-3">
+              <label className="flex items-center">
+                {isEditing ? (
+                  <input
+                    type="checkbox"
+                    checked={editData.expectations?.salary?.negotiable || false}
+                    onChange={(e) => handleExpectationChange('salary', 'negotiable', e.target.checked)}
+                    className="mr-2 text-blue-600"
+                  />
+                ) : (
+                  <span className={`w-4 h-4 mr-2 rounded ${user?.expectations?.salary?.negotiable ? 'bg-blue-600' : 'bg-slate-300'}`}></span>
+                )}
+                <span className="text-sm text-slate-700">My salary is negotiable based on job requirements</span>
+              </label>
+              
+              <label className="flex items-center">
+                {isEditing ? (
+                  <input
+                    type="checkbox"
+                    checked={editData.expectations?.salary?.performanceBonusExpected || false}
+                    onChange={(e) => handleExpectationChange('salary', 'performanceBonusExpected', e.target.checked)}
+                    className="mr-2 text-blue-600"
+                  />
+                ) : (
+                  <span className={`w-4 h-4 mr-2 rounded ${user?.expectations?.salary?.performanceBonusExpected ? 'bg-blue-600' : 'bg-slate-300'}`}></span>
+                )}
+                <span className="text-sm text-slate-700">I would like performance bonuses</span>
+              </label>
+            </div>
           </div>
 
           {/* Work Readiness */}
-          <div className="bg-slate-50 p-4 rounded-lg">
-            <h4 className="font-semibold text-slate-900 mb-4">Work Readiness</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <h4 className="font-semibold text-blue-800 mb-4 flex items-center">
+              🛂 Work Readiness
+            </h4>
+            <div className="space-y-4">
+              {/* Passport Status */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Passport Status</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Do you have a valid passport?</label>
                 {isEditing ? (
-                  <select
-                    value={editData.readiness?.hasValidPassport || ''}
-                    onChange={(e) => handleReadinessChange('hasValidPassport', e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">Select status</option>
-                    <option value="yes">Valid passport</option>
-                    <option value="no">Need to apply/renew</option>
-                  </select>
+                  <div className="flex space-x-4">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="hasValidPassport"
+                        value="yes"
+                        checked={editData.readiness?.hasValidPassport === 'yes'}
+                        onChange={(e) => handleReadinessChange('hasValidPassport', e.target.value)}
+                        className="mr-2 text-blue-600"
+                      />
+                      Yes, valid passport
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="hasValidPassport"
+                        value="no"
+                        checked={editData.readiness?.hasValidPassport === 'no'}
+                        onChange={(e) => handleReadinessChange('hasValidPassport', e.target.value)}
+                        className="mr-2 text-blue-600"
+                      />
+                      No, need to apply/renew
+                    </label>
+                  </div>
                 ) : (
                   <p className="text-slate-900">
-                    {user?.readiness?.hasValidPassport === 'yes' ? 'Valid passport' : 
-                     user?.readiness?.hasValidPassport === 'no' ? 'Need to apply/renew' : 'Not specified'}
+                    {user?.readiness?.hasValidPassport === 'yes' ? 'Yes, valid passport' : 
+                     user?.readiness?.hasValidPassport === 'no' ? 'No, need to apply/renew' : 'Not specified'}
                   </p>
                 )}
               </div>
 
+              {/* Passport Expiry (conditional) */}
+              {(isEditing ? editData.readiness?.hasValidPassport === 'yes' : user?.readiness?.hasValidPassport === 'yes') && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Passport Expiry Date</label>
+                  {isEditing ? (
+                    <input
+                      type="date"
+                      value={editData.readiness?.passportExpiry || ''}
+                      onChange={(e) => handleReadinessChange('passportExpiry', e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  ) : (
+                    <p className="text-slate-900">
+                      {user?.readiness?.passportExpiry ? new Date(user.readiness.passportExpiry).toLocaleDateString() : 'Not specified'}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Can Start Work */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Can Start Work</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">When can you start working?</label>
                 {isEditing ? (
-                  <select
-                    value={editData.readiness?.canStartWork || ''}
-                    onChange={(e) => handleReadinessChange('canStartWork', e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">Select timeframe</option>
-                    <option value="immediately">Immediately</option>
-                    <option value="within_month">Within a month</option>
-                    <option value="1_2_months">1-2 months</option>
-                    <option value="3_months_plus">3+ months</option>
-                  </select>
+                  <div className="space-y-2">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="canStartWork"
+                        value="immediately"
+                        checked={editData.readiness?.canStartWork === 'immediately'}
+                        onChange={(e) => handleReadinessChange('canStartWork', e.target.value)}
+                        className="mr-2 text-blue-600"
+                      />
+                      Immediately (ready to start within 1-2 weeks)
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="canStartWork"
+                        value="within_month"
+                        checked={editData.readiness?.canStartWork === 'within_month'}
+                        onChange={(e) => handleReadinessChange('canStartWork', e.target.value)}
+                        className="mr-2 text-blue-600"
+                      />
+                      Within 1 month
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="canStartWork"
+                        value="after_date"
+                        checked={editData.readiness?.canStartWork === 'after_date'}
+                        onChange={(e) => handleReadinessChange('canStartWork', e.target.value)}
+                        className="mr-2 text-blue-600"
+                      />
+                      After a specific date
+                    </label>
+                  </div>
                 ) : (
                   <p className="text-slate-900">
-                    {user?.readiness?.canStartWork === 'immediately' ? 'Immediately' :
-                     user?.readiness?.canStartWork === 'within_month' ? 'Within a month' :
-                     user?.readiness?.canStartWork === '1_2_months' ? '1-2 months' :
-                     user?.readiness?.canStartWork === '3_months_plus' ? '3+ months' : 'Not specified'}
+                    {user?.readiness?.canStartWork === 'immediately' ? 'Immediately (ready to start within 1-2 weeks)' :
+                     user?.readiness?.canStartWork === 'within_month' ? 'Within 1 month' :
+                     user?.readiness?.canStartWork === 'after_date' ? 'After a specific date' : 'Not specified'}
                   </p>
                 )}
               </div>
 
+              {/* Start Date (conditional) */}
+              {(isEditing ? editData.readiness?.canStartWork === 'after_date' : user?.readiness?.canStartWork === 'after_date') && (
+                <div className="ml-6">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Start Date</label>
+                  {isEditing ? (
+                    <input
+                      type="date"
+                      value={editData.readiness?.startDate || ''}
+                      onChange={(e) => handleReadinessChange('startDate', e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  ) : (
+                    <p className="text-slate-900">
+                      {user?.readiness?.startDate ? new Date(user.readiness.startDate).toLocaleDateString() : 'Not specified'}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Visa Status */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Visa Status</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Current Visa/Work Permit Status</label>
                 {isEditing ? (
                   <select
                     value={editData.readiness?.visaStatus || ''}
                     onChange={(e) => handleReadinessChange('visaStatus', e.target.value)}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
-                    <option value="">Select status</option>
-                    <option value="none_needed">No visa needed</option>
-                    <option value="have_valid">Have valid work permit</option>
-                    <option value="need_to_apply">Need to apply</option>
-                    <option value="employer_assistance">Need employer assistance</option>
+                    <option value="">Select Visa Status</option>
+                    <option value="first_time">First time applying (no previous work permit)</option>
+                    <option value="valid_permit">Currently have valid work permit</option>
+                    <option value="expired_permit">Previous work permit expired</option>
+                    <option value="transfer_ready">Ready for transfer from current employer</option>
+                    <option value="citizen_pr">Singapore Citizen/PR</option>
                   </select>
                 ) : (
                   <p className="text-slate-900">
-                    {user?.readiness?.visaStatus === 'none_needed' ? 'No visa needed' :
-                     user?.readiness?.visaStatus === 'have_valid' ? 'Have valid work permit' :
-                     user?.readiness?.visaStatus === 'need_to_apply' ? 'Need to apply' :
-                     user?.readiness?.visaStatus === 'employer_assistance' ? 'Need employer assistance' : 'Not specified'}
+                    {user?.readiness?.visaStatus === 'first_time' ? 'First time applying (no previous work permit)' :
+                     user?.readiness?.visaStatus === 'valid_permit' ? 'Currently have valid work permit' :
+                     user?.readiness?.visaStatus === 'expired_permit' ? 'Previous work permit expired' :
+                     user?.readiness?.visaStatus === 'transfer_ready' ? 'Ready for transfer from current employer' :
+                     user?.readiness?.visaStatus === 'citizen_pr' ? 'Singapore Citizen/PR' : 'Not specified'}
                   </p>
                 )}
               </div>
@@ -1026,33 +1158,91 @@ export const HelperAvailabilityInfo = ({ user, isEditing, editData, setEditData 
           </div>
 
           {/* Interview Preferences */}
-          <div className="bg-slate-50 p-4 rounded-lg">
-            <h4 className="font-semibold text-slate-900 mb-4">Interview Preferences</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+            <h4 className="font-semibold text-slate-900 mb-4 flex items-center">
+              📞 Interview Preferences
+            </h4>
+            <div className="space-y-4">
+              {/* Interview Availability */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Interview Availability</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">When are you available for interviews?</label>
                 {isEditing ? (
-                  <select
-                    value={editData.interview?.availability || ''}
-                    onChange={(e) => handleInterviewChange('availability', e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">Select availability</option>
-                    <option value="weekdays_morning">Weekdays morning</option>
-                    <option value="weekdays_afternoon">Weekdays afternoon</option>
-                    <option value="weekends">Weekends</option>
-                    <option value="anytime">Anytime</option>
-                  </select>
+                  <div className="space-y-2">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="interviewAvailability"
+                        value="immediate"
+                        checked={editData.interview?.availability === 'immediate'}
+                        onChange={(e) => handleInterviewChange('availability', e.target.value)}
+                        className="mr-2 text-blue-600"
+                      />
+                      Available anytime
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="interviewAvailability"
+                        value="weekdays_only"
+                        checked={editData.interview?.availability === 'weekdays_only'}
+                        onChange={(e) => handleInterviewChange('availability', e.target.value)}
+                        className="mr-2 text-blue-600"
+                      />
+                      Weekdays only
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="interviewAvailability"
+                        value="weekends_only"
+                        checked={editData.interview?.availability === 'weekends_only'}
+                        onChange={(e) => handleInterviewChange('availability', e.target.value)}
+                        className="mr-2 text-blue-600"
+                      />
+                      Weekends only
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="interviewAvailability"
+                        value="after_date"
+                        checked={editData.interview?.availability === 'after_date'}
+                        onChange={(e) => handleInterviewChange('availability', e.target.value)}
+                        className="mr-2 text-blue-600"
+                      />
+                      After a specific date
+                    </label>
+                  </div>
                 ) : (
                   <p className="text-slate-900">
-                    {user?.interview?.availability === 'weekdays_morning' ? 'Weekdays morning' :
-                     user?.interview?.availability === 'weekdays_afternoon' ? 'Weekdays afternoon' :
-                     user?.interview?.availability === 'weekends' ? 'Weekends' :
-                     user?.interview?.availability === 'anytime' ? 'Anytime' : 'Not specified'}
+                    {user?.interview?.availability === 'immediate' ? 'Available anytime' :
+                     user?.interview?.availability === 'weekdays_only' ? 'Weekdays only' :
+                     user?.interview?.availability === 'weekends_only' ? 'Weekends only' :
+                     user?.interview?.availability === 'after_date' ? 'After a specific date' : 'Not specified'}
                   </p>
                 )}
               </div>
 
+              {/* Interview Availability Date (conditional) */}
+              {(isEditing ? editData.interview?.availability === 'after_date' : user?.interview?.availability === 'after_date') && (
+                <div className="ml-6">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Available from Date</label>
+                  {isEditing ? (
+                    <input
+                      type="date"
+                      value={editData.interview?.availabilityDate || ''}
+                      onChange={(e) => handleInterviewChange('availabilityDate', e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  ) : (
+                    <p className="text-slate-900">
+                      {user?.interview?.availabilityDate ? new Date(user.interview.availabilityDate).toLocaleDateString() : 'Not specified'}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Interview Method */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Preferred Interview Method</label>
                 {isEditing ? (
@@ -1061,22 +1251,42 @@ export const HelperAvailabilityInfo = ({ user, isEditing, editData, setEditData 
                     onChange={(e) => handleInterviewChange('means', e.target.value)}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
-                    <option value="">Select method</option>
-                    <option value="video_call">Video call</option>
-                    <option value="phone_call">Phone call</option>
-                    <option value="in_person">In person</option>
-                    <option value="any">Any method</option>
+                    <option value="">Select Interview Method</option>
+                    <option value="whatsapp_video_call">WhatsApp Video Call</option>
+                    <option value="zoom_video_call">Zoom Video Call</option>
+                    <option value="voice_call">Voice Call</option>
+                    <option value="face_to_face">Face to Face Meeting</option>
+                    <option value="others">Others (specify in comments)</option>
                   </select>
                 ) : (
                   <p className="text-slate-900">
-                    {user?.interview?.means === 'video_call' ? 'Video call' :
-                     user?.interview?.means === 'phone_call' ? 'Phone call' :
-                     user?.interview?.means === 'in_person' ? 'In person' :
-                     user?.interview?.means === 'any' ? 'Any method' : 'Not specified'}
+                    {user?.interview?.means === 'whatsapp_video_call' ? 'WhatsApp Video Call' :
+                     user?.interview?.means === 'zoom_video_call' ? 'Zoom Video Call' :
+                     user?.interview?.means === 'voice_call' ? 'Voice Call' :
+                     user?.interview?.means === 'face_to_face' ? 'Face to Face Meeting' :
+                     user?.interview?.means === 'others' ? 'Others (specify in comments)' : 'Not specified'}
                   </p>
                 )}
               </div>
             </div>
+          </div>
+
+          {/* Additional Comments */}
+          <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+            <h4 className="font-semibold text-slate-900 mb-4">Additional Comments & Special Requests</h4>
+            {isEditing ? (
+              <textarea
+                value={editData.otherRemarks || ''}
+                onChange={(e) => setEditData({...editData, otherRemarks: e.target.value})}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                rows="4"
+                placeholder="Anything else you'd like potential employers to know about you, your availability, salary expectations, or special requests..."
+              />
+            ) : (
+              <p className="text-slate-900">
+                {user?.otherRemarks || 'No additional comments'}
+              </p>
+            )}
           </div>
         </div>
       </div>

@@ -82,10 +82,28 @@ export default function ProfilePage() {
         // Preferences
         preferences: user.preferences || {},
         
-        // Availability & Readiness
-        expectations: user.expectations || {},
-        readiness: user.readiness || {},
-        interview: user.interview || {},
+        // Availability & Readiness  
+        expectations: {
+          salary: {
+            minimumAmount: user.expectations?.salary?.minimumAmount || '',
+            preferredAmount: user.expectations?.salary?.preferredAmount || '',
+            negotiable: user.expectations?.salary?.negotiable || false,
+            performanceBonusExpected: user.expectations?.salary?.performanceBonusExpected || false
+          }
+        },
+        readiness: {
+          hasValidPassport: user.readiness?.hasValidPassport || '',
+          passportExpiry: user.readiness?.passportExpiry || '',
+          canStartWork: user.readiness?.canStartWork || '',
+          startDate: user.readiness?.startDate || '',
+          visaStatus: user.readiness?.visaStatus || ''
+        },
+        interview: {
+          availability: user.interview?.availability || '',
+          availabilityDate: user.interview?.availabilityDate || '',
+          means: user.interview?.means || ''
+        },
+        otherRemarks: user.otherRemarks || '',
         
         // Legacy fields for backward compatibility
         availability: user.availability || '',
