@@ -85,18 +85,20 @@ export default function ProfilePage() {
         // Availability & Readiness  
         expectations: {
           salary: {
-            minimumAmount: user.expectations?.salary?.minimumAmount || '',
-            preferredAmount: user.expectations?.salary?.preferredAmount || '',
-            negotiable: user.expectations?.salary?.negotiable || false,
-            performanceBonusExpected: user.expectations?.salary?.performanceBonusExpected || false
+            minimumAmount: user.expectations?.salary?.minimumAmount || user.salaryProfile?.minimumSalary || '',
+            preferredAmount: user.expectations?.salary?.preferredAmount || user.salaryProfile?.preferredSalary || '',
+            negotiable: user.expectations?.salary?.negotiable || user.salaryProfile?.salaryNegotiable || false,
+            performanceBonusExpected: user.expectations?.salary?.performanceBonusExpected || user.salaryProfile?.wantsBonus || false
           }
         },
         readiness: {
-          hasValidPassport: user.readiness?.hasValidPassport || '',
+          hasValidPassport: user.readiness?.hasValidPassport || (user.availabilityProfile?.hasValidPassport ? 'yes' : '') || '',
           passportExpiry: user.readiness?.passportExpiry || '',
-          canStartWork: user.readiness?.canStartWork || '',
+          canStartWork: user.readiness?.canStartWork || 
+                       (user.availabilityProfile?.immediatelyAvailable ? 'immediately' : 
+                        user.availabilityProfile?.withinMonth ? 'within_month' : '') || '',
           startDate: user.readiness?.startDate || '',
-          visaStatus: user.readiness?.visaStatus || ''
+          visaStatus: user.readiness?.visaStatus || user.availabilityProfile?.visaStatus || ''
         },
         interview: {
           availability: user.interview?.availability || '',
@@ -172,6 +174,30 @@ export default function ProfilePage() {
                    editData.languages.filter(lang => lang.trim()).join(', ') : 
                    editData.languages
       };
+
+      // Also update salaryProfile for backward compatibility
+      if (editData.expectations?.salary) {
+        dataToSave.salaryProfile = {
+          ...dataToSave.salaryProfile,
+          minimumSalary: editData.expectations.salary.minimumAmount,
+          preferredSalary: editData.expectations.salary.preferredAmount,
+          salaryNegotiable: editData.expectations.salary.negotiable,
+          wantsBonus: editData.expectations.salary.performanceBonusExpected
+        };
+      }
+
+      // Also update availabilityProfile for backward compatibility
+      if (editData.readiness) {
+        dataToSave.availabilityProfile = {
+          ...dataToSave.availabilityProfile,
+          immediatelyAvailable: editData.readiness.canStartWork === 'immediately',
+          withinMonth: editData.readiness.canStartWork === 'within_month',
+          hasValidPassport: editData.readiness.hasValidPassport === 'yes',
+          visaStatus: editData.readiness.visaStatus,
+          workReady: editData.readiness.hasValidPassport === 'yes' && 
+                    (editData.readiness.canStartWork === 'immediately' || editData.readiness.canStartWork === 'within_month')
+        };
+      }
       
       await ClientUserService.updateUser(user.uid, dataToSave);
       await refreshUser();
