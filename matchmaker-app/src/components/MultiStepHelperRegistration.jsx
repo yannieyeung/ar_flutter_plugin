@@ -1711,7 +1711,25 @@ const MultiStepHelperRegistration = ({ onSubmit, isLoading }) => {
     const optimizedData = {
       ...formData,
       // Add ML profile generation here
-      mlProfile: generateMLProfile(formData)
+      mlProfile: generateMLProfile(formData),
+      // Ensure salary and availability data is saved at top level for profile display
+      expectations: formData.expectations || {},
+      salaryProfile: {
+        minimumSalary: parseFloat(formData.expectations?.salary?.minimumAmount) || 0,
+        preferredSalary: parseFloat(formData.expectations?.salary?.preferredAmount) || 0,
+        salaryNegotiable: formData.expectations?.salary?.negotiable || false,
+        wantsBonus: formData.expectations?.salary?.performanceBonusExpected || false,
+        salaryFlexibilityScore: calculateSalaryFlexibility(formData.expectations?.salary)
+      },
+      availabilityProfile: {
+        immediatelyAvailable: formData.readiness?.canStartWork === 'immediately',
+        withinMonth: formData.readiness?.canStartWork === 'within_month',
+        hasValidPassport: formData.readiness?.hasValidPassport === 'yes',
+        visaStatus: formData.readiness?.visaStatus || '',
+        interviewFlexibility: calculateInterviewFlexibility(formData.interview?.availability),
+        workReady: formData.readiness?.hasValidPassport === 'yes' && 
+                   (formData.readiness?.canStartWork === 'immediately' || formData.readiness?.canStartWork === 'within_month')
+      }
     };
     
     onSubmit(optimizedData);
