@@ -938,7 +938,7 @@ export const HelperAvailabilityInfo = ({ user, isEditing, editData, setEditData 
                   </div>
                 ) : (
                   <p className="text-slate-900 font-medium">
-                    {user?.expectations?.salary?.minimumAmount ? `SGD $${user.expectations.salary.minimumAmount}` : 'Not specified'}
+                    {editData?.expectations?.salary?.minimumAmount ? `SGD $${editData.expectations.salary.minimumAmount}` : 'Not specified'}
                   </p>
                 )}
               </div>
@@ -962,7 +962,7 @@ export const HelperAvailabilityInfo = ({ user, isEditing, editData, setEditData 
                   </div>
                 ) : (
                   <p className="text-slate-900 font-medium">
-                    {user?.expectations?.salary?.preferredAmount ? `SGD $${user.expectations.salary.preferredAmount}` : 'Not specified'}
+                    {editData?.expectations?.salary?.preferredAmount ? `SGD $${editData.expectations.salary.preferredAmount}` : 'Not specified'}
                   </p>
                 )}
               </div>
@@ -979,7 +979,7 @@ export const HelperAvailabilityInfo = ({ user, isEditing, editData, setEditData 
                     className="mr-2 text-blue-600"
                   />
                 ) : (
-                  <span className={`w-4 h-4 mr-2 rounded ${user?.expectations?.salary?.negotiable ? 'bg-blue-600' : 'bg-slate-300'}`}></span>
+                  <span className={`w-4 h-4 mr-2 rounded ${editData?.expectations?.salary?.negotiable ? 'bg-blue-600' : 'bg-slate-300'}`}></span>
                 )}
                 <span className="text-sm text-slate-700">My salary is negotiable based on job requirements</span>
               </label>
@@ -993,7 +993,7 @@ export const HelperAvailabilityInfo = ({ user, isEditing, editData, setEditData 
                     className="mr-2 text-blue-600"
                   />
                 ) : (
-                  <span className={`w-4 h-4 mr-2 rounded ${user?.expectations?.salary?.performanceBonusExpected ? 'bg-blue-600' : 'bg-slate-300'}`}></span>
+                  <span className={`w-4 h-4 mr-2 rounded ${editData?.expectations?.salary?.performanceBonusExpected ? 'bg-blue-600' : 'bg-slate-300'}`}></span>
                 )}
                 <span className="text-sm text-slate-700">I would like performance bonuses</span>
               </label>
@@ -1034,16 +1034,16 @@ export const HelperAvailabilityInfo = ({ user, isEditing, editData, setEditData 
                       No, need to apply/renew
                     </label>
                   </div>
-                ) : (
+                                ) : (
                   <p className="text-slate-900">
-                    {user?.readiness?.hasValidPassport === 'yes' ? 'Yes, valid passport' : 
-                     user?.readiness?.hasValidPassport === 'no' ? 'No, need to apply/renew' : 'Not specified'}
+                    {editData?.readiness?.hasValidPassport === 'yes' ? 'Yes, valid passport' :
+                     editData?.readiness?.hasValidPassport === 'no' ? 'No, need to apply/renew' : 'Not specified'}
                   </p>
                 )}
               </div>
 
               {/* Passport Expiry (conditional) */}
-              {(isEditing ? editData.readiness?.hasValidPassport === 'yes' : user?.readiness?.hasValidPassport === 'yes') && (
+              {(isEditing ? editData.readiness?.hasValidPassport === 'yes' : editData?.readiness?.hasValidPassport === 'yes') && (
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Passport Expiry Date</label>
                   {isEditing ? (
@@ -1055,7 +1055,7 @@ export const HelperAvailabilityInfo = ({ user, isEditing, editData, setEditData 
                     />
                   ) : (
                     <p className="text-slate-900">
-                      {user?.readiness?.passportExpiry ? new Date(user.readiness.passportExpiry).toLocaleDateString() : 'Not specified'}
+                      {editData?.readiness?.passportExpiry ? new Date(editData.readiness.passportExpiry).toLocaleDateString() : 'Not specified'}
                     </p>
                   )}
                 </div>
@@ -1102,15 +1102,15 @@ export const HelperAvailabilityInfo = ({ user, isEditing, editData, setEditData 
                   </div>
                 ) : (
                   <p className="text-slate-900">
-                    {user?.readiness?.canStartWork === 'immediately' ? 'Immediately (ready to start within 1-2 weeks)' :
-                     user?.readiness?.canStartWork === 'within_month' ? 'Within 1 month' :
-                     user?.readiness?.canStartWork === 'after_date' ? 'After a specific date' : 'Not specified'}
+                    {editData?.readiness?.canStartWork === 'immediately' ? 'Immediately (ready to start within 1-2 weeks)' :
+                     editData?.readiness?.canStartWork === 'within_month' ? 'Within 1 month' :
+                     editData?.readiness?.canStartWork === 'after_date' ? 'After a specific date' : 'Not specified'}
                   </p>
                 )}
               </div>
 
               {/* Start Date (conditional) */}
-              {(isEditing ? editData.readiness?.canStartWork === 'after_date' : user?.readiness?.canStartWork === 'after_date') && (
+              {(isEditing ? editData.readiness?.canStartWork === 'after_date' : editData?.readiness?.canStartWork === 'after_date') && (
                 <div className="ml-6">
                   <label className="block text-sm font-medium text-slate-700 mb-2">Start Date</label>
                   {isEditing ? (
@@ -1122,7 +1122,7 @@ export const HelperAvailabilityInfo = ({ user, isEditing, editData, setEditData 
                     />
                   ) : (
                     <p className="text-slate-900">
-                      {user?.readiness?.startDate ? new Date(user.readiness.startDate).toLocaleDateString() : 'Not specified'}
+                      {editData?.readiness?.startDate ? new Date(editData.readiness.startDate).toLocaleDateString() : 'Not specified'}
                     </p>
                   )}
                 </div>
@@ -1146,11 +1146,11 @@ export const HelperAvailabilityInfo = ({ user, isEditing, editData, setEditData 
                   </select>
                 ) : (
                   <p className="text-slate-900">
-                    {user?.readiness?.visaStatus === 'first_time' ? 'First time applying (no previous work permit)' :
-                     user?.readiness?.visaStatus === 'valid_permit' ? 'Currently have valid work permit' :
-                     user?.readiness?.visaStatus === 'expired_permit' ? 'Previous work permit expired' :
-                     user?.readiness?.visaStatus === 'transfer_ready' ? 'Ready for transfer from current employer' :
-                     user?.readiness?.visaStatus === 'citizen_pr' ? 'Singapore Citizen/PR' : 'Not specified'}
+                    {editData?.readiness?.visaStatus === 'first_time' ? 'First time applying (no previous work permit)' :
+                     editData?.readiness?.visaStatus === 'valid_permit' ? 'Currently have valid work permit' :
+                     editData?.readiness?.visaStatus === 'expired_permit' ? 'Previous work permit expired' :
+                     editData?.readiness?.visaStatus === 'transfer_ready' ? 'Ready for transfer from current employer' :
+                     editData?.readiness?.visaStatus === 'citizen_pr' ? 'Singapore Citizen/PR' : 'Not specified'}
                   </p>
                 )}
               </div>
@@ -1215,16 +1215,16 @@ export const HelperAvailabilityInfo = ({ user, isEditing, editData, setEditData 
                   </div>
                 ) : (
                   <p className="text-slate-900">
-                    {user?.interview?.availability === 'immediate' ? 'Available anytime' :
-                     user?.interview?.availability === 'weekdays_only' ? 'Weekdays only' :
-                     user?.interview?.availability === 'weekends_only' ? 'Weekends only' :
-                     user?.interview?.availability === 'after_date' ? 'After a specific date' : 'Not specified'}
+                    {editData?.interview?.availability === 'immediate' ? 'Available anytime' :
+                     editData?.interview?.availability === 'weekdays_only' ? 'Weekdays only' :
+                     editData?.interview?.availability === 'weekends_only' ? 'Weekends only' :
+                     editData?.interview?.availability === 'after_date' ? 'After a specific date' : 'Not specified'}
                   </p>
                 )}
               </div>
 
               {/* Interview Availability Date (conditional) */}
-              {(isEditing ? editData.interview?.availability === 'after_date' : user?.interview?.availability === 'after_date') && (
+              {(isEditing ? editData.interview?.availability === 'after_date' : editData?.interview?.availability === 'after_date') && (
                 <div className="ml-6">
                   <label className="block text-sm font-medium text-slate-700 mb-2">Available from Date</label>
                   {isEditing ? (
@@ -1236,7 +1236,7 @@ export const HelperAvailabilityInfo = ({ user, isEditing, editData, setEditData 
                     />
                   ) : (
                     <p className="text-slate-900">
-                      {user?.interview?.availabilityDate ? new Date(user.interview.availabilityDate).toLocaleDateString() : 'Not specified'}
+                      {editData?.interview?.availabilityDate ? new Date(editData.interview.availabilityDate).toLocaleDateString() : 'Not specified'}
                     </p>
                   )}
                 </div>
@@ -1260,11 +1260,11 @@ export const HelperAvailabilityInfo = ({ user, isEditing, editData, setEditData 
                   </select>
                 ) : (
                   <p className="text-slate-900">
-                    {user?.interview?.means === 'whatsapp_video_call' ? 'WhatsApp Video Call' :
-                     user?.interview?.means === 'zoom_video_call' ? 'Zoom Video Call' :
-                     user?.interview?.means === 'voice_call' ? 'Voice Call' :
-                     user?.interview?.means === 'face_to_face' ? 'Face to Face Meeting' :
-                     user?.interview?.means === 'others' ? 'Others (specify in comments)' : 'Not specified'}
+                    {editData?.interview?.means === 'whatsapp_video_call' ? 'WhatsApp Video Call' :
+                     editData?.interview?.means === 'zoom_video_call' ? 'Zoom Video Call' :
+                     editData?.interview?.means === 'voice_call' ? 'Voice Call' :
+                     editData?.interview?.means === 'face_to_face' ? 'Face to Face Meeting' :
+                     editData?.interview?.means === 'others' ? 'Others (specify in comments)' : 'Not specified'}
                   </p>
                 )}
               </div>
@@ -1284,7 +1284,7 @@ export const HelperAvailabilityInfo = ({ user, isEditing, editData, setEditData 
               />
             ) : (
               <p className="text-slate-900">
-                {user?.otherRemarks || 'No additional comments'}
+                {editData?.otherRemarks || 'No additional comments'}
               </p>
             )}
           </div>
