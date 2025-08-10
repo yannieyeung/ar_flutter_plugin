@@ -85,10 +85,12 @@ export default function ProfilePage() {
         // Availability & Readiness  
         expectations: {
           salary: {
-            minimumAmount: user.expectations?.salary?.minimumAmount || user.salaryProfile?.minimumSalary || '',
-            preferredAmount: user.expectations?.salary?.preferredAmount || user.salaryProfile?.preferredSalary || '',
-            negotiable: user.expectations?.salary?.negotiable || user.salaryProfile?.salaryNegotiable || false,
-            performanceBonusExpected: user.expectations?.salary?.performanceBonusExpected || user.salaryProfile?.wantsBonus || false
+            minimumAmount: user.expectations?.salary?.minimumAmount || 
+                          (user.salaryProfile?.minimumSalary ? String(user.salaryProfile.minimumSalary) : ''),
+            preferredAmount: user.expectations?.salary?.preferredAmount || 
+                            (user.salaryProfile?.preferredSalary ? String(user.salaryProfile.preferredSalary) : ''),
+            negotiable: user.expectations?.salary?.negotiable ?? user.salaryProfile?.salaryNegotiable ?? false,
+            performanceBonusExpected: user.expectations?.salary?.performanceBonusExpected ?? user.salaryProfile?.wantsBonus ?? false
           }
         },
         readiness: {
