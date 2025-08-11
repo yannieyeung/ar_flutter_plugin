@@ -410,6 +410,11 @@ function SignInContent() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                       />
+                      <div className="text-right mt-2">
+                        <Link href="/auth/forgot-password" className="text-sm text-indigo-600 hover:text-indigo-500">
+                          Forgot your password?
+                        </Link>
+                      </div>
                     </div>
                   </>
                 )}

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
+import { onAuthStateChanged, signInWithCustomToken, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { ClientUserService } from '@/lib/db-client';
 
@@ -163,6 +163,34 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const changePassword = async (currentPassword, newPassword) => {
+    try {
+      if (!firebaseUser || !firebaseUser.email) {
+        throw new Error('User not authenticated or email not available');
+      }
+
+      console.log('🔄 AuthProvider: Starting password change process...');
+
+      // First, reauthenticate the user with their current password
+      console.log('🔐 AuthProvider: Reauthenticating user...');
+      const credential = EmailAuthProvider.credential(firebaseUser.email, currentPassword);
+      await reauthenticateWithCredential(firebaseUser, credential);
+
+      console.log('✅ AuthProvider: User reauthenticated successfully');
+
+      // Now update the password
+      console.log('🔄 AuthProvider: Updating password...');
+      await updatePassword(firebaseUser, newPassword);
+
+      console.log('✅ AuthProvider: Password updated successfully');
+      
+      return { success: true };
+    } catch (error) {
+      console.error('❌ AuthProvider: Change password error:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
   const value = {
     user,
     firebaseUser,
@@ -171,6 +199,7 @@ export function AuthProvider({ children }) {
     signOut,
     refreshUser,
     forceRefreshUser,
+    changePassword,
   };
 
   return (
