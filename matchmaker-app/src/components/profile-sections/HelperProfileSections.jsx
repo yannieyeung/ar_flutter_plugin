@@ -795,7 +795,7 @@ export const HelperExperienceInfo = ({ user, isEditing, editData, setEditData })
                               }
                             </p>
                           )}
-                        </>
+                        </div>
                       )}
                     </div>
                   )}
