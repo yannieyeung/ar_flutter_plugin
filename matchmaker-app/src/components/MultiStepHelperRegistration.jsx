@@ -189,6 +189,11 @@ const ExperienceStep = ({ data, onChange, errors }) => {
       }
     };
 
+    // Initialize countryExperiences when hasExperience is set to true
+    if (field === 'hasExperience' && value === true && !updatedData.experience[type].countryExperiences) {
+      updatedData.experience[type].countryExperiences = [{ country: '', startYear: '', endYear: '' }];
+    }
+
     // Auto-calculate and store structured ML data
     updatedData.experienceForML = getStructuredExperienceForML(updatedData.experience);
     
@@ -389,7 +394,7 @@ const ExperienceStep = ({ data, onChange, errors }) => {
                             <select
                               value={entry.country || ''}
                               onChange={(e) => {
-                                const currentEntries = data.experience?.[category.key]?.countryExperiences || [];
+                                const currentEntries = data.experience?.[category.key]?.countryExperiences || [{ country: '', startYear: '', endYear: '' }];
                                 const newEntries = currentEntries.map((exp, i) => 
                                   i === index ? { ...exp, country: e.target.value } : exp
                                 );

@@ -549,16 +549,25 @@ export const HelperMedicalInfo = ({ user, isEditing, editData, setEditData }) =>
 // NEW: Experience Information Section
 export const HelperExperienceInfo = ({ user, isEditing, editData, setEditData }) => {
   const handleExperienceChange = (skillType, field, value) => {
-    setEditData(prev => ({
-      ...prev,
-      experience: {
-        ...prev.experience,
-        [skillType]: {
-          ...prev.experience?.[skillType],
-          [field]: value
+    setEditData(prev => {
+      const newData = {
+        ...prev,
+        experience: {
+          ...prev.experience,
+          [skillType]: {
+            ...prev.experience?.[skillType],
+            [field]: value
+          }
         }
+      };
+
+      // Initialize countryExperiences when hasExperience is set to true
+      if (field === 'hasExperience' && value === true && !newData.experience[skillType].countryExperiences) {
+        newData.experience[skillType].countryExperiences = [{ country: '', startYear: '', endYear: '' }];
       }
-    }));
+
+      return newData;
+    });
   };
 
   const skillTypes = [
