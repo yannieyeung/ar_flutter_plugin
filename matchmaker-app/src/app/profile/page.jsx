@@ -86,21 +86,27 @@ export default function ProfilePage() {
         expectations: {
           salary: {
             minimumAmount: user.expectations?.salary?.minimumAmount || 
-                          (user.salaryProfile?.minimumSalary ? String(user.salaryProfile.minimumSalary) : ''),
+                          (user.salaryProfile?.minimumSalary ? String(user.salaryProfile.minimumSalary) : '') ||
+                          (user.mlProfile?.salaryProfile?.minimumSalary ? String(user.mlProfile.salaryProfile.minimumSalary) : ''),
             preferredAmount: user.expectations?.salary?.preferredAmount || 
-                            (user.salaryProfile?.preferredSalary ? String(user.salaryProfile.preferredSalary) : ''),
-            negotiable: user.expectations?.salary?.negotiable ?? user.salaryProfile?.salaryNegotiable ?? false,
-            performanceBonusExpected: user.expectations?.salary?.performanceBonusExpected ?? user.salaryProfile?.wantsBonus ?? false
+                            (user.salaryProfile?.preferredSalary ? String(user.salaryProfile.preferredSalary) : '') ||
+                            (user.mlProfile?.salaryProfile?.preferredSalary ? String(user.mlProfile.salaryProfile.preferredSalary) : ''),
+            negotiable: user.expectations?.salary?.negotiable ?? user.salaryProfile?.salaryNegotiable ?? user.mlProfile?.salaryProfile?.salaryNegotiable ?? false,
+            performanceBonusExpected: user.expectations?.salary?.performanceBonusExpected ?? user.salaryProfile?.wantsBonus ?? user.mlProfile?.salaryProfile?.wantsBonus ?? false
           }
         },
-        readiness: {
-          hasValidPassport: user.readiness?.hasValidPassport || (user.availabilityProfile?.hasValidPassport ? 'yes' : '') || '',
+                readiness: {
+          hasValidPassport: user.readiness?.hasValidPassport || 
+                           (user.availabilityProfile?.hasValidPassport ? 'yes' : '') ||
+                           (user.mlProfile?.availabilityProfile?.hasValidPassport ? 'yes' : '') || '',
           passportExpiry: user.readiness?.passportExpiry || '',
           canStartWork: user.readiness?.canStartWork || 
-                       (user.availabilityProfile?.immediatelyAvailable ? 'immediately' : 
-                        user.availabilityProfile?.withinMonth ? 'within_month' : '') || '',
+                       (user.availabilityProfile?.immediatelyAvailable ? 'immediately' :
+                        user.availabilityProfile?.withinMonth ? 'within_month' : '') ||
+                       (user.mlProfile?.availabilityProfile?.immediatelyAvailable ? 'immediately' :
+                        user.mlProfile?.availabilityProfile?.withinMonth ? 'within_month' : '') || '',
           startDate: user.readiness?.startDate || '',
-          visaStatus: user.readiness?.visaStatus || user.availabilityProfile?.visaStatus || ''
+          visaStatus: user.readiness?.visaStatus || user.availabilityProfile?.visaStatus || user.mlProfile?.availabilityProfile?.visaStatus || ''
         },
         interview: {
           availability: user.interview?.availability || '',
