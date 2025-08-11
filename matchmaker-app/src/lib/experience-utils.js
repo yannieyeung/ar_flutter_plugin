@@ -165,7 +165,7 @@ export function getStructuredExperienceForML(experience) {
       }
       
       // Adjust based on years of experience
-      const experienceMultiplier = Math.min(years / 5, 1); // Cap at 5 years for max score
+      const experienceMultiplier = Math.min(totalYears / 5, 1); // Cap at 5 years for max score
       structuredData.skillsCompetency[category] = competencyScore * (0.5 + 0.5 * experienceMultiplier);
     } else {
       structuredData.skillsExperience[category] = {
