@@ -336,53 +336,172 @@ const ExperienceStep = ({ data, onChange, errors }) => {
                     </select>
                   </div>
 
-                  {/* Years of Experience */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Started Year</label>
-                      <input
-                        type="number"
-                        min="1990"
-                        max={new Date().getFullYear()}
-                        value={data.experience?.[category.key]?.startYear || ''}
-                        onChange={(e) => handleExperienceChange(category.key, 'startYear', parseInt(e.target.value) || '')}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder={`e.g., ${new Date().getFullYear() - 5}`}
-                      />
+                  {/* Multiple Country Experiences */}
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <label className="block text-sm font-medium text-gray-700">Work Experience by Country</label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const currentEntries = data.experience?.[category.key]?.countryExperiences || [{ country: '', startYear: '', endYear: '' }];
+                          handleExperienceChange(category.key, 'countryExperiences', [
+                            ...currentEntries,
+                            { country: '', startYear: '', endYear: '' }
+                          ]);
+                        }}
+                        className="inline-flex items-center px-3 py-1 bg-blue-50 text-blue-600 text-sm font-medium rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Another Country
+                      </button>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        End Year 
-                        <span className="text-xs text-gray-500 ml-1">(leave empty if current)</span>
-                      </label>
-                      <input
-                        type="number"
-                        min="1990"
-                        max={new Date().getFullYear()}
-                        value={data.experience?.[category.key]?.endYear || ''}
-                        onChange={(e) => handleExperienceChange(category.key, 'endYear', parseInt(e.target.value) || '')}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Current"
-                      />
-                    </div>
+                    
+                    {((data.experience?.[category.key]?.countryExperiences?.length > 0) 
+                      ? data.experience[category.key].countryExperiences 
+                      : [{ country: '', startYear: '', endYear: '' }]
+                    ).map((entry, index) => (
+                      <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                        <div className="flex justify-between items-start mb-3">
+                          <h4 className="text-sm font-medium text-gray-700">Experience #{index + 1}</h4>
+                          {index > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const currentEntries = data.experience?.[category.key]?.countryExperiences || [];
+                                const newEntries = currentEntries.filter((_, i) => i !== index);
+                                handleExperienceChange(category.key, 'countryExperiences', newEntries);
+                              }}
+                              className="text-red-500 hover:text-red-700 text-sm"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          {/* Country */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                            <select
+                              value={entry.country || ''}
+                              onChange={(e) => {
+                                const currentEntries = data.experience?.[category.key]?.countryExperiences || [];
+                                const newEntries = currentEntries.map((exp, i) => 
+                                  i === index ? { ...exp, country: e.target.value } : exp
+                                );
+                                handleExperienceChange(category.key, 'countryExperiences', newEntries);
+                              }}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                            >
+                              <option value="">Select Country</option>
+                              <option value="Singapore">Singapore</option>
+                              <option value="Hong Kong">Hong Kong</option>
+                              <option value="Malaysia">Malaysia</option>
+                              <option value="UAE">UAE</option>
+                              <option value="Saudi Arabia">Saudi Arabia</option>
+                              <option value="Qatar">Qatar</option>
+                              <option value="Kuwait">Kuwait</option>
+                              <option value="Taiwan">Taiwan</option>
+                              <option value="Philippines">Philippines</option>
+                              <option value="Indonesia">Indonesia</option>
+                              <option value="Myanmar">Myanmar</option>
+                              <option value="Sri Lanka">Sri Lanka</option>
+                              <option value="India">India</option>
+                              <option value="Others">Others</option>
+                            </select>
+                          </div>
+                          
+                          {/* Start Year */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Start Year</label>
+                            <input
+                              type="number"
+                              min="1990"
+                              max={new Date().getFullYear()}
+                              value={entry.startYear || ''}
+                              onChange={(e) => {
+                                const currentEntries = data.experience?.[category.key]?.countryExperiences || [];
+                                const newEntries = currentEntries.map((exp, i) => 
+                                  i === index ? { ...exp, startYear: parseInt(e.target.value) || '' } : exp
+                                );
+                                handleExperienceChange(category.key, 'countryExperiences', newEntries);
+                              }}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                              placeholder={`e.g., ${new Date().getFullYear() - 5}`}
+                            />
+                          </div>
+                          
+                          {/* End Year */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              End Year <span className="text-xs text-gray-500">(leave empty if current)</span>
+                            </label>
+                            <input
+                              type="number"
+                              min="1990"
+                              max={new Date().getFullYear()}
+                              value={entry.endYear || ''}
+                              onChange={(e) => {
+                                const currentEntries = data.experience?.[category.key]?.countryExperiences || [];
+                                const newEntries = currentEntries.map((exp, i) => 
+                                  i === index ? { ...exp, endYear: parseInt(e.target.value) || '' } : exp
+                                );
+                                handleExperienceChange(category.key, 'countryExperiences', newEntries);
+                              }}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                              placeholder="Current"
+                            />
+                          </div>
+                        </div>
+                        
+                        {/* Calculate and Display Experience Duration for this entry */}
+                        {entry.startYear && (
+                          <div className="mt-3 bg-blue-50 p-2 rounded text-xs text-blue-800">
+                            <strong>Duration:</strong> {
+                              (() => {
+                                const startYear = entry.startYear;
+                                const endYear = entry.endYear || new Date().getFullYear();
+                                const years = Math.max(0, endYear - startYear + 1);
+                                return years === 1 ? '1 year' : `${years} years`;
+                              })()
+                            }
+                            {!entry.endYear && ' (ongoing)'}
+                            {entry.country && ` in ${entry.country}`}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    
+                    {/* Total Experience Summary */}
+                    {data.experience?.[category.key]?.countryExperiences?.some(exp => exp.startYear) && (
+                      <div className="bg-green-50 p-3 rounded-lg">
+                        <p className="text-sm text-green-800">
+                          <strong>Total Experience:</strong> {
+                            (() => {
+                              const experiences = data.experience[category.key].countryExperiences || [];
+                              let totalYears = 0;
+                              const countries = new Set();
+                              
+                              experiences.forEach(exp => {
+                                if (exp.startYear) {
+                                  const endYear = exp.endYear || new Date().getFullYear();
+                                  totalYears += Math.max(0, endYear - exp.startYear + 1);
+                                  if (exp.country) countries.add(exp.country);
+                                }
+                              });
+                              
+                              const countryText = countries.size > 0 ? ` across ${Array.from(countries).join(', ')}` : '';
+                              return totalYears === 1 ? `1 year${countryText}` : `${totalYears} years${countryText}`;
+                            })()
+                          }
+                        </p>
+                      </div>
+                    )}
                   </div>
-                  
-                  {/* Calculate and Display Experience Duration */}
-                  {data.experience?.[category.key]?.startYear && (
-                    <div className="bg-blue-50 p-3 rounded-lg">
-                      <p className="text-sm text-blue-800">
-                        <strong>Experience Duration:</strong> {
-                          (() => {
-                            const startYear = data.experience[category.key].startYear;
-                            const endYear = data.experience[category.key].endYear || new Date().getFullYear();
-                            const years = Math.max(0, endYear - startYear + 1);
-                            return years === 1 ? '1 year' : `${years} years`;
-                          })()
-                        }
-                        {!data.experience[category.key].endYear && ' (ongoing)'}
-                      </p>
-                    </div>
-                  )}
 
                   {/* Specific Tasks */}
                   <div>

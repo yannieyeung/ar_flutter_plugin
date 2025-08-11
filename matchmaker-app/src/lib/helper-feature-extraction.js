@@ -115,11 +115,136 @@ function extractExperienceFeatures(helper) {
     currentJobsCount: experienceML.experienceTimeline.filter(t => t.endYear === null).length,
     hasCurrentExperience: experienceML.experienceTimeline.some(t => t.endYear === null) ? 1 : 0,
     
+    // Country Experience Features
+    ...extractCountryExperienceFeatures(experienceML, helper.experience),
+    
     // Task-level Granularity
     taskCompetencies: extractTaskCompetencies(helper.experience)
   };
   
   return features;
+}
+
+// Extract country-specific experience features
+function extractCountryExperienceFeatures(experienceML, rawExperience) {
+  const countryFeatures = {
+    // Total number of unique countries worked in
+    totalCountriesWorked: 0,
+    
+    // Specific country experience (binary indicators)
+    hasSingaporeExperience: 0,
+    hasHongKongExperience: 0,
+    hasMalaysiaExperience: 0,
+    hasUAEExperience: 0,
+    hasSaudiArabiaExperience: 0,
+    hasQatarExperience: 0,
+    hasKuwaitExperience: 0,
+    hasTaiwanExperience: 0,
+    hasPhilippinesExperience: 0,
+    hasIndonesiaExperience: 0,
+    hasMyanmarExperience: 0,
+    hasSriLankaExperience: 0,
+    
+    // Regional experience indicators
+    hasMiddleEastExperience: 0,
+    hasAsiaExperience: 0,
+    
+    // Experience pattern analysis
+    countryMobility: 0, // Normalized score for willingness to work in different countries
+    hasMultiCountryExperience: 0,
+    averageYearsPerCountry: 0,
+    maxYearsInSingleCountry: 0
+  };
+
+  const allCountries = new Set();
+  let totalCountryExperiences = 0;
+  let totalYearsAcrossCountries = 0;
+  let maxYearsInOneCountry = 0;
+
+  // Process timeline data which includes country information
+  if (experienceML.experienceTimeline && experienceML.experienceTimeline.length > 0) {
+    experienceML.experienceTimeline.forEach(timelineEntry => {
+      if (timelineEntry.country && timelineEntry.country !== 'Unknown') {
+        allCountries.add(timelineEntry.country);
+        totalCountryExperiences++;
+        
+        const years = timelineEntry.years || 0;
+        totalYearsAcrossCountries += years;
+        maxYearsInOneCountry = Math.max(maxYearsInOneCountry, years);
+        
+        // Set specific country flags
+        const country = timelineEntry.country.toLowerCase();
+        if (country.includes('singapore')) countryFeatures.hasSingaporeExperience = 1;
+        if (country.includes('hong kong')) countryFeatures.hasHongKongExperience = 1;
+        if (country.includes('malaysia')) countryFeatures.hasMalaysiaExperience = 1;
+        if (country.includes('uae')) countryFeatures.hasUAEExperience = 1;
+        if (country.includes('saudi')) countryFeatures.hasSaudiArabiaExperience = 1;
+        if (country.includes('qatar')) countryFeatures.hasQatarExperience = 1;
+        if (country.includes('kuwait')) countryFeatures.hasKuwaitExperience = 1;
+        if (country.includes('taiwan')) countryFeatures.hasTaiwanExperience = 1;
+        if (country.includes('philippines')) countryFeatures.hasPhilippinesExperience = 1;
+        if (country.includes('indonesia')) countryFeatures.hasIndonesiaExperience = 1;
+        if (country.includes('myanmar')) countryFeatures.hasMyanmarExperience = 1;
+        if (country.includes('sri lanka')) countryFeatures.hasSriLankaExperience = 1;
+      }
+    });
+  }
+
+  // Alternative: Process raw experience data if timeline doesn't have country info
+  if (allCountries.size === 0 && rawExperience) {
+    const experienceCategories = ['careOfInfant', 'careOfChildren', 'careOfDisabled', 'careOfOldAge', 'generalHousework', 'cooking'];
+    
+    experienceCategories.forEach(category => {
+      const categoryData = rawExperience[category];
+      if (categoryData?.countryExperiences?.length > 0) {
+        categoryData.countryExperiences.forEach(countryExp => {
+          if (countryExp.country) {
+            allCountries.add(countryExp.country);
+            
+            const years = countryExp.startYear ? 
+              Math.max(0, (countryExp.endYear || new Date().getFullYear()) - countryExp.startYear + 1) : 0;
+            totalYearsAcrossCountries += years;
+            maxYearsInOneCountry = Math.max(maxYearsInOneCountry, years);
+            
+            // Set specific country flags
+            const country = countryExp.country.toLowerCase();
+            if (country.includes('singapore')) countryFeatures.hasSingaporeExperience = 1;
+            if (country.includes('hong kong')) countryFeatures.hasHongKongExperience = 1;
+            if (country.includes('malaysia')) countryFeatures.hasMalaysiaExperience = 1;
+            if (country.includes('uae')) countryFeatures.hasUAEExperience = 1;
+            if (country.includes('saudi')) countryFeatures.hasSaudiArabiaExperience = 1;
+            if (country.includes('qatar')) countryFeatures.hasQatarExperience = 1;
+            if (country.includes('kuwait')) countryFeatures.hasKuwaitExperience = 1;
+            if (country.includes('taiwan')) countryFeatures.hasTaiwanExperience = 1;
+            if (country.includes('philippines')) countryFeatures.hasPhilippinesExperience = 1;
+            if (country.includes('indonesia')) countryFeatures.hasIndonesiaExperience = 1;
+            if (country.includes('myanmar')) countryFeatures.hasMyanmarExperience = 1;
+            if (country.includes('sri lanka')) countryFeatures.hasSriLankaExperience = 1;
+          }
+        });
+      }
+    });
+  }
+
+  // Calculate derived features
+  countryFeatures.totalCountriesWorked = allCountries.size;
+  countryFeatures.hasMultiCountryExperience = allCountries.size > 1 ? 1 : 0;
+  countryFeatures.averageYearsPerCountry = allCountries.size > 0 ? totalYearsAcrossCountries / allCountries.size : 0;
+  countryFeatures.maxYearsInSingleCountry = maxYearsInOneCountry;
+  
+  // Country mobility score (normalized 0-1)
+  countryFeatures.countryMobility = Math.min(allCountries.size / 5, 1); // Normalize based on max 5 countries
+
+  // Regional experience
+  const middleEastCountries = ['uae', 'saudi', 'qatar', 'kuwait'];
+  const asiaCountries = ['singapore', 'hong kong', 'malaysia', 'taiwan', 'philippines', 'indonesia', 'myanmar', 'sri lanka'];
+  
+  countryFeatures.hasMiddleEastExperience = [...allCountries].some(country => 
+    middleEastCountries.some(me => country.toLowerCase().includes(me))) ? 1 : 0;
+  countryFeatures.hasAsiaExperience = [...allCountries].some(country => 
+    asiaCountries.some(asia => country.toLowerCase().includes(asia))) ? 1 : 0;
+
+  return countryFeatures;
 }
 
 // Extract language features

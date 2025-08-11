@@ -528,6 +528,8 @@ function generateDetailedExperience(hasExperience, yearsOfExperience) {
   const numCategories = Math.floor(Math.random() * 4) + 2; // 2-5 categories
   const selectedCategories = experienceCategories.sort(() => 0.5 - Math.random()).slice(0, numCategories);
   
+  const COUNTRIES = ['Singapore', 'Hong Kong', 'Malaysia', 'UAE', 'Saudi Arabia', 'Qatar', 'Kuwait', 'Taiwan', 'Philippines', 'Indonesia', 'Myanmar', 'Sri Lanka'];
+
   selectedCategories.forEach(category => {
     // Generate realistic year ranges
     const categoryExperienceYears = Math.min(
@@ -535,18 +537,40 @@ function generateDetailedExperience(hasExperience, yearsOfExperience) {
       yearsOfExperience
     );
     
-    // Some experiences might be ongoing (70% chance), others completed
-    const isOngoing = Math.random() > 0.3;
+    // Generate 1-3 country experiences for this category
+    const numCountryExperiences = Math.floor(Math.random() * 3) + 1; // 1-3 countries
+    const countryExperiences = [];
+    let remainingYears = categoryExperienceYears;
     
-    const startYear = currentYear - categoryExperienceYears;
-    const endYear = isOngoing ? null : startYear + categoryExperienceYears - 1;
+    for (let i = 0; i < numCountryExperiences && remainingYears > 0; i++) {
+      const country = COUNTRIES[Math.floor(Math.random() * COUNTRIES.length)];
+      
+      // Distribute years across countries
+      const maxYearsForThisCountry = Math.min(remainingYears, Math.floor(Math.random() * 5) + 1); // 1-5 years max per country
+      const yearsInCountry = Math.max(1, maxYearsForThisCountry);
+      remainingYears -= yearsInCountry;
+      
+      // Some experiences might be ongoing (only the last one, 50% chance)
+      const isOngoing = i === numCountryExperiences - 1 && Math.random() > 0.5;
+      
+      const startYear = currentYear - categoryExperienceYears + (categoryExperienceYears - remainingYears - yearsInCountry);
+      const endYear = isOngoing ? null : startYear + yearsInCountry - 1;
+      
+      countryExperiences.push({
+        country: country,
+        startYear: startYear,
+        endYear: endYear
+      });
+    }
     
     experience[category] = {
       hasExperience: true,
       experienceLevel: EXPERIENCE_LEVELS[Math.floor(Math.random() * EXPERIENCE_LEVELS.length)],
-      startYear: startYear,
-      endYear: endYear,
-      specificTasks: EXPERIENCE_TASKS[category].sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 4) + 2)
+      countryExperiences: countryExperiences,
+      specificTasks: EXPERIENCE_TASKS[category].sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 4) + 2),
+      // Maintain backward compatibility
+      startYear: countryExperiences[0]?.startYear,
+      endYear: countryExperiences.find(exp => !exp.endYear)?.endYear || countryExperiences[countryExperiences.length - 1]?.endYear
     };
 
     // Add cuisine data for cooking

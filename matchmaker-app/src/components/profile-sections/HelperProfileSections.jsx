@@ -591,7 +591,7 @@ export const HelperExperienceInfo = ({ user, isEditing, editData, setEditData })
                   <h4 className="font-semibold text-slate-900 mb-3">{label}</h4>
                   
                   {isEditing ? (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-4">
                       {/* Has Experience */}
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-2">Experience</label>
@@ -607,35 +607,124 @@ export const HelperExperienceInfo = ({ user, isEditing, editData, setEditData })
                       </div>
 
                       {editExperienceData.hasExperience && (
-                        <>
-                          {/* Start Year */}
-                          <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">Started Year</label>
-                            <input
-                              type="number"
-                              value={editExperienceData.startYear || ''}
-                              onChange={(e) => handleExperienceChange(key, 'startYear', parseInt(e.target.value) || null)}
-                              className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                              min="1990"
-                              max={new Date().getFullYear()}
-                              placeholder="e.g., 2018"
-                            />
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-center">
+                            <label className="block text-sm font-medium text-slate-700">Work Experience by Country</label>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const currentEntries = editExperienceData.countryExperiences || [{ country: '', startYear: '', endYear: '' }];
+                                handleExperienceChange(key, 'countryExperiences', [
+                                  ...currentEntries,
+                                  { country: '', startYear: '', endYear: '' }
+                                ]);
+                              }}
+                              className="inline-flex items-center px-3 py-1 bg-blue-50 text-blue-600 text-sm font-medium rounded-md hover:bg-blue-100"
+                            >
+                              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                              </svg>
+                              Add Country
+                            </button>
                           </div>
-
-                          {/* End Year */}
-                          <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">End Year</label>
-                            <input
-                              type="number"
-                              value={editExperienceData.endYear || ''}
-                              onChange={(e) => handleExperienceChange(key, 'endYear', e.target.value ? parseInt(e.target.value) : null)}
-                              className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                              min="1990"
-                              max={new Date().getFullYear()}
-                              placeholder="Leave empty if ongoing"
-                            />
-                          </div>
-                        </>
+                          
+                          {((editExperienceData.countryExperiences?.length > 0) 
+                            ? editExperienceData.countryExperiences 
+                            : [{ country: '', startYear: '', endYear: '' }]
+                          ).map((entry, index) => (
+                            <div key={index} className="border border-slate-200 rounded-lg p-3 bg-white">
+                              <div className="flex justify-between items-start mb-3">
+                                <h5 className="text-sm font-medium text-slate-700">Experience #{index + 1}</h5>
+                                {index > 0 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const currentEntries = editExperienceData.countryExperiences || [];
+                                      const newEntries = currentEntries.filter((_, i) => i !== index);
+                                      handleExperienceChange(key, 'countryExperiences', newEntries);
+                                    }}
+                                    className="text-red-500 hover:text-red-700 text-sm"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                  </button>
+                                )}
+                              </div>
+                              
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div>
+                                  <label className="block text-sm font-medium text-slate-700 mb-1">Country</label>
+                                  <select
+                                    value={entry.country || ''}
+                                    onChange={(e) => {
+                                      const currentEntries = editExperienceData.countryExperiences || [];
+                                      const newEntries = currentEntries.map((exp, i) => 
+                                        i === index ? { ...exp, country: e.target.value } : exp
+                                      );
+                                      handleExperienceChange(key, 'countryExperiences', newEntries);
+                                    }}
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                  >
+                                    <option value="">Select Country</option>
+                                    <option value="Singapore">Singapore</option>
+                                    <option value="Hong Kong">Hong Kong</option>
+                                    <option value="Malaysia">Malaysia</option>
+                                    <option value="UAE">UAE</option>
+                                    <option value="Saudi Arabia">Saudi Arabia</option>
+                                    <option value="Qatar">Qatar</option>
+                                    <option value="Kuwait">Kuwait</option>
+                                    <option value="Taiwan">Taiwan</option>
+                                    <option value="Philippines">Philippines</option>
+                                    <option value="Indonesia">Indonesia</option>
+                                    <option value="Myanmar">Myanmar</option>
+                                    <option value="Sri Lanka">Sri Lanka</option>
+                                    <option value="India">India</option>
+                                    <option value="Others">Others</option>
+                                  </select>
+                                </div>
+                                
+                                <div>
+                                  <label className="block text-sm font-medium text-slate-700 mb-1">Start Year</label>
+                                  <input
+                                    type="number"
+                                    value={entry.startYear || ''}
+                                    onChange={(e) => {
+                                      const currentEntries = editExperienceData.countryExperiences || [];
+                                      const newEntries = currentEntries.map((exp, i) => 
+                                        i === index ? { ...exp, startYear: parseInt(e.target.value) || '' } : exp
+                                      );
+                                      handleExperienceChange(key, 'countryExperiences', newEntries);
+                                    }}
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                    min="1990"
+                                    max={new Date().getFullYear()}
+                                    placeholder="e.g., 2018"
+                                  />
+                                </div>
+                                
+                                <div>
+                                  <label className="block text-sm font-medium text-slate-700 mb-1">End Year</label>
+                                  <input
+                                    type="number"
+                                    value={entry.endYear || ''}
+                                    onChange={(e) => {
+                                      const currentEntries = editExperienceData.countryExperiences || [];
+                                      const newEntries = currentEntries.map((exp, i) => 
+                                        i === index ? { ...exp, endYear: parseInt(e.target.value) || '' } : exp
+                                      );
+                                      handleExperienceChange(key, 'countryExperiences', newEntries);
+                                    }}
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                    min="1990"
+                                    max={new Date().getFullYear()}
+                                    placeholder="Current"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       )}
                     </div>
                   ) : (
@@ -644,10 +733,50 @@ export const HelperExperienceInfo = ({ user, isEditing, editData, setEditData })
                         <span className="font-medium">Experience:</span> {experienceData.hasExperience ? 'Yes' : 'No'}
                       </p>
                       {experienceData.hasExperience && (
-                        <>
-                          <p className="text-slate-700">
-                            <span className="font-medium">Period:</span> {experienceData.startYear || 'N/A'} - {experienceData.endYear || 'Ongoing'}
-                          </p>
+                        <div className="space-y-3">
+                          {/* Display country experiences if available */}
+                          {experienceData.countryExperiences?.length > 0 ? (
+                            <div>
+                              <p className="text-sm font-medium text-slate-700 mb-2">Work Experience by Country:</p>
+                              {experienceData.countryExperiences.map((exp, index) => (
+                                <div key={index} className="bg-white p-3 rounded border border-slate-200 mb-2">
+                                  <div className="flex justify-between items-start">
+                                    <div>
+                                      <p className="font-medium text-slate-900">{exp.country || 'Unknown Country'}</p>
+                                      <p className="text-sm text-slate-600">
+                                        {exp.startYear || 'N/A'} - {exp.endYear || 'Ongoing'}
+                                        {exp.startYear && (
+                                          <span className="ml-2 text-slate-500">
+                                            ({Math.max(0, (exp.endYear || new Date().getFullYear()) - exp.startYear + 1)} years)
+                                          </span>
+                                        )}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                              {/* Total summary */}
+                              <div className="bg-blue-50 p-2 rounded text-sm text-blue-800">
+                                <strong>Total Experience:</strong> {
+                                  (() => {
+                                    const totalYears = experienceData.countryExperiences.reduce((total, exp) => {
+                                      if (exp.startYear) {
+                                        return total + Math.max(0, (exp.endYear || new Date().getFullYear()) - exp.startYear + 1);
+                                      }
+                                      return total;
+                                    }, 0);
+                                    const countries = [...new Set(experienceData.countryExperiences.filter(exp => exp.country).map(exp => exp.country))];
+                                    return `${totalYears} years across ${countries.join(', ')}`;
+                                  })()
+                                }
+                              </div>
+                            </div>
+                          ) : (
+                            /* Fall back to legacy single experience display */
+                            <p className="text-slate-700">
+                              <span className="font-medium">Period:</span> {experienceData.startYear || 'N/A'} - {experienceData.endYear || 'Ongoing'}
+                            </p>
+                          )}
                           {experienceData.startYear && (
                             <p className="text-slate-600 text-sm">
                               <span className="font-medium">Duration:</span> {

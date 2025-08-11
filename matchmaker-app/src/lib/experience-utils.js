@@ -10,7 +10,30 @@ export function calculateExperienceYears(startYear, endYear = null) {
   return Math.max(0, end - startYear + 1);
 }
 
-// Helper function to get total experience across all skills
+// Helper function to calculate total years from country experiences
+export function calculateCountryExperienceYears(countryExperiences) {
+  if (!Array.isArray(countryExperiences)) return 0;
+  
+  return countryExperiences.reduce((total, exp) => {
+    if (exp.startYear) {
+      const endYear = exp.endYear || new Date().getFullYear();
+      return total + Math.max(0, endYear - exp.startYear + 1);
+    }
+    return total;
+  }, 0);
+}
+
+// Helper function to get unique countries from country experiences
+export function getUniqueCountries(countryExperiences) {
+  if (!Array.isArray(countryExperiences)) return [];
+  
+  return [...new Set(countryExperiences
+    .filter(exp => exp.country && exp.country.trim())
+    .map(exp => exp.country.trim())
+  )];
+}
+
+// Helper function to get total experience across all skills (updated for country experiences)
 export function getTotalExperienceYears(experience) {
   if (!experience) return 0;
   
@@ -18,12 +41,22 @@ export function getTotalExperienceYears(experience) {
   const experienceCategories = ['careOfInfant', 'careOfChildren', 'careOfDisabled', 'careOfOldAge', 'generalHousework', 'cooking'];
   
   experienceCategories.forEach(category => {
-    if (experience[category]?.hasExperience && experience[category]?.startYear) {
-      const years = calculateExperienceYears(
-        experience[category].startYear,
-        experience[category].endYear
-      );
-      maxYears = Math.max(maxYears, years);
+    if (experience[category]?.hasExperience) {
+      let categoryYears = 0;
+      
+      // Check for new country experiences structure
+      if (experience[category]?.countryExperiences?.length > 0) {
+        categoryYears = calculateCountryExperienceYears(experience[category].countryExperiences);
+      }
+      // Fall back to legacy single experience structure
+      else if (experience[category]?.startYear) {
+        categoryYears = calculateExperienceYears(
+          experience[category].startYear,
+          experience[category].endYear
+        );
+      }
+      
+      maxYears = Math.max(maxYears, categoryYears);
     }
   });
   
@@ -54,30 +87,71 @@ export function getStructuredExperienceForML(experience) {
   experienceCategories.forEach(category => {
     if (experience[category]?.hasExperience) {
       const categoryData = experience[category];
-      const years = calculateExperienceYears(categoryData.startYear, categoryData.endYear);
-      maxYears = Math.max(maxYears, years);
+      let totalYears = 0;
+      let countries = [];
+      let experiences = [];
+      
+      // Handle new country experiences structure
+      if (categoryData.countryExperiences?.length > 0) {
+        totalYears = calculateCountryExperienceYears(categoryData.countryExperiences);
+        countries = getUniqueCountries(categoryData.countryExperiences);
+        
+        // Process each country experience
+        categoryData.countryExperiences.forEach(countryExp => {
+          if (countryExp.startYear) {
+            const years = calculateExperienceYears(countryExp.startYear, countryExp.endYear);
+            experiences.push({
+              startYear: countryExp.startYear,
+              endYear: countryExp.endYear,
+              years: years,
+              country: countryExp.country || 'Unknown',
+              isCurrent: !countryExp.endYear
+            });
+          }
+        });
+      }
+      // Fall back to legacy single experience structure
+      else if (categoryData.startYear) {
+        totalYears = calculateExperienceYears(categoryData.startYear, categoryData.endYear);
+        experiences.push({
+          startYear: categoryData.startYear,
+          endYear: categoryData.endYear,
+          years: totalYears,
+          country: 'Unknown',
+          isCurrent: !categoryData.endYear
+        });
+      }
+      
+      maxYears = Math.max(maxYears, totalYears);
       
       structuredData.skillsExperience[category] = {
         hasExperience: true,
-        yearsOfExperience: years,
+        yearsOfExperience: totalYears,
         experienceLevel: categoryData.experienceLevel || 'beginner',
-        startYear: categoryData.startYear,
-        endYear: categoryData.endYear,
-        isCurrent: !categoryData.endYear,
+        countries: countries,
+        countryCount: countries.length,
+        experiences: experiences,
         specificTasks: categoryData.specificTasks || [],
-        taskCount: (categoryData.specificTasks || []).length
+        taskCount: (categoryData.specificTasks || []).length,
+        // Maintain backward compatibility
+        startYear: experiences[0]?.startYear,
+        endYear: experiences.find(exp => exp.isCurrent)?.endYear || experiences[experiences.length - 1]?.endYear,
+        isCurrent: experiences.some(exp => exp.isCurrent)
       };
 
       // Add to active skills list
       structuredData.activeSkills.push(category);
 
-      // Add to timeline
-      structuredData.experienceTimeline.push({
-        skill: category,
-        startYear: categoryData.startYear,
-        endYear: categoryData.endYear || new Date().getFullYear(),
-        years: years,
-        level: categoryData.experienceLevel
+      // Add each experience to timeline
+      experiences.forEach(exp => {
+        structuredData.experienceTimeline.push({
+          skill: category,
+          startYear: exp.startYear,
+          endYear: exp.endYear || new Date().getFullYear(),
+          years: exp.years,
+          country: exp.country,
+          level: categoryData.experienceLevel || 'beginner'
+        });
       });
 
       // Calculate competency score (for ML features)
