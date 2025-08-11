@@ -9,6 +9,12 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+// Import experience utilities for consistency
+import {
+  calculateExperienceYears,
+  getStructuredExperienceForML
+} from '../src/lib/experience-utils.js';
+
 // Get current directory for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -198,7 +204,7 @@ function generateHelperData(index) {
     // Pre-computed ML-ready experience data for TensorFlow matching
     experienceForML: hasExperience ? (() => {
       const detailedExperience = generateDetailedExperience(hasExperience, yearsOfExperience);
-      return generateExperienceForML(detailedExperience);
+      return getStructuredExperienceForML(detailedExperience);
     })() : {
       totalExperienceYears: 0,
       skillsExperience: {},
@@ -598,82 +604,9 @@ function generateDetailedExperience(hasExperience, yearsOfExperience) {
   return experience;
 }
 
-// Helper function to calculate years of experience from year ranges
-function calculateExperienceYears(startYear, endYear = null) {
-  if (!startYear) return 0;
-  const end = endYear || new Date().getFullYear();
-  return Math.max(0, end - startYear + 1);
-}
+// Function now imported from experience-utils.js for consistency
 
-// Helper function to structure experience data for ML/TensorFlow
-function generateExperienceForML(experience) {
-  if (!experience) return {};
-  
-  const experienceCategories = ['careOfInfant', 'careOfChildren', 'careOfDisabled', 'careOfOldAge', 'generalHousework', 'cooking'];
-  const structuredData = {
-    totalExperienceYears: 0,
-    skillsExperience: {},
-    skillsCompetency: {},
-    activeSkills: [],
-    experienceTimeline: []
-  };
-
-  let maxYears = 0;
-
-  experienceCategories.forEach(category => {
-    if (experience[category]?.hasExperience) {
-      const categoryData = experience[category];
-      const years = calculateExperienceYears(categoryData.startYear, categoryData.endYear);
-      maxYears = Math.max(maxYears, years);
-      
-      structuredData.skillsExperience[category] = {
-        hasExperience: true,
-        yearsOfExperience: years,
-        experienceLevel: categoryData.experienceLevel || 'beginner',
-        startYear: categoryData.startYear,
-        endYear: categoryData.endYear,
-        isCurrent: !categoryData.endYear,
-        specificTasks: categoryData.specificTasks || [],
-        taskCount: (categoryData.specificTasks || []).length
-      };
-
-      // Add to active skills list
-      structuredData.activeSkills.push(category);
-
-      // Add to timeline
-      structuredData.experienceTimeline.push({
-        skill: category,
-        startYear: categoryData.startYear,
-        endYear: categoryData.endYear || new Date().getFullYear(),
-        years: years,
-        level: categoryData.experienceLevel
-      });
-
-      // Calculate competency score (for ML features)
-      let competencyScore = 0;
-      switch (categoryData.experienceLevel) {
-        case 'expert': competencyScore = 1.0; break;
-        case 'advanced': competencyScore = 0.8; break;
-        case 'intermediate': competencyScore = 0.6; break;
-        case 'beginner': competencyScore = 0.4; break;
-        default: competencyScore = 0.2;
-      }
-      
-      // Adjust based on years of experience
-      const experienceMultiplier = Math.min(years / 5, 1); // Cap at 5 years for max score
-      structuredData.skillsCompetency[category] = competencyScore * (0.5 + 0.5 * experienceMultiplier);
-    } else {
-      structuredData.skillsExperience[category] = {
-        hasExperience: false,
-        yearsOfExperience: 0
-      };
-      structuredData.skillsCompetency[category] = 0;
-    }
-  });
-
-  structuredData.totalExperienceYears = maxYears;
-  return structuredData;
-}
+// Function now imported from experience-utils.js for consistency
 
 // Generate detailed preferences
 function generateDetailedPreferences() {
