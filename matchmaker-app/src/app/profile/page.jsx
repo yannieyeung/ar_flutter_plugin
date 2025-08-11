@@ -61,11 +61,6 @@ export default function ProfilePage() {
         repatriationPort: user.repatriationPort || '',
         hasBeenHelperBefore: user.hasBeenHelperBefore || '',
         
-        // Languages
-        languages: Array.isArray(user.languages) ? user.languages : 
-                   (typeof user.languages === 'string' && user.languages) ? 
-                   user.languages.split(',').map(lang => lang.trim()).filter(lang => lang) : [],
-        
         // Medical Information
         hasAllergies: user.hasAllergies || '',
         allergiesDetails: user.allergiesDetails || '',
@@ -178,12 +173,9 @@ export default function ProfilePage() {
     try {
       setSaving(true);
       
-      // Prepare data for saving - convert languages array back to comma-separated string if needed
+      // Prepare data for saving
       const dataToSave = {
-        ...editData,
-        languages: Array.isArray(editData.languages) ? 
-                   editData.languages.filter(lang => lang.trim()).join(', ') : 
-                   editData.languages
+        ...editData
       };
 
       // Also update salaryProfile for backward compatibility
@@ -330,23 +322,52 @@ export default function ProfilePage() {
     }));
   };
 
-  const handleLanguageChange = (index, value) => {
-    const newLanguages = [...editData.languages];
-    newLanguages[index] = value;
-    setEditData(prev => ({ ...prev, languages: newLanguages }));
+  const handleLanguageChange = (index, field, value) => {
+    setEditData(prev => {
+      const currentLanguages = prev.experience?.languagesSpoken || [];
+      const newLanguages = [...currentLanguages];
+      
+      // Ensure the language object exists
+      if (!newLanguages[index]) {
+        newLanguages[index] = { language: '', proficiency: 'basic', canTeach: false };
+      }
+      
+      // Update the specific field
+      newLanguages[index] = {
+        ...newLanguages[index],
+        [field]: value
+      };
+      
+      return {
+        ...prev,
+        experience: {
+          ...prev.experience,
+          languagesSpoken: newLanguages
+        }
+      };
+    });
   };
 
   const addLanguage = () => {
-    setEditData(prev => ({ 
-      ...prev, 
-      languages: [...prev.languages, ''] 
+    setEditData(prev => ({
+      ...prev,
+      experience: {
+        ...prev.experience,
+        languagesSpoken: [
+          ...(prev.experience?.languagesSpoken || []),
+          { language: '', proficiency: 'basic', canTeach: false }
+        ]
+      }
     }));
   };
 
   const removeLanguage = (index) => {
     setEditData(prev => ({
       ...prev,
-      languages: prev.languages.filter((_, i) => i !== index)
+      experience: {
+        ...prev.experience,
+        languagesSpoken: (prev.experience?.languagesSpoken || []).filter((_, i) => i !== index)
+      }
     }));
   };
 

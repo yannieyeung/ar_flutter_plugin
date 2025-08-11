@@ -330,45 +330,123 @@ export const HelperPersonalInfo = ({ user, isEditing, editData, setEditData, han
         <div className="sm:col-span-2">
           <label className="block text-sm font-medium text-slate-700 mb-2">Languages Spoken</label>
           {isEditing ? (
-            <div className="space-y-2">
-              {editData.languages && editData.languages.map((language, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <input
-                    type="text"
-                    value={language}
-                    onChange={(e) => handleLanguageChange(index, e.target.value)}
-                    className="flex-1 px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    placeholder="Language"
-                  />
+            <div className="space-y-3">
+              {(editData.experience?.languagesSpoken || []).map((langObj, index) => (
+                <div key={index} className="border border-slate-200 rounded-lg p-3 bg-slate-50">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1">Language</label>
+                      <input
+                        type="text"
+                        value={langObj.language || ''}
+                        onChange={(e) => handleLanguageChange(index, 'language', e.target.value)}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                        placeholder="e.g., Mandarin"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1">Proficiency</label>
+                      <select
+                        value={langObj.proficiency || 'basic'}
+                        onChange={(e) => handleLanguageChange(index, 'proficiency', e.target.value)}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      >
+                        <option value="basic">Basic</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                        <option value="native">Native</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1">Can Teach Children</label>
+                      <div className="flex items-center space-x-4 mt-2">
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            name={`canTeach-${index}`}
+                            checked={langObj.canTeach === true}
+                            onChange={() => handleLanguageChange(index, 'canTeach', true)}
+                            className="mr-1 text-blue-600"
+                          />
+                          <span className="text-sm">Yes</span>
+                        </label>
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            name={`canTeach-${index}`}
+                            checked={langObj.canTeach === false}
+                            onChange={() => handleLanguageChange(index, 'canTeach', false)}
+                            className="mr-1 text-blue-600"
+                          />
+                          <span className="text-sm">No</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
                   <button
                     type="button"
                     onClick={() => removeLanguage(index)}
-                    className="px-3 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
+                    className="mt-2 text-red-600 hover:text-red-800 text-xs font-medium"
                   >
-                    Remove
+                    Remove Language
                   </button>
                 </div>
               ))}
               <button
                 type="button"
                 onClick={addLanguage}
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                className="inline-flex items-center px-4 py-2 bg-blue-50 text-blue-600 text-sm font-medium rounded-lg hover:bg-blue-100 transition-colors"
               >
                 + Add Language
               </button>
             </div>
           ) : (
-            <div className="flex flex-wrap gap-2">
+            <div className="space-y-3">
               {(() => {
-                const languages = Array.isArray(user?.languages) ? user.languages : 
-                                 (typeof user?.languages === 'string' && user.languages) ? 
-                                 user.languages.split(',').map(lang => lang.trim()).filter(lang => lang) : [];
+                // Check multiple possible locations for language data
+                const languagesSpoken = user?.experience?.languagesSpoken || 
+                                      editData?.experience?.languagesSpoken || 
+                                      [];
                 
-                return languages.length > 0 ? languages.map((language, index) => (
-                  <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                    {language}
-                  </span>
-                )) : <p className="text-slate-900">Not provided</p>;
+                return languagesSpoken.length > 0 ? languagesSpoken.map((langObj, index) => (
+                  <div key={index} className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-semibold text-slate-900">{langObj.language || 'Unknown Language'}</h4>
+                      <div className="flex items-center space-x-2">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          langObj.proficiency === 'native' ? 'bg-green-100 text-green-800' :
+                          langObj.proficiency === 'advanced' ? 'bg-blue-100 text-blue-800' :
+                          langObj.proficiency === 'intermediate' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {langObj.proficiency === 'native' ? 'Native' :
+                           langObj.proficiency === 'advanced' ? 'Advanced' :
+                           langObj.proficiency === 'intermediate' ? 'Intermediate' :
+                           'Basic'}
+                        </span>
+                        {langObj.canTeach && (
+                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                            Can Teach
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-sm text-slate-600">
+                      <span className="font-medium">Proficiency:</span> {
+                        langObj.proficiency === 'native' ? 'Native speaker' :
+                        langObj.proficiency === 'advanced' ? 'Advanced level' :
+                        langObj.proficiency === 'intermediate' ? 'Intermediate level' :
+                        'Basic level'
+                      }
+                      {langObj.canTeach !== undefined && (
+                        <>
+                          <span className="mx-2">•</span>
+                          <span className="font-medium">Can teach children:</span> {langObj.canTeach ? 'Yes' : 'No'}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )) : <p className="text-slate-900">No languages specified</p>;
               })()}
             </div>
           )}
