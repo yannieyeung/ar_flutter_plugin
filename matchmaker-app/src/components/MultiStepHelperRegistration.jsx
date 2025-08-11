@@ -2,6 +2,13 @@ import React from 'react';
 import MultiStepForm from './MultiStepForm';
 import PersonalInfoStep from './helper-steps/PersonalInfoStep';
 import PhotosDocumentsStep from './helper-steps/PhotosDocumentsStep';
+import { 
+  calculateExperienceYears, 
+  getTotalExperienceYears, 
+  getStructuredExperienceForML,
+  validateExperienceData
+} from '../lib/experience-utils';
+import { clientFeatureComputationService } from '../lib/feature-computation-client';
 
 // Enhanced Medical & Health Information Step
 const MedicalInfoStep = ({ data, onChange, errors }) => (
@@ -14,7 +21,9 @@ const MedicalInfoStep = ({ data, onChange, errors }) => (
     <div className="space-y-6">
       {/* Allergies */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Do you have any allergies?</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Do you have any allergies? <span className="text-red-500">*</span>
+        </label>
         <div className="flex space-x-4 mb-2">
           <label className="flex items-center">
             <input
@@ -39,20 +48,28 @@ const MedicalInfoStep = ({ data, onChange, errors }) => (
             No
           </label>
         </div>
+        {errors.hasAllergies && <p className="text-red-500 text-sm mt-1">{errors.hasAllergies}</p>}
         {data.hasAllergies === 'yes' && (
-          <textarea
-            value={data.allergiesDetails || ''}
-            onChange={(e) => onChange({ ...data, allergiesDetails: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Please describe your allergies (e.g., food allergies, environmental allergies, medications)..."
-            rows="3"
-          />
+          <div className="mt-2">
+            <textarea
+              value={data.allergiesDetails || ''}
+              onChange={(e) => onChange({ ...data, allergiesDetails: e.target.value })}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.allergiesDetails ? 'border-red-300' : 'border-gray-300'
+              }`}
+              placeholder="Please describe your allergies (e.g., food allergies, environmental allergies, medications)..."
+              rows="3"
+            />
+            {errors.allergiesDetails && <p className="text-red-500 text-sm mt-1">{errors.allergiesDetails}</p>}
+          </div>
         )}
       </div>
 
       {/* Past Illness */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Do you have any past or existing medical conditions?</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Do you have any past or existing medical conditions? <span className="text-red-500">*</span>
+        </label>
         <div className="flex space-x-4 mb-2">
           <label className="flex items-center">
             <input
@@ -77,20 +94,28 @@ const MedicalInfoStep = ({ data, onChange, errors }) => (
             No
           </label>
         </div>
+        {errors.hasPastIllness && <p className="text-red-500 text-sm mt-1">{errors.hasPastIllness}</p>}
         {data.hasPastIllness === 'yes' && (
-          <textarea
-            value={data.illnessDetails || ''}
-            onChange={(e) => onChange({ ...data, illnessDetails: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Please describe your medical history..."
-            rows="3"
-          />
+          <div className="mt-2">
+            <textarea
+              value={data.illnessDetails || ''}
+              onChange={(e) => onChange({ ...data, illnessDetails: e.target.value })}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.illnessDetails ? 'border-red-300' : 'border-gray-300'
+              }`}
+              placeholder="Please describe your medical history..."
+              rows="3"
+            />
+            {errors.illnessDetails && <p className="text-red-500 text-sm mt-1">{errors.illnessDetails}</p>}
+          </div>
         )}
       </div>
 
       {/* Physical Disabilities */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Do you have any physical disabilities or limitations?</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Do you have any physical disabilities or limitations? <span className="text-red-500">*</span>
+        </label>
         <div className="flex space-x-4 mb-2">
           <label className="flex items-center">
             <input
@@ -115,14 +140,20 @@ const MedicalInfoStep = ({ data, onChange, errors }) => (
             No
           </label>
         </div>
+        {errors.hasPhysicalDisabilities && <p className="text-red-500 text-sm mt-1">{errors.hasPhysicalDisabilities}</p>}
         {data.hasPhysicalDisabilities === 'yes' && (
-          <textarea
-            value={data.disabilitiesDetails || ''}
-            onChange={(e) => onChange({ ...data, disabilitiesDetails: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Please describe any physical limitations that might affect your work..."
-            rows="3"
-          />
+          <div className="mt-2">
+            <textarea
+              value={data.disabilitiesDetails || ''}
+              onChange={(e) => onChange({ ...data, disabilitiesDetails: e.target.value })}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.disabilitiesDetails ? 'border-red-300' : 'border-gray-300'
+              }`}
+              placeholder="Please describe any physical limitations that might affect your work..."
+              rows="3"
+            />
+            {errors.disabilitiesDetails && <p className="text-red-500 text-sm mt-1">{errors.disabilitiesDetails}</p>}
+          </div>
         )}
       </div>
 
@@ -142,8 +173,12 @@ const ExperienceStep = ({ data, onChange, errors }) => {
   ];
   const CUISINES = ['Chinese', 'Western', 'Malay', 'Indian', 'Japanese', 'Korean', 'Thai', 'Vietnamese', 'Indonesian', 'Filipino', 'Italian', 'Mediterranean'];
 
-  const handleExperienceChange = (type, field, value) => {
-    onChange({
+  // Wrapper functions to use the utility functions with component data
+  const getTotalExperienceYearsWrapper = () => getTotalExperienceYears(data.experience);
+  const getStructuredExperienceForMLWrapper = () => getStructuredExperienceForML(data.experience);
+
+  const handleExperienceChange = async (type, field, value) => {
+    const updatedData = {
       ...data,
       experience: {
         ...data.experience,
@@ -152,7 +187,41 @@ const ExperienceStep = ({ data, onChange, errors }) => {
           [field]: value
         }
       }
-    });
+    };
+
+    // Initialize countryExperiences when hasExperience is set to true
+    if (field === 'hasExperience' && value === true && !updatedData.experience[type].countryExperiences) {
+      updatedData.experience[type].countryExperiences = [{ country: '', startYear: '', endYear: '' }];
+    }
+
+    // Auto-calculate and store structured ML data
+    updatedData.experienceForML = getStructuredExperienceForML(updatedData.experience);
+    
+    // Trigger feature computation if helper has ID (during profile updates)
+    if (data.uid && (field === 'startYear' || field === 'endYear' || field === 'experienceLevel')) {
+      try {
+        // Debounce feature computation to avoid excessive calls
+        if (handleExperienceChange.timeoutId) {
+          clearTimeout(handleExperienceChange.timeoutId);
+        }
+        
+        handleExperienceChange.timeoutId = setTimeout(async () => {
+          console.log('🔄 Updating helper features due to experience change...');
+          
+          // Use client-safe feature computation service
+          await clientFeatureComputationService.updateFeatures(
+            data.uid, 
+            { experience: updatedData.experience, experienceForML: updatedData.experienceForML },
+            updatedData
+          );
+        }, 2000); // 2 second debounce
+      } catch (error) {
+        console.warn('⚠️ Failed to update helper features:', error);
+        // Don't block the UI update
+      }
+    }
+    
+    onChange(updatedData);
   };
 
   const handleLanguageChange = (index, field, value) => {
@@ -272,32 +341,171 @@ const ExperienceStep = ({ data, onChange, errors }) => {
                     </select>
                   </div>
 
-                  {/* Years of Experience */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Years of Experience (From)</label>
-                      <input
-                        type="number"
-                        min="0"
-                        max="50"
-                        value={data.experience?.[category.key]?.yearsFrom || ''}
-                        onChange={(e) => handleExperienceChange(category.key, 'yearsFrom', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="0"
-                      />
+                  {/* Multiple Country Experiences */}
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <label className="block text-sm font-medium text-gray-700">Work Experience by Country</label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const currentEntries = data.experience?.[category.key]?.countryExperiences || [{ country: '', startYear: '', endYear: '' }];
+                          handleExperienceChange(category.key, 'countryExperiences', [
+                            ...currentEntries,
+                            { country: '', startYear: '', endYear: '' }
+                          ]);
+                        }}
+                        className="inline-flex items-center px-3 py-1 bg-blue-50 text-blue-600 text-sm font-medium rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Another Country
+                      </button>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Years of Experience (To)</label>
-                      <input
-                        type="number"
-                        min="0"
-                        max="50"
-                        value={data.experience?.[category.key]?.yearsTo || ''}
-                        onChange={(e) => handleExperienceChange(category.key, 'yearsTo', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="5"
-                      />
-                    </div>
+                    
+                    {((data.experience?.[category.key]?.countryExperiences?.length > 0) 
+                      ? data.experience[category.key].countryExperiences 
+                      : [{ country: '', startYear: '', endYear: '' }]
+                    ).map((entry, index) => (
+                      <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                        <div className="flex justify-between items-start mb-3">
+                          <h4 className="text-sm font-medium text-gray-700">Experience #{index + 1}</h4>
+                          {index > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const currentEntries = data.experience?.[category.key]?.countryExperiences || [];
+                                const newEntries = currentEntries.filter((_, i) => i !== index);
+                                handleExperienceChange(category.key, 'countryExperiences', newEntries);
+                              }}
+                              className="text-red-500 hover:text-red-700 text-sm"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          {/* Country */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                            <select
+                              value={entry.country || ''}
+                              onChange={(e) => {
+                                const currentEntries = data.experience?.[category.key]?.countryExperiences || [{ country: '', startYear: '', endYear: '' }];
+                                const newEntries = currentEntries.map((exp, i) => 
+                                  i === index ? { ...exp, country: e.target.value } : exp
+                                );
+                                handleExperienceChange(category.key, 'countryExperiences', newEntries);
+                              }}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                            >
+                              <option value="">Select Country</option>
+                              <option value="Singapore">Singapore</option>
+                              <option value="Hong Kong">Hong Kong</option>
+                              <option value="Malaysia">Malaysia</option>
+                              <option value="UAE">UAE</option>
+                              <option value="Saudi Arabia">Saudi Arabia</option>
+                              <option value="Qatar">Qatar</option>
+                              <option value="Kuwait">Kuwait</option>
+                              <option value="Taiwan">Taiwan</option>
+                              <option value="Philippines">Philippines</option>
+                              <option value="Indonesia">Indonesia</option>
+                              <option value="Myanmar">Myanmar</option>
+                              <option value="Sri Lanka">Sri Lanka</option>
+                              <option value="India">India</option>
+                              <option value="Others">Others</option>
+                            </select>
+                          </div>
+                          
+                          {/* Start Year */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Start Year</label>
+                            <input
+                              type="number"
+                              min="1990"
+                              max={new Date().getFullYear()}
+                              value={entry.startYear || ''}
+                              onChange={(e) => {
+                                const currentEntries = data.experience?.[category.key]?.countryExperiences || [];
+                                const newEntries = currentEntries.map((exp, i) => 
+                                  i === index ? { ...exp, startYear: parseInt(e.target.value) || '' } : exp
+                                );
+                                handleExperienceChange(category.key, 'countryExperiences', newEntries);
+                              }}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                              placeholder={`e.g., ${new Date().getFullYear() - 5}`}
+                            />
+                          </div>
+                          
+                          {/* End Year */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              End Year <span className="text-xs text-gray-500">(leave empty if current)</span>
+                            </label>
+                            <input
+                              type="number"
+                              min="1990"
+                              max={new Date().getFullYear()}
+                              value={entry.endYear || ''}
+                              onChange={(e) => {
+                                const currentEntries = data.experience?.[category.key]?.countryExperiences || [];
+                                const newEntries = currentEntries.map((exp, i) => 
+                                  i === index ? { ...exp, endYear: parseInt(e.target.value) || '' } : exp
+                                );
+                                handleExperienceChange(category.key, 'countryExperiences', newEntries);
+                              }}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                              placeholder="Current"
+                            />
+                          </div>
+                        </div>
+                        
+                        {/* Calculate and Display Experience Duration for this entry */}
+                        {entry.startYear && (
+                          <div className="mt-3 bg-blue-50 p-2 rounded text-xs text-blue-800">
+                            <strong>Duration:</strong> {
+                              (() => {
+                                const startYear = entry.startYear;
+                                const endYear = entry.endYear || new Date().getFullYear();
+                                const years = Math.max(0, endYear - startYear + 1);
+                                return years === 1 ? '1 year' : `${years} years`;
+                              })()
+                            }
+                            {!entry.endYear && ' (ongoing)'}
+                            {entry.country && ` in ${entry.country}`}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    
+                    {/* Total Experience Summary */}
+                    {data.experience?.[category.key]?.countryExperiences?.some(exp => exp.startYear) && (
+                      <div className="bg-green-50 p-3 rounded-lg">
+                        <p className="text-sm text-green-800">
+                          <strong>Total Experience:</strong> {
+                            (() => {
+                              const experiences = data.experience[category.key].countryExperiences || [];
+                              let totalYears = 0;
+                              const countries = new Set();
+                              
+                              experiences.forEach(exp => {
+                                if (exp.startYear) {
+                                  const endYear = exp.endYear || new Date().getFullYear();
+                                  totalYears += Math.max(0, endYear - exp.startYear + 1);
+                                  if (exp.country) countries.add(exp.country);
+                                }
+                              });
+                              
+                              const countryText = countries.size > 0 ? ` across ${Array.from(countries).join(', ')}` : '';
+                              return totalYears === 1 ? `1 year${countryText}` : `${totalYears} years${countryText}`;
+                            })()
+                          }
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Specific Tasks */}
@@ -353,6 +561,50 @@ const ExperienceStep = ({ data, onChange, errors }) => {
               )}
             </div>
           ))}
+
+          {/* Experience Summary */}
+          {getTotalExperienceYearsWrapper() > 0 && (
+            <div className="border-2 border-green-200 rounded-lg p-6 bg-green-50">
+              <h3 className="text-lg font-medium text-green-900 mb-4">📊 Your Experience Summary</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white p-4 rounded-lg">
+                  <h4 className="font-medium text-gray-900 mb-2">Total Experience</h4>
+                  <p className="text-2xl font-bold text-green-600">{getTotalExperienceYearsWrapper()} years</p>
+                  <p className="text-sm text-gray-600">Maximum experience across all skills</p>
+                </div>
+                <div className="bg-white p-4 rounded-lg">
+                  <h4 className="font-medium text-gray-900 mb-2">Active Skills</h4>
+                  <p className="text-2xl font-bold text-blue-600">{getStructuredExperienceForMLWrapper().activeSkills.length}</p>
+                  <p className="text-sm text-gray-600">Skills with experience</p>
+                </div>
+              </div>
+              
+              {/* Skills Breakdown */}
+              <div className="mt-4">
+                <h4 className="font-medium text-gray-900 mb-3">Skills Experience Breakdown</h4>
+                <div className="space-y-2">
+                  {Object.entries(getStructuredExperienceForMLWrapper().skillsExperience)
+                    .filter(([_, skill]) => skill.hasExperience)
+                    .map(([category, skill]) => (
+                      <div key={category} className="flex justify-between items-center bg-white p-3 rounded-lg">
+                        <div>
+                          <span className="font-medium capitalize">
+                            {category.replace(/([A-Z])/g, ' $1').toLowerCase().replace(/^./, str => str.toUpperCase())}
+                          </span>
+                          <span className="text-sm text-gray-500 ml-2">
+                            ({skill.experienceLevel})
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <span className="font-bold text-green-600">{skill.yearsOfExperience} years</span>
+                          {skill.isCurrent && <span className="text-xs text-blue-600 block">Currently active</span>}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Languages Section */}
           <div className="border rounded-lg p-6 bg-gray-50">
@@ -851,6 +1103,31 @@ const PreferencesStep = ({ data, onChange, errors }) => {
               ))}
             </div>
           </div>
+          {/* Required Off Days */}
+          <div className="border rounded-lg p-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Required Off Days <span className="text-red-500">*</span></label>
+            <p className="text-xs text-gray-600 mb-3">How many off days do you require per week?</p>
+            <select
+              value={data.preferences?.workEnvironment?.requiredOffDays || ''}
+              onChange={(e) => onChange({ 
+                ...data, 
+                preferences: { 
+                  ...data.preferences, 
+                  workEnvironment: { 
+                    ...data.preferences?.workEnvironment,
+                    requiredOffDays: e.target.value === '' ? '' : parseInt(e.target.value)
+                  }
+                }
+              })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select Number</option>
+              {[0, 1, 2, 3, 4].map(num => (
+                <option key={num} value={num}>{num} day{num !== 1 ? 's' : ''} per week</option>
+              ))}
+            </select>
+            {errors.requiredOffDays && <p className="text-red-500 text-sm mt-1">{errors.requiredOffDays}</p>}
+          </div>
         </div>
 
         {/* Preferred Countries */}
@@ -922,22 +1199,7 @@ const PreferencesStep = ({ data, onChange, errors }) => {
           </div>
         </div>
 
-        {/* Required Off Days */}
-        <div className="border rounded-lg p-6 bg-gray-50">
-          <label className="block text-lg font-medium text-gray-900 mb-2">Required Off Days <span className="text-red-500">*</span></label>
-          <p className="text-sm text-gray-600 mb-3">How many off days do you require per week? This helps with job matching</p>
-          <select
-            value={data.requiredOffDays || ''}
-            onChange={(e) => onChange({ ...data, requiredOffDays: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Select Number</option>
-            {[0, 1, 2, 3, 4].map(num => (
-              <option key={num} value={num}>{num} day{num !== 1 ? 's' : ''} per week</option>
-            ))}
-          </select>
-          {errors.requiredOffDays && <p className="text-red-500 text-sm mt-1">{errors.requiredOffDays}</p>}
-        </div>
+
 
         {/* Other Remarks */}
         <div className="border rounded-lg p-6 bg-gray-50">
@@ -976,19 +1238,52 @@ const AvailabilityStep = ({ data, onChange, errors }) => (
       <div className="bg-green-50 p-6 rounded-lg border border-green-200">
         <h3 className="text-lg font-medium text-green-800 mb-4">💰 Salary Expectations</h3>
         
+        {/* Currency Selection */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Currency <span className="text-red-500">*</span></label>
+          <select
+            value={data.expectations?.salary?.currency || 'SGD'}
+            onChange={(e) => onChange({ 
+              ...data, 
+              expectations: { 
+                ...data.expectations, 
+                salary: { 
+                  ...data.expectations?.salary,
+                  currency: e.target.value 
+                }
+              }
+            })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="SGD">Singapore Dollar (SGD)</option>
+            <option value="HKD">Hong Kong Dollar (HKD)</option>
+            <option value="MYR">Malaysian Ringgit (MYR)</option>
+            <option value="USD">US Dollar (USD)</option>
+            <option value="AED">UAE Dirham (AED)</option>
+            <option value="SAR">Saudi Riyal (SAR)</option>
+            <option value="QAR">Qatari Riyal (QAR)</option>
+            <option value="KWD">Kuwaiti Dinar (KWD)</option>
+            <option value="TWD">Taiwan Dollar (TWD)</option>
+            <option value="PHP">Philippine Peso (PHP)</option>
+            <option value="IDR">Indonesian Rupiah (IDR)</option>
+            <option value="LKR">Sri Lankan Rupee (LKR)</option>
+            <option value="INR">Indian Rupee (INR)</option>
+          </select>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Minimum Salary */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Monthly Salary Expected <span className="text-red-500">*</span></label>
             <div className="flex">
               <span className="inline-flex items-center px-3 py-2 border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm rounded-l-md">
-                SGD $
+                {data.expectations?.salary?.currency || 'SGD'} $
               </span>
               <input
                 type="number"
-                min="500"
-                max="3000"
-                step="50"
+                min="100"
+                max={data.expectations?.salary?.currency === 'IDR' ? '50000000' : data.expectations?.salary?.currency === 'PHP' ? '100000' : data.expectations?.salary?.currency === 'LKR' ? '500000' : data.expectations?.salary?.currency === 'INR' ? '100000' : '10000'}
+                step={data.expectations?.salary?.currency === 'IDR' ? '100000' : data.expectations?.salary?.currency === 'KWD' ? '5' : '50'}
                 value={data.expectations?.salary?.minimumAmount || ''}
                 onChange={(e) => onChange({ 
                   ...data, 
@@ -1001,7 +1296,19 @@ const AvailabilityStep = ({ data, onChange, errors }) => (
                   }
                 })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="800"
+                placeholder={data.expectations?.salary?.currency === 'SGD' ? '800' : 
+                           data.expectations?.salary?.currency === 'HKD' ? '4500' :
+                           data.expectations?.salary?.currency === 'MYR' ? '1800' :
+                           data.expectations?.salary?.currency === 'USD' ? '600' :
+                           data.expectations?.salary?.currency === 'AED' ? '2200' :
+                           data.expectations?.salary?.currency === 'SAR' ? '2250' :
+                           data.expectations?.salary?.currency === 'QAR' ? '2200' :
+                           data.expectations?.salary?.currency === 'KWD' ? '180' :
+                           data.expectations?.salary?.currency === 'TWD' ? '18000' :
+                           data.expectations?.salary?.currency === 'PHP' ? '25000' :
+                           data.expectations?.salary?.currency === 'IDR' ? '8000000' :
+                           data.expectations?.salary?.currency === 'LKR' ? '150000' :
+                           data.expectations?.salary?.currency === 'INR' ? '45000' : '800'}
               />
             </div>
           </div>
@@ -1011,13 +1318,13 @@ const AvailabilityStep = ({ data, onChange, errors }) => (
             <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Monthly Salary <span className="text-red-500">*</span></label>
             <div className="flex">
               <span className="inline-flex items-center px-3 py-2 border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm rounded-l-md">
-                SGD $
+                {data.expectations?.salary?.currency || 'SGD'} $
               </span>
               <input
                 type="number"
-                min="500"
-                max="3000"
-                step="50"
+                min="100"
+                max={data.expectations?.salary?.currency === 'IDR' ? '50000000' : data.expectations?.salary?.currency === 'PHP' ? '100000' : data.expectations?.salary?.currency === 'LKR' ? '500000' : data.expectations?.salary?.currency === 'INR' ? '100000' : '10000'}
+                step={data.expectations?.salary?.currency === 'IDR' ? '100000' : data.expectations?.salary?.currency === 'KWD' ? '5' : '50'}
                 value={data.expectations?.salary?.preferredAmount || ''}
                 onChange={(e) => onChange({ 
                   ...data, 
@@ -1030,7 +1337,19 @@ const AvailabilityStep = ({ data, onChange, errors }) => (
                   }
                 })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="1000"
+                placeholder={data.expectations?.salary?.currency === 'SGD' ? '1000' : 
+                           data.expectations?.salary?.currency === 'HKD' ? '5500' :
+                           data.expectations?.salary?.currency === 'MYR' ? '2200' :
+                           data.expectations?.salary?.currency === 'USD' ? '750' :
+                           data.expectations?.salary?.currency === 'AED' ? '2800' :
+                           data.expectations?.salary?.currency === 'SAR' ? '2800' :
+                           data.expectations?.salary?.currency === 'QAR' ? '2800' :
+                           data.expectations?.salary?.currency === 'KWD' ? '230' :
+                           data.expectations?.salary?.currency === 'TWD' ? '22000' :
+                           data.expectations?.salary?.currency === 'PHP' ? '30000' :
+                           data.expectations?.salary?.currency === 'IDR' ? '10000000' :
+                           data.expectations?.salary?.currency === 'LKR' ? '180000' :
+                           data.expectations?.salary?.currency === 'INR' ? '55000' : '1000'}
               />
             </div>
           </div>
@@ -1407,9 +1726,33 @@ const MultiStepHelperRegistration = ({ onSubmit, isLoading }) => {
       component: MedicalInfoStep,
       validate: (data) => {
         const errors = {};
-        if (!data.requiredOffDays && data.requiredOffDays !== 0) {
-          errors.requiredOffDays = 'Please specify how many off days you require per week';
+        
+        // Required health questions
+        if (!data.hasAllergies) {
+          errors.hasAllergies = 'Please specify if you have any allergies';
         }
+        
+        if (!data.hasPastIllness) {
+          errors.hasPastIllness = 'Please specify if you have any past or existing medical conditions';
+        }
+        
+        if (!data.hasPhysicalDisabilities) {
+          errors.hasPhysicalDisabilities = 'Please specify if you have any physical disabilities or limitations';
+        }
+        
+        // Conditional validation for details when user answers "yes"
+        if (data.hasAllergies === 'yes' && (!data.allergiesDetails || data.allergiesDetails.trim() === '')) {
+          errors.allergiesDetails = 'Please provide details about your allergies';
+        }
+        
+        if (data.hasPastIllness === 'yes' && (!data.illnessDetails || data.illnessDetails.trim() === '')) {
+          errors.illnessDetails = 'Please provide details about your medical history';
+        }
+        
+        if (data.hasPhysicalDisabilities === 'yes' && (!data.disabilitiesDetails || data.disabilitiesDetails.trim() === '')) {
+          errors.disabilitiesDetails = 'Please provide details about your physical limitations';
+        }
+        
         return errors;
       }
     },
@@ -1480,6 +1823,12 @@ const MultiStepHelperRegistration = ({ onSubmit, isLoading }) => {
           errors.petPreference = 'Please specify your preference about working with pets';
         }
         
+        // Require required off days to be specified
+        const requiredOffDaysValue = data.preferences?.workEnvironment?.requiredOffDays;
+        if (requiredOffDaysValue === '' || requiredOffDaysValue === null || requiredOffDaysValue === undefined) {
+          errors.requiredOffDays = 'Please specify how many off days you require per week';
+        }
+        
         // Require at least one preferred country
         if (!data.preferences?.location?.preferredCountries || 
             data.preferences.location.preferredCountries.length === 0) {
@@ -1543,7 +1892,26 @@ const MultiStepHelperRegistration = ({ onSubmit, isLoading }) => {
     const optimizedData = {
       ...formData,
       // Add ML profile generation here
-      mlProfile: generateMLProfile(formData)
+      mlProfile: generateMLProfile(formData),
+      // Ensure salary and availability data is saved at top level for profile display
+      expectations: formData.expectations || {},
+      salaryProfile: {
+        minimumSalary: parseFloat(formData.expectations?.salary?.minimumAmount) || 0,
+        preferredSalary: parseFloat(formData.expectations?.salary?.preferredAmount) || 0,
+        currency: formData.expectations?.salary?.currency || 'SGD',
+        salaryNegotiable: formData.expectations?.salary?.negotiable || false,
+        wantsBonus: formData.expectations?.salary?.performanceBonusExpected || false,
+        salaryFlexibilityScore: calculateSalaryFlexibility(formData.expectations?.salary)
+      },
+      availabilityProfile: {
+        immediatelyAvailable: formData.readiness?.canStartWork === 'immediately',
+        withinMonth: formData.readiness?.canStartWork === 'within_month',
+        hasValidPassport: formData.readiness?.hasValidPassport === 'yes',
+        visaStatus: formData.readiness?.visaStatus || '',
+        interviewFlexibility: calculateInterviewFlexibility(formData.interview?.availability),
+        workReady: formData.readiness?.hasValidPassport === 'yes' && 
+                   (formData.readiness?.canStartWork === 'immediately' || formData.readiness?.canStartWork === 'within_month')
+      }
     };
     
     onSubmit(optimizedData);
@@ -1713,15 +2081,23 @@ const MultiStepHelperRegistration = ({ onSubmit, isLoading }) => {
         hasAllergies: data.hasAllergies === 'yes',
         hasMedicalIssues: data.hasPastIllness === 'yes',
         hasPhysicalDisabilities: data.hasPhysicalDisabilities === 'yes',
-        requiredOffDays: parseInt(data.requiredOffDays) || 0,
         foodRestrictions: (data.foodHandlingPreferences || []).length,
         healthScore: calculateHealthScore(data)
+      },
+      
+      // Work preferences profile
+      workPreferencesProfile: {
+        requiredOffDays: parseInt(data.preferences?.workEnvironment?.requiredOffDays) || 0,
+        liveInPreference: data.preferences?.workEnvironment?.liveInPreference || '',
+        petFriendly: data.preferences?.workEnvironment?.petFriendly || '',
+        workFlexibilityScore: calculateWorkFlexibilityScore(data.preferences?.workEnvironment)
       },
       
       // Salary expectations
       salaryProfile: {
         minimumSalary: parseFloat(data.expectations?.salary?.minimumAmount) || 0,
         preferredSalary: parseFloat(data.expectations?.salary?.preferredAmount) || 0,
+        currency: data.expectations?.salary?.currency || 'SGD',
         salaryNegotiable: data.expectations?.salary?.negotiable || false,
         wantsBonus: data.expectations?.salary?.performanceBonusExpected || false,
         salaryFlexibilityScore: calculateSalaryFlexibility(data.expectations?.salary)
@@ -1767,6 +2143,27 @@ const MultiStepHelperRegistration = ({ onSubmit, isLoading }) => {
     if (data.hasPhysicalDisabilities === 'yes') score -= 3;
     if ((data.foodHandlingPreferences || []).length > 2) score -= 1;
     return Math.max(0, score);
+  };
+
+  const calculateWorkFlexibilityScore = (workEnvironment) => {
+    if (!workEnvironment) return 5;
+    let score = 5; // Base score
+    
+    // Live-in arrangement flexibility
+    if (workEnvironment.liveInPreference === 'either') score += 2;
+    else if (workEnvironment.liveInPreference === 'live_out_only') score += 1;
+    
+    // Pet tolerance
+    if (workEnvironment.petFriendly === 'love_pets') score += 2;
+    else if (workEnvironment.petFriendly === 'comfortable') score += 1;
+    
+    // Off days requirement (fewer required days = more flexible)
+    const offDays = parseInt(workEnvironment.requiredOffDays) || 0;
+    if (offDays === 0) score += 2;
+    else if (offDays === 1) score += 1;
+    else if (offDays >= 3) score -= 1;
+    
+    return Math.min(10, Math.max(0, score));
   };
 
   const calculateSalaryFlexibility = (salary) => {

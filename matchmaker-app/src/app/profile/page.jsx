@@ -9,7 +9,13 @@ import { ClientPhotoService } from '@/lib/client-photo-service';
 import Link from 'next/link';
 
 // Import user-type-specific profile sections
-import { HelperPersonalInfo, HelperMedicalInfo } from '@/components/profile-sections/HelperProfileSections';
+import { 
+  HelperPersonalInfo, 
+  HelperMedicalInfo, 
+  HelperExperienceInfo, 
+  HelperPreferencesInfo, 
+  HelperAvailabilityInfo 
+} from '@/components/profile-sections/HelperProfileSections';
 import { AgencyBusinessInfo, AgencyLicenseInfo, AgencyServicesInfo, AgencyFeesInfo } from '@/components/profile-sections/AgencyProfileSections';
 import { EmployerPersonalInfo, EmployerHouseholdInfo, EmployerPreferences } from '@/components/profile-sections/EmployerProfileSections';
 import { ProfilePhotosSection } from '@/components/profile-sections/SharedProfileSections';
@@ -37,38 +43,80 @@ export default function ProfilePage() {
     if (user.userType === 'individual_helper') {
       return {
         ...baseData,
+        // Personal Information
+        contactNumber: user.contactNumber || '',
         educationLevel: user.educationLevel || '',
         maritalStatus: user.maritalStatus || '',
         nationality: user.nationality || '',
         religion: user.religion || '',
-        relevantSkills: user.relevantSkills || '',
         dateOfBirth: user.dateOfBirth || '',
-        experience: user.experience || {},
-        emergencyContact: user.emergencyContact || '',
-        previousWork: user.previousWork || '',
-        languages: Array.isArray(user.languages) ? user.languages : 
-                   (typeof user.languages === 'string' && user.languages) ? 
-                   user.languages.split(',').map(lang => lang.trim()).filter(lang => lang) : [],
-        availability: user.availability || '',
         countryOfBirth: user.countryOfBirth || '',
         cityOfBirth: user.cityOfBirth || '',
         height: user.height || '',
         weight: user.weight || '',
         numberOfSiblings: user.numberOfSiblings || '',
         numberOfChildren: user.numberOfChildren || '',
+        residentialAddress: user.residentialAddress || '',
+        emergencyContact: user.emergencyContact || '',
         repatriationPort: user.repatriationPort || '',
         hasBeenHelperBefore: user.hasBeenHelperBefore || '',
+        
+        // Medical Information
         hasAllergies: user.hasAllergies || '',
         allergiesDetails: user.allergiesDetails || '',
         hasPastIllness: user.hasPastIllness || '',
-        pastIllnessDetails: user.pastIllnessDetails || '',
+        illnessDetails: user.illnessDetails || user.pastIllnessDetails || '',
         hasPhysicalDisabilities: user.hasPhysicalDisabilities || '',
-        physicalDisabilitiesDetails: user.physicalDisabilitiesDetails || '',
-        hasDietaryRestrictions: user.hasDietaryRestrictions || '',
-        dietaryRestrictionsDetails: user.dietaryRestrictionsDetails || '',
+        disabilitiesDetails: user.disabilitiesDetails || user.physicalDisabilitiesDetails || '',
+        
+        // Experience & Skills
+        experience: user.experience || {},
+        relevantSkills: user.relevantSkills || '',
+        previousWork: user.previousWork || '',
+        
+        // Preferences
         preferences: user.preferences || {},
-        interview: user.interview || {},
-        readiness: user.readiness || {}
+        
+        // Availability & Readiness  
+        expectations: {
+          salary: {
+            minimumAmount: user.expectations?.salary?.minimumAmount || 
+                          (user.salaryProfile?.minimumSalary ? String(user.salaryProfile.minimumSalary) : '') ||
+                          (user.mlProfile?.salaryProfile?.minimumSalary ? String(user.mlProfile.salaryProfile.minimumSalary) : ''),
+            preferredAmount: user.expectations?.salary?.preferredAmount || 
+                            (user.salaryProfile?.preferredSalary ? String(user.salaryProfile.preferredSalary) : '') ||
+                            (user.mlProfile?.salaryProfile?.preferredSalary ? String(user.mlProfile.salaryProfile.preferredSalary) : ''),
+            currency: user.expectations?.salary?.currency || 
+                     user.salaryProfile?.currency || 
+                     user.mlProfile?.salaryProfile?.currency || 'SGD',
+            negotiable: user.expectations?.salary?.negotiable ?? user.salaryProfile?.salaryNegotiable ?? user.mlProfile?.salaryProfile?.salaryNegotiable ?? false,
+            performanceBonusExpected: user.expectations?.salary?.performanceBonusExpected ?? user.salaryProfile?.wantsBonus ?? user.mlProfile?.salaryProfile?.wantsBonus ?? false
+          }
+        },
+                readiness: {
+          hasValidPassport: user.readiness?.hasValidPassport || 
+                           (user.availabilityProfile?.hasValidPassport ? 'yes' : '') ||
+                           (user.mlProfile?.availabilityProfile?.hasValidPassport ? 'yes' : '') || '',
+          passportExpiry: user.readiness?.passportExpiry || '',
+          canStartWork: user.readiness?.canStartWork || 
+                       (user.availabilityProfile?.immediatelyAvailable ? 'immediately' :
+                        user.availabilityProfile?.withinMonth ? 'within_month' : '') ||
+                       (user.mlProfile?.availabilityProfile?.immediatelyAvailable ? 'immediately' :
+                        user.mlProfile?.availabilityProfile?.withinMonth ? 'within_month' : '') || '',
+          startDate: user.readiness?.startDate || '',
+          visaStatus: user.readiness?.visaStatus || user.availabilityProfile?.visaStatus || user.mlProfile?.availabilityProfile?.visaStatus || ''
+        },
+        interview: {
+          availability: user.interview?.availability || '',
+          availabilityDate: user.interview?.availabilityDate || '',
+          means: user.interview?.means || ''
+        },
+        otherRemarks: user.otherRemarks || '',
+        
+        // Legacy fields for backward compatibility
+        availability: user.availability || '',
+        hasDietaryRestrictions: user.hasDietaryRestrictions || '',
+        dietaryRestrictionsDetails: user.dietaryRestrictionsDetails || ''
       };
     } else if (user.userType === 'agency') {
       return {
@@ -125,13 +173,35 @@ export default function ProfilePage() {
     try {
       setSaving(true);
       
-      // Prepare data for saving - convert languages array back to comma-separated string if needed
+      // Prepare data for saving
       const dataToSave = {
-        ...editData,
-        languages: Array.isArray(editData.languages) ? 
-                   editData.languages.filter(lang => lang.trim()).join(', ') : 
-                   editData.languages
+        ...editData
       };
+
+      // Also update salaryProfile for backward compatibility
+      if (editData.expectations?.salary) {
+        dataToSave.salaryProfile = {
+          ...dataToSave.salaryProfile,
+          minimumSalary: editData.expectations.salary.minimumAmount,
+          preferredSalary: editData.expectations.salary.preferredAmount,
+          currency: editData.expectations.salary.currency,
+          salaryNegotiable: editData.expectations.salary.negotiable,
+          wantsBonus: editData.expectations.salary.performanceBonusExpected
+        };
+      }
+
+      // Also update availabilityProfile for backward compatibility
+      if (editData.readiness) {
+        dataToSave.availabilityProfile = {
+          ...dataToSave.availabilityProfile,
+          immediatelyAvailable: editData.readiness.canStartWork === 'immediately',
+          withinMonth: editData.readiness.canStartWork === 'within_month',
+          hasValidPassport: editData.readiness.hasValidPassport === 'yes',
+          visaStatus: editData.readiness.visaStatus,
+          workReady: editData.readiness.hasValidPassport === 'yes' && 
+                    (editData.readiness.canStartWork === 'immediately' || editData.readiness.canStartWork === 'within_month')
+        };
+      }
       
       await ClientUserService.updateUser(user.uid, dataToSave);
       await refreshUser();
@@ -252,23 +322,52 @@ export default function ProfilePage() {
     }));
   };
 
-  const handleLanguageChange = (index, value) => {
-    const newLanguages = [...editData.languages];
-    newLanguages[index] = value;
-    setEditData(prev => ({ ...prev, languages: newLanguages }));
+  const handleLanguageChange = (index, field, value) => {
+    setEditData(prev => {
+      const currentLanguages = prev.experience?.languagesSpoken || [];
+      const newLanguages = [...currentLanguages];
+      
+      // Ensure the language object exists
+      if (!newLanguages[index]) {
+        newLanguages[index] = { language: '', proficiency: 'basic', canTeach: false };
+      }
+      
+      // Update the specific field
+      newLanguages[index] = {
+        ...newLanguages[index],
+        [field]: value
+      };
+      
+      return {
+        ...prev,
+        experience: {
+          ...prev.experience,
+          languagesSpoken: newLanguages
+        }
+      };
+    });
   };
 
   const addLanguage = () => {
-    setEditData(prev => ({ 
-      ...prev, 
-      languages: [...prev.languages, ''] 
+    setEditData(prev => ({
+      ...prev,
+      experience: {
+        ...prev.experience,
+        languagesSpoken: [
+          ...(prev.experience?.languagesSpoken || []),
+          { language: '', proficiency: 'basic', canTeach: false }
+        ]
+      }
     }));
   };
 
   const removeLanguage = (index) => {
     setEditData(prev => ({
       ...prev,
-      languages: prev.languages.filter((_, i) => i !== index)
+      experience: {
+        ...prev.experience,
+        languagesSpoken: (prev.experience?.languagesSpoken || []).filter((_, i) => i !== index)
+      }
     }));
   };
 
@@ -466,6 +565,24 @@ export default function ProfilePage() {
                       calculateAge={calculateAge}
                     />
                     <HelperMedicalInfo 
+                      user={user}
+                      isEditing={isEditing}
+                      editData={editData}
+                      setEditData={setEditData}
+                    />
+                    <HelperExperienceInfo 
+                      user={user}
+                      isEditing={isEditing}
+                      editData={editData}
+                      setEditData={setEditData}
+                    />
+                    <HelperPreferencesInfo 
+                      user={user}
+                      isEditing={isEditing}
+                      editData={editData}
+                      setEditData={setEditData}
+                    />
+                    <HelperAvailabilityInfo 
                       user={user}
                       isEditing={isEditing}
                       editData={editData}
