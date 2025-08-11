@@ -339,6 +339,7 @@ function generateHelperData(index) {
   helperData.salaryProfile = {
     minimumSalary: parseFloat(salaryExpectations.salary.minimumAmount) || 0,
     preferredSalary: parseFloat(salaryExpectations.salary.preferredAmount) || 0,
+    currency: salaryExpectations.salary.currency || 'SGD',
     salaryNegotiable: salaryExpectations.salary.negotiable || false,
     wantsBonus: salaryExpectations.salary.performanceBonusExpected || false,
     salaryFlexibilityScore: salaryExpectations.salary.negotiable ? 8 : 5
@@ -668,11 +669,46 @@ function generateDetailedPreferences() {
 
 // Generate salary expectations
 function generateSalaryExpectations() {
-  const minimumAmount = (Math.floor(Math.random() * 10) + 8) * 100; // 800-1700
-  const preferredAmount = minimumAmount + (Math.floor(Math.random() * 5) + 1) * 100; // 100-500 more than minimum
+  // Realistic currency distribution for domestic helpers
+  const currencies = [
+    { code: 'SGD', weight: 30, minBase: 800, maxBase: 1200, step: 50 },
+    { code: 'HKD', weight: 25, minBase: 4000, maxBase: 6000, step: 250 },
+    { code: 'MYR', weight: 15, minBase: 1500, maxBase: 2500, step: 100 },
+    { code: 'USD', weight: 10, minBase: 500, maxBase: 800, step: 25 },
+    { code: 'AED', weight: 8, minBase: 2000, maxBase: 3000, step: 100 },
+    { code: 'SAR', weight: 5, minBase: 2000, maxBase: 3000, step: 100 },
+    { code: 'QAR', weight: 3, minBase: 2000, maxBase: 3000, step: 100 },
+    { code: 'KWD', weight: 2, minBase: 150, maxBase: 250, step: 10 },
+    { code: 'TWD', weight: 1, minBase: 15000, maxBase: 25000, step: 1000 },
+    { code: 'PHP', weight: 1, minBase: 20000, maxBase: 35000, step: 1000 }
+  ];
+  
+  // Weighted random selection
+  const totalWeight = currencies.reduce((sum, curr) => sum + curr.weight, 0);
+  let random = Math.random() * totalWeight;
+  let selectedCurrency = currencies[0];
+  
+  for (const currency of currencies) {
+    random -= currency.weight;
+    if (random <= 0) {
+      selectedCurrency = currency;
+      break;
+    }
+  }
+  
+  // Generate salary range based on currency
+  const range = selectedCurrency.maxBase - selectedCurrency.minBase;
+  const steps = Math.floor(range / selectedCurrency.step);
+  const randomSteps = Math.floor(Math.random() * steps);
+  const minimumAmount = selectedCurrency.minBase + (randomSteps * selectedCurrency.step);
+  
+  // Preferred salary is 15-40% higher than minimum
+  const increasePercent = 0.15 + (Math.random() * 0.25); // 15% to 40%
+  const preferredAmount = Math.round(minimumAmount * (1 + increasePercent));
   
   return {
     salary: {
+      currency: selectedCurrency.code,
       minimumAmount: minimumAmount.toString(),
       preferredAmount: preferredAmount.toString(),
       negotiable: Math.random() > 0.4, // 60% are negotiable

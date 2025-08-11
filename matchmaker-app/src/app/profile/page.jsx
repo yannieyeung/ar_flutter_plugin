@@ -91,6 +91,9 @@ export default function ProfilePage() {
             preferredAmount: user.expectations?.salary?.preferredAmount || 
                             (user.salaryProfile?.preferredSalary ? String(user.salaryProfile.preferredSalary) : '') ||
                             (user.mlProfile?.salaryProfile?.preferredSalary ? String(user.mlProfile.salaryProfile.preferredSalary) : ''),
+            currency: user.expectations?.salary?.currency || 
+                     user.salaryProfile?.currency || 
+                     user.mlProfile?.salaryProfile?.currency || 'SGD',
             negotiable: user.expectations?.salary?.negotiable ?? user.salaryProfile?.salaryNegotiable ?? user.mlProfile?.salaryProfile?.salaryNegotiable ?? false,
             performanceBonusExpected: user.expectations?.salary?.performanceBonusExpected ?? user.salaryProfile?.wantsBonus ?? user.mlProfile?.salaryProfile?.wantsBonus ?? false
           }
@@ -189,6 +192,7 @@ export default function ProfilePage() {
           ...dataToSave.salaryProfile,
           minimumSalary: editData.expectations.salary.minimumAmount,
           preferredSalary: editData.expectations.salary.preferredAmount,
+          currency: editData.expectations.salary.currency,
           salaryNegotiable: editData.expectations.salary.negotiable,
           wantsBonus: editData.expectations.salary.performanceBonusExpected
         };

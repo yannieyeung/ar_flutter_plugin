@@ -1238,19 +1238,52 @@ const AvailabilityStep = ({ data, onChange, errors }) => (
       <div className="bg-green-50 p-6 rounded-lg border border-green-200">
         <h3 className="text-lg font-medium text-green-800 mb-4">💰 Salary Expectations</h3>
         
+        {/* Currency Selection */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Currency <span className="text-red-500">*</span></label>
+          <select
+            value={data.expectations?.salary?.currency || 'SGD'}
+            onChange={(e) => onChange({ 
+              ...data, 
+              expectations: { 
+                ...data.expectations, 
+                salary: { 
+                  ...data.expectations?.salary,
+                  currency: e.target.value 
+                }
+              }
+            })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="SGD">Singapore Dollar (SGD)</option>
+            <option value="HKD">Hong Kong Dollar (HKD)</option>
+            <option value="MYR">Malaysian Ringgit (MYR)</option>
+            <option value="USD">US Dollar (USD)</option>
+            <option value="AED">UAE Dirham (AED)</option>
+            <option value="SAR">Saudi Riyal (SAR)</option>
+            <option value="QAR">Qatari Riyal (QAR)</option>
+            <option value="KWD">Kuwaiti Dinar (KWD)</option>
+            <option value="TWD">Taiwan Dollar (TWD)</option>
+            <option value="PHP">Philippine Peso (PHP)</option>
+            <option value="IDR">Indonesian Rupiah (IDR)</option>
+            <option value="LKR">Sri Lankan Rupee (LKR)</option>
+            <option value="INR">Indian Rupee (INR)</option>
+          </select>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Minimum Salary */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Monthly Salary Expected <span className="text-red-500">*</span></label>
             <div className="flex">
               <span className="inline-flex items-center px-3 py-2 border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm rounded-l-md">
-                SGD $
+                {data.expectations?.salary?.currency || 'SGD'} $
               </span>
               <input
                 type="number"
-                min="500"
-                max="3000"
-                step="50"
+                min="100"
+                max={data.expectations?.salary?.currency === 'IDR' ? '50000000' : data.expectations?.salary?.currency === 'PHP' ? '100000' : data.expectations?.salary?.currency === 'LKR' ? '500000' : data.expectations?.salary?.currency === 'INR' ? '100000' : '10000'}
+                step={data.expectations?.salary?.currency === 'IDR' ? '100000' : data.expectations?.salary?.currency === 'KWD' ? '5' : '50'}
                 value={data.expectations?.salary?.minimumAmount || ''}
                 onChange={(e) => onChange({ 
                   ...data, 
@@ -1263,7 +1296,19 @@ const AvailabilityStep = ({ data, onChange, errors }) => (
                   }
                 })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="800"
+                placeholder={data.expectations?.salary?.currency === 'SGD' ? '800' : 
+                           data.expectations?.salary?.currency === 'HKD' ? '4500' :
+                           data.expectations?.salary?.currency === 'MYR' ? '1800' :
+                           data.expectations?.salary?.currency === 'USD' ? '600' :
+                           data.expectations?.salary?.currency === 'AED' ? '2200' :
+                           data.expectations?.salary?.currency === 'SAR' ? '2250' :
+                           data.expectations?.salary?.currency === 'QAR' ? '2200' :
+                           data.expectations?.salary?.currency === 'KWD' ? '180' :
+                           data.expectations?.salary?.currency === 'TWD' ? '18000' :
+                           data.expectations?.salary?.currency === 'PHP' ? '25000' :
+                           data.expectations?.salary?.currency === 'IDR' ? '8000000' :
+                           data.expectations?.salary?.currency === 'LKR' ? '150000' :
+                           data.expectations?.salary?.currency === 'INR' ? '45000' : '800'}
               />
             </div>
           </div>
@@ -1273,13 +1318,13 @@ const AvailabilityStep = ({ data, onChange, errors }) => (
             <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Monthly Salary <span className="text-red-500">*</span></label>
             <div className="flex">
               <span className="inline-flex items-center px-3 py-2 border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm rounded-l-md">
-                SGD $
+                {data.expectations?.salary?.currency || 'SGD'} $
               </span>
               <input
                 type="number"
-                min="500"
-                max="3000"
-                step="50"
+                min="100"
+                max={data.expectations?.salary?.currency === 'IDR' ? '50000000' : data.expectations?.salary?.currency === 'PHP' ? '100000' : data.expectations?.salary?.currency === 'LKR' ? '500000' : data.expectations?.salary?.currency === 'INR' ? '100000' : '10000'}
+                step={data.expectations?.salary?.currency === 'IDR' ? '100000' : data.expectations?.salary?.currency === 'KWD' ? '5' : '50'}
                 value={data.expectations?.salary?.preferredAmount || ''}
                 onChange={(e) => onChange({ 
                   ...data, 
@@ -1292,7 +1337,19 @@ const AvailabilityStep = ({ data, onChange, errors }) => (
                   }
                 })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="1000"
+                placeholder={data.expectations?.salary?.currency === 'SGD' ? '1000' : 
+                           data.expectations?.salary?.currency === 'HKD' ? '5500' :
+                           data.expectations?.salary?.currency === 'MYR' ? '2200' :
+                           data.expectations?.salary?.currency === 'USD' ? '750' :
+                           data.expectations?.salary?.currency === 'AED' ? '2800' :
+                           data.expectations?.salary?.currency === 'SAR' ? '2800' :
+                           data.expectations?.salary?.currency === 'QAR' ? '2800' :
+                           data.expectations?.salary?.currency === 'KWD' ? '230' :
+                           data.expectations?.salary?.currency === 'TWD' ? '22000' :
+                           data.expectations?.salary?.currency === 'PHP' ? '30000' :
+                           data.expectations?.salary?.currency === 'IDR' ? '10000000' :
+                           data.expectations?.salary?.currency === 'LKR' ? '180000' :
+                           data.expectations?.salary?.currency === 'INR' ? '55000' : '1000'}
               />
             </div>
           </div>
@@ -1841,6 +1898,7 @@ const MultiStepHelperRegistration = ({ onSubmit, isLoading }) => {
       salaryProfile: {
         minimumSalary: parseFloat(formData.expectations?.salary?.minimumAmount) || 0,
         preferredSalary: parseFloat(formData.expectations?.salary?.preferredAmount) || 0,
+        currency: formData.expectations?.salary?.currency || 'SGD',
         salaryNegotiable: formData.expectations?.salary?.negotiable || false,
         wantsBonus: formData.expectations?.salary?.performanceBonusExpected || false,
         salaryFlexibilityScore: calculateSalaryFlexibility(formData.expectations?.salary)
@@ -2039,6 +2097,7 @@ const MultiStepHelperRegistration = ({ onSubmit, isLoading }) => {
       salaryProfile: {
         minimumSalary: parseFloat(data.expectations?.salary?.minimumAmount) || 0,
         preferredSalary: parseFloat(data.expectations?.salary?.preferredAmount) || 0,
+        currency: data.expectations?.salary?.currency || 'SGD',
         salaryNegotiable: data.expectations?.salary?.negotiable || false,
         wantsBonus: data.expectations?.salary?.performanceBonusExpected || false,
         salaryFlexibilityScore: calculateSalaryFlexibility(data.expectations?.salary)

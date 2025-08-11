@@ -323,7 +323,35 @@ function extractWorkPreferenceFeatures(helper) {
     
     // Work Intensity Tolerance
     overtimeWillingness: helper.workPreferences?.overtime ? 1 : 0,
-    weekendWork: helper.workPreferences?.weekends ? 1 : 0
+    weekendWork: helper.workPreferences?.weekends ? 1 : 0,
+    
+    // Salary & Economic Features
+    salaryFlexibility: (helper.expectations?.salary?.negotiable || 
+                       helper.salaryProfile?.salaryNegotiable ||
+                       helper.mlProfile?.salaryProfile?.salaryNegotiable) ? 1 : 0,
+    expectsBonus: (helper.expectations?.salary?.performanceBonusExpected ||
+                   helper.salaryProfile?.wantsBonus ||
+                   helper.mlProfile?.salaryProfile?.wantsBonus) ? 1 : 0,
+    
+    // Currency Features - one-hot encoding for major currencies
+    currencySGD: getCurrencyFlag(helper, 'SGD'),
+    currencyHKD: getCurrencyFlag(helper, 'HKD'),
+    currencyMYR: getCurrencyFlag(helper, 'MYR'),
+    currencyUSD: getCurrencyFlag(helper, 'USD'),
+    currencyAED: getCurrencyFlag(helper, 'AED'),
+    currencySAR: getCurrencyFlag(helper, 'SAR'),
+    currencyQAR: getCurrencyFlag(helper, 'QAR'),
+    currencyKWD: getCurrencyFlag(helper, 'KWD'),
+    currencyTWD: getCurrencyFlag(helper, 'TWD'),
+    currencyPHP: getCurrencyFlag(helper, 'PHP'),
+    currencyIDR: getCurrencyFlag(helper, 'IDR'),
+    currencyLKR: getCurrencyFlag(helper, 'LKR'),
+    currencyINR: getCurrencyFlag(helper, 'INR'),
+    currencyOther: getCurrencyFlag(helper, 'OTHER'),
+    
+    // Salary Range Features (normalized to 0-1 scale in USD equivalent)
+    salaryFlexibilityRange: calculateSalaryRange(helper),
+    salaryExpectationLevel: calculateSalaryLevel(helper)
   };
 }
 
@@ -834,6 +862,64 @@ function calculateCulturalFit(helper, culturalContext) {
   };
   
   return fits[culturalContext] || 0.5;
+}
+
+// Currency helper functions
+function getCurrencyFlag(helper, targetCurrency) {
+  const currency = helper.expectations?.salary?.currency || 
+                  helper.salaryProfile?.currency ||
+                  helper.mlProfile?.salaryProfile?.currency ||
+                  'SGD';
+  
+  if (targetCurrency === 'OTHER') {
+    const supportedCurrencies = ['SGD', 'HKD', 'MYR', 'USD', 'AED', 'SAR', 'QAR', 'KWD', 'TWD', 'PHP', 'IDR', 'LKR', 'INR'];
+    return supportedCurrencies.includes(currency) ? 0 : 1;
+  }
+  
+  return currency === targetCurrency ? 1 : 0;
+}
+
+function calculateSalaryRange(helper) {
+  const minSalary = helper.expectations?.salary?.minimumAmount ||
+                   helper.salaryProfile?.minimumSalary ||
+                   helper.mlProfile?.salaryProfile?.minimumSalary;
+  const maxSalary = helper.expectations?.salary?.preferredAmount ||
+                   helper.salaryProfile?.preferredSalary ||
+                   helper.mlProfile?.salaryProfile?.preferredSalary;
+  
+  if (!minSalary || !maxSalary) return 0;
+  
+  const diff = Math.abs(parseFloat(maxSalary) - parseFloat(minSalary));
+  const avg = (parseFloat(maxSalary) + parseFloat(minSalary)) / 2;
+  
+  // Return flexibility as ratio of range to average (normalized)
+  return Math.min(diff / avg, 1);
+}
+
+function calculateSalaryLevel(helper) {
+  // Convert salary to USD equivalent for comparison
+  const currency = helper.expectations?.salary?.currency ||
+                  helper.salaryProfile?.currency ||
+                  helper.mlProfile?.salaryProfile?.currency ||
+                  'SGD';
+  
+  const minSalary = parseFloat(helper.expectations?.salary?.minimumAmount ||
+                              helper.salaryProfile?.minimumSalary ||
+                              helper.mlProfile?.salaryProfile?.minimumSalary || 0);
+  
+  if (!minSalary) return 0;
+  
+  // Rough conversion rates to USD (approximate)
+  const conversionRates = {
+    'SGD': 0.74, 'HKD': 0.13, 'MYR': 0.22, 'USD': 1.0,
+    'AED': 0.27, 'SAR': 0.27, 'QAR': 0.27, 'KWD': 3.25,
+    'TWD': 0.032, 'PHP': 0.018, 'IDR': 0.000066, 'LKR': 0.003, 'INR': 0.012
+  };
+  
+  const usdEquivalent = minSalary * (conversionRates[currency] || 1.0);
+  
+  // Normalize to 0-1 scale (assuming 300-1200 USD range for domestic helpers)
+  return Math.min(Math.max((usdEquivalent - 300) / 900, 0), 1);
 }
 
 // Export for use in other modules

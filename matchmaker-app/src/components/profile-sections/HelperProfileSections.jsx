@@ -1055,13 +1055,44 @@ export const HelperAvailabilityInfo = ({ user, isEditing, editData, setEditData 
             <h4 className="font-semibold text-green-800 mb-4 flex items-center">
               💰 Salary Expectations
             </h4>
+            
+            {/* Currency Selection */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-slate-700 mb-2">Currency</label>
+              {isEditing ? (
+                <select
+                  value={editData.expectations?.salary?.currency || 'SGD'}
+                  onChange={(e) => handleExpectationChange('salary', 'currency', e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="SGD">Singapore Dollar (SGD)</option>
+                  <option value="HKD">Hong Kong Dollar (HKD)</option>
+                  <option value="MYR">Malaysian Ringgit (MYR)</option>
+                  <option value="USD">US Dollar (USD)</option>
+                  <option value="AED">UAE Dirham (AED)</option>
+                  <option value="SAR">Saudi Riyal (SAR)</option>
+                  <option value="QAR">Qatari Riyal (QAR)</option>
+                  <option value="KWD">Kuwaiti Dinar (KWD)</option>
+                  <option value="TWD">Taiwan Dollar (TWD)</option>
+                  <option value="PHP">Philippine Peso (PHP)</option>
+                  <option value="IDR">Indonesian Rupiah (IDR)</option>
+                  <option value="LKR">Sri Lankan Rupee (LKR)</option>
+                  <option value="INR">Indian Rupee (INR)</option>
+                </select>
+              ) : (
+                <p className="text-slate-900 font-medium">
+                  {editData?.expectations?.salary?.currency || 'SGD'}
+                </p>
+              )}
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Minimum Monthly Salary Expected</label>
                 {isEditing ? (
                   <div className="flex">
                     <span className="inline-flex items-center px-3 py-2 border border-r-0 border-slate-300 bg-slate-50 text-slate-500 text-sm rounded-l-lg">
-                      SGD $
+                      {editData.expectations?.salary?.currency || 'SGD'} $
                     </span>
                     <input
                       type="number"
@@ -1076,7 +1107,7 @@ export const HelperAvailabilityInfo = ({ user, isEditing, editData, setEditData 
                   </div>
                 ) : (
                   <p className="text-slate-900 font-medium">
-                    {editData?.expectations?.salary?.minimumAmount ? `SGD $${editData.expectations.salary.minimumAmount}` : 'Not specified'}
+                    {editData?.expectations?.salary?.minimumAmount ? `${editData.expectations.salary.currency || 'SGD'} $${editData.expectations.salary.minimumAmount}` : 'Not specified'}
                   </p>
                 )}
               </div>
@@ -1085,7 +1116,7 @@ export const HelperAvailabilityInfo = ({ user, isEditing, editData, setEditData 
                 {isEditing ? (
                   <div className="flex">
                     <span className="inline-flex items-center px-3 py-2 border border-r-0 border-slate-300 bg-slate-50 text-slate-500 text-sm rounded-l-lg">
-                      SGD $
+                      {editData.expectations?.salary?.currency || 'SGD'} $
                     </span>
                     <input
                       type="number"
@@ -1100,7 +1131,7 @@ export const HelperAvailabilityInfo = ({ user, isEditing, editData, setEditData 
                   </div>
                 ) : (
                   <p className="text-slate-900 font-medium">
-                    {editData?.expectations?.salary?.preferredAmount ? `SGD $${editData.expectations.salary.preferredAmount}` : 'Not specified'}
+                    {editData?.expectations?.salary?.preferredAmount ? `${editData.expectations.salary.currency || 'SGD'} $${editData.expectations.salary.preferredAmount}` : 'Not specified'}
                   </p>
                 )}
               </div>
